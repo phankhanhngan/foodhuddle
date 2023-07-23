@@ -3,6 +3,7 @@ import { Options } from '@mikro-orm/core';
 const MikroOrmConfig = (): Options => {
   return {
     debug: true,
+    allowGlobalContext: true,
     entities: ['dist/entities/*.entity.js'],
     entitiesTs: ['src/entities/*.entity.ts'],
     type: 'mysql',

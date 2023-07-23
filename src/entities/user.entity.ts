@@ -1,20 +1,20 @@
-import { Entity, Property } from '@mikro-orm/core';
+import { Entity, Index, Property, Unique } from '@mikro-orm/core';
 import { Base } from './base.entity';
 
 @Entity()
 export class User extends Base {
-  constructor(googleId: string, email: string, name: string) {
-    super();
-    this.googleId = googleId;
-    this.email = email;
-    this.name = name;
-  }
+  @Unique()
   @Property({ nullable: false })
-  googleId: string;
+  googleId!: string;
 
+  @Unique()
+  @Index()
   @Property({ nullable: false })
-  email: string;
+  email!: string;
 
   @Property({ nullable: false })
   name: string;
+
+  @Property({ nullable: true })
+  photo?: string;
 }

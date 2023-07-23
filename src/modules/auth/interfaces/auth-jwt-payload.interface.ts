@@ -1,4 +1,4 @@
-export interface IUserPayLoad {
+export interface IAuthPayload {
   googleId: string;
   email: string;
 }
