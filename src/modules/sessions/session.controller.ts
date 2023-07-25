@@ -15,7 +15,6 @@ export class SessionController {
   constructor(private readonly sessionService: SessionService) { }
 
   @Get('/get-all-sessions-today')
-  @UseGuards(JwtAuthGuard)
   async getAllSessionsToday(
     @Res() res: Response) {
 
