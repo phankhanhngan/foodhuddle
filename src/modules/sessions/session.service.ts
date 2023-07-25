@@ -27,7 +27,11 @@ export class SessionService {
             (v.created_at.getFullYear() === currentYear)
         );
 
-        return listSessionsToday;
+        const listSessionsReturn = (await listSessionsToday).map((v) =>{
+            return {...v, number_of_joiners:0};
+        });
+
+        return listSessionsReturn;
     }
 
     async getLatestSessionByHostId(hostId: string){
