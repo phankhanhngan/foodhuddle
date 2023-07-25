@@ -27,7 +27,7 @@ export class SessionService {
             (v.created_at.getFullYear() === currentYear)
         );
 
-        const listSessionsReturn = (await listSessionsToday).map((v) =>{
+        const listSessionsReturn = (listSessionsToday).map((v) =>{
             return {...v, number_of_joiners:0};
         });
 

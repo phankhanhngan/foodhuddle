@@ -69,7 +69,7 @@ export class SessionController {
     return res.status(HttpStatus.OK).json({
       status: 200,
       message: 'Create new session successfully !',
-      newSession
+      id: newSession.id
     });
 
   }
