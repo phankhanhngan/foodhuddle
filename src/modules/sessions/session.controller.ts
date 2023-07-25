@@ -40,7 +40,7 @@ export class SessionController {
 
     const sessionByHostId = await (this.sessionService.getLatestSessionByHostId(hostId));
 
-    const hostPaymentInfor = sessionByHostId.host_payment_infor;
+    const hostPaymentInfor = sessionByHostId.host_payment_info;
 
     return res.status(HttpStatus.OK).json({
       hostPaymentInfor: hostPaymentInfor
