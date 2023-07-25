@@ -10,10 +10,12 @@ import { AuthService } from './auth.service';
 import { Response } from 'express';
 import { IUserAuthen } from './interfaces';
 import { OAuth2Client } from './google_client/google_client.config';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('auth')
 export class AuthController {
   constructor(
+    private readonly configService: ConfigService,
     private readonly authService: AuthService,
     private readonly oauth2Client: OAuth2Client,
   ) {}
@@ -36,13 +38,14 @@ export class AuthController {
         name,
         photo: picture,
       };
-
       const token = await this.authService.logIn(user);
-
       return res.status(HttpStatus.OK).json({
         status: 'Success',
         message: 'Login successfully',
         accessToken: token,
+        expiresIn: parseInt(
+          this.configService.get<string>('TOKEN_EXPIRE_TIME'),
+        ),
         profile: user,
       });
     } catch (err) {
