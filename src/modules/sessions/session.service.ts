@@ -46,12 +46,21 @@ export class SessionService {
         }
     }
 
-    async getLatestSessionByHostId(hostId: number){
-        return this.sessionRepository.findOne({ host: hostId }, { orderBy: { id: 'DESC' } });
+    async getLatestSessionByHostId(hostId: number) {
+        try {
+
+            const latestSessionByHostId = this.sessionRepository.findOne({ host: hostId }, { orderBy: { id: 'DESC' } });
+
+            return latestSessionByHostId;
+
+        } catch (error) {
+            console.log('HAS AN ERROR AT getLatestSessionByHostId()');
+            throw error;
+        }
     }
 
     async createNewSessionToday(dto: CreateSession) {
-        
+
         try {
             const newSession = this.sessionRepository.create(dto);
 
