@@ -19,7 +19,8 @@ export class SessionController {
     const allSessionToday = await (this.sessionService.getAllSessionsToday());
 
     return res.status(HttpStatus.OK).json({
-      allSessionToday: allSessionToday
+      status: "success",
+      data: allSessionToday
     });
   }
 
