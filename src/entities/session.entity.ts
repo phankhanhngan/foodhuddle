@@ -6,7 +6,7 @@ import { Base } from './base.entity';
 export class Session extends Base {
 
   @Property({ nullable: false })
-  host_id: number;
+  host_id: string;
 
   @Property({ nullable: false })
   title: string;

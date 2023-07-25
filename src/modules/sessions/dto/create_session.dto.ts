@@ -2,7 +2,7 @@ import { Enum, Property } from '@mikro-orm/core';
 
 export class CreateSession {
     @Property({ nullable: false })
-    hostId: number;
+    hostId: string;
 
     @Property({ nullable: false })
     title: string;

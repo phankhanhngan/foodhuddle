@@ -33,7 +33,7 @@ export class SessionController {
     });
   }
 
-  @Get('/today/host-payment-infor/:host_id')
+  @Get('/host-payment-infor/:host_id')
   async getHostPaymentInfor(
     @Param('host_id') hostId: number, 
     @Res() res: Response) {
