@@ -50,7 +50,7 @@ export class AuthService {
       });
     } catch (err) {
       console.log('HAS AN ERROR AT LOGIN SERVICE', err);
-      throw new InternalServerErrorException();
+      throw err;
     }
   }
 

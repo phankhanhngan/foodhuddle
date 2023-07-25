@@ -14,17 +14,22 @@ export class OAuth2Client {
   }
 
   async getInfo(accessToken: string) {
-    this.oauth2Client.setCredentials({
-      access_token: accessToken,
-      token_type: 'Bearer',
-    });
+    try {
+      this.oauth2Client.setCredentials({
+        access_token: accessToken,
+        token_type: 'Bearer',
+      });
 
-    const { data } = await google
-      .oauth2({
-        auth: this.oauth2Client,
-        version: 'v2',
-      })
-      .userinfo.v2.me.get();
-    return data;
+      const { data } = await google
+        .oauth2({
+          auth: this.oauth2Client,
+          version: 'v2',
+        })
+        .userinfo.v2.me.get();
+      return data;
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
   }
 }

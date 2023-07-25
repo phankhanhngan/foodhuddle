@@ -2,9 +2,9 @@ import {
   Controller,
   Res,
   HttpStatus,
-  InternalServerErrorException,
   Post,
   Body,
+  BadRequestException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Response } from 'express';
@@ -22,6 +22,11 @@ export class AuthController {
   async googleAuthCallback(@Body() body, @Res() res: Response) {
     try {
       const { accessToken } = body;
+
+      if (!accessToken) {
+        throw new BadRequestException('Access Token can not be null');
+      }
+
       const { id, email, name, picture } = await this.oauth2Client.getInfo(
         accessToken,
       );
@@ -33,6 +38,7 @@ export class AuthController {
       };
 
       const token = await this.authService.logIn(user);
+
       return res.status(HttpStatus.OK).json({
         status: 'Success',
         message: 'Login successfully',
@@ -41,7 +47,7 @@ export class AuthController {
       });
     } catch (err) {
       console.log(err);
-      throw new InternalServerErrorException();
+      throw err;
     }
   }
 }
