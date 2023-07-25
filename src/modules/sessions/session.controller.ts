@@ -18,7 +18,7 @@ import { CreateSession } from './dto/create_session.dto';
 import { AwsService } from '../aws/aws.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
-@Controller('sessions')
+@Controller('session')
 export class SessionController {
   constructor(private readonly sessionService: SessionService,
               private readonly awsService: AwsService) { }
@@ -53,7 +53,7 @@ export class SessionController {
 
   }
 
-  @Post('/today')
+  @Post('/create-new-session')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file'))
   async createNewSessionToday(
