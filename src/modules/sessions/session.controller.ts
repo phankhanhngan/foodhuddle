@@ -23,7 +23,7 @@ export class SessionController {
   constructor(private readonly sessionService: SessionService,
               private readonly awsService: AwsService) { }
 
-  @Get('/today')
+  @Get('/get-all-sessions-today')
   @UseGuards(JwtAuthGuard)
   async getAllSessionsToday(
     @Res() res: Response) {
