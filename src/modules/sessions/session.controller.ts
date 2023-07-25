@@ -35,7 +35,7 @@ export class SessionController {
 
   @Get('/host-payment-infor/:host_id')
   async getHostPaymentInfor(
-    @Param('host_id') hostId: number, 
+    @Param('host_id') hostId: string, 
     @Res() res: Response) {
 
     const sessionByHostId = await (this.sessionService.getLatestSessionByHostId(hostId));

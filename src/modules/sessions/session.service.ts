@@ -30,7 +30,7 @@ export class SessionService {
         return listSessionsToday;
     }
 
-    async getLatestSessionByHostId(hostId: number){
+    async getLatestSessionByHostId(hostId: string){
         return this.sessionRepository.findOne({ host_id: hostId }, { orderBy: { id: 'DESC' } });
     }
 
