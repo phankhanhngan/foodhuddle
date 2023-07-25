@@ -42,7 +42,7 @@ export class SessionService {
     }
 
     async getLatestSessionByHostId(hostId: number){
-        return this.sessionRepository.findOne({ host_id: hostId }, { orderBy: { id: 'DESC' } });
+        return this.sessionRepository.findOne({ host: hostId }, { orderBy: { id: 'DESC' } });
     }
 
     async createNewSessionToday(dto: CreateSession) {

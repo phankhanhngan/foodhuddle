@@ -68,7 +68,7 @@ export class SessionController {
 
     const hostId = Object(res.req.user).id;
 
-    dto.host_id = hostId;
+    dto.host = hostId;
 
     const newSession = await this.sessionService.createNewSessionToday(dto);
 
