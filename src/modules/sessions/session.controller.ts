@@ -16,9 +16,9 @@ import { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateSession } from './dto/create_session.dto';
 import { AwsService } from '../aws/aws.service';
-
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-@Controller('session')
+
+@Controller('sessions')
 export class SessionController {
   constructor(private readonly sessionService: SessionService,
               private readonly awsService: AwsService) { }
