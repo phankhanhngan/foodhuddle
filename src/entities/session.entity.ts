@@ -15,7 +15,7 @@ export class Session extends Base {
   description: string;
 
   @Property({ nullable: false, type: 'text' })
-  shop_ink: string;
+  shop_link: string;
 
   @Property({ nullable: false, type: 'text' })
   host_payment_infor: string
