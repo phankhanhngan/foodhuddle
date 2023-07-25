@@ -7,6 +7,7 @@ import { MorganModule, MorganInterceptor } from 'nest-morgan';
 import { AppService } from './app.service';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AuthModule } from './modules/auth/auth.module';
+import { SessionModule } from './modules/sessions/session.module';
 
 @Module({
   imports: [
@@ -15,8 +16,9 @@ import { AuthModule } from './modules/auth/auth.module';
     MikroOrmModule.forRootAsync({
       useFactory: () => MikroOrmConfig(),
     }),
-    AuthModule,
+    AuthModule, SessionModule
   ],
+
   controllers: [AppController],
   providers: [
     AppService,
