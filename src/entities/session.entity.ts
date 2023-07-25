@@ -6,7 +6,7 @@ import { Base } from './base.entity';
 export class Session extends Base {
 
   @Property({ nullable: false })
-  hostId: number;
+  host_id: number;
 
   @Property({ nullable: false })
   title: string;
@@ -15,13 +15,13 @@ export class Session extends Base {
   description: string;
 
   @Property({ nullable: false, type: 'text' })
-  shopLink: string;
+  shop_link: string;
 
   @Property({ nullable: false, type: 'text' })
-  hostPaymentInfor: string
+  host_payment_infor: string
 
   @Property({ nullable: true, type: 'text' })
-  qrImage: string;
+  qr_image: string;
 
   @Enum(()  => SessionStatus)
   status!: SessionStatus;
