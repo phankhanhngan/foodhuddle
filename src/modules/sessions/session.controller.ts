@@ -8,6 +8,7 @@ import {
   InternalServerErrorException,
   UploadedFile,
   Res,
+  UseGuards,
   UseInterceptors 
 } from '@nestjs/common';
 import { SessionService } from './session.service';
@@ -16,12 +17,14 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateSession } from './dto/create_session.dto';
 import { AwsService } from '../aws/aws.service';
 
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 @Controller('session')
 export class SessionController {
   constructor(private readonly sessionService: SessionService,
               private readonly awsService: AwsService) { }
 
   @Get('/today')
+  @UseGuards(JwtAuthGuard)
   async getAllSessionsToday(
     @Res() res: Response) {
 
