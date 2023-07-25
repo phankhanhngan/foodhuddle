@@ -66,22 +66,22 @@ export class SessionController {
     @UploadedFile() file: Express.Multer.File,
     @Res() res: Response) {
 
-    const fileBuffer = file.buffer;
-    const originalFilename = file.originalname;
+    // const fileBuffer = file.buffer;
+    // const originalFilename = file.originalname;
 
-    const fileKey = await this.awsService.uploadFileToS3(fileBuffer, originalFilename);
+    // const fileKey = await this.awsService.uploadFileToS3(fileBuffer, originalFilename);
 
-    //const newSession = await this.sessionService.createNewSessionToday(dto);
+    const newSession = await this.sessionService.createNewSessionToday(dto);
 
-    // if (!newSession) {
-    //   throw new InternalServerErrorException();
-    // }
+    if (!newSession) {
+      throw new InternalServerErrorException();
+    }
 
-    // return res.status(HttpStatus.OK).json({
-    //   status: 200,
-    //   message: 'Create new session successfully !',
-    //   newSession
-    // });
+    return res.status(HttpStatus.OK).json({
+      status: 200,
+      message: 'Create new session successfully !',
+      newSession
+    });
 
   }
 
