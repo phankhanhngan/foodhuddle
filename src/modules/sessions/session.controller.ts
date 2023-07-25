@@ -17,6 +17,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateSession } from './dto/create_session.dto';
 import { AwsService } from '../aws/aws.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { UpdateSessionStatus } from './dto/update_session_status.dto';
 
 @Controller('session')
 export class SessionController {
@@ -36,7 +37,6 @@ export class SessionController {
     });
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get('/host-payment-infor')
   async getHostPaymentInfor(
     @Res() res: Response) {
@@ -83,5 +83,21 @@ export class SessionController {
     });
 
   }
+
+  @Post('/update-status')
+  @UseGuards(JwtAuthGuard)
+  async updateSessionStatus(
+    @Body() dto: UpdateSessionStatus, 
+    @Res() res: Response) {
+
+    const updateStatusSession = await this.sessionService.updateSessionStatus(dto);
+
+    return res.status(HttpStatus.OK).json({
+      status: 200,
+      message: 'Create new session successfully !',
+    });
+
+  }
+
 
 }

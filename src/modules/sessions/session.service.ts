@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { EntityManager, EntityRepository  } from '@mikro-orm/core';
+import { EntityManager, EntityRepository, wrap } from '@mikro-orm/core';
 import { Session } from 'src/entities/session.entity';
 import { CreateSession } from './dto/create_session.dto';
+import { UpdateSessionStatus } from './dto/update_session_status.dto';
 
 @Injectable()
 export class SessionService {
@@ -59,5 +60,24 @@ export class SessionService {
             throw error;
         }
 
+    }
+
+    async updateSessionStatus(dto: UpdateSessionStatus){
+        try{
+               
+            const currentSessionStatus = await (this.sessionRepository.findOneOrFail({ id: dto.id}))
+
+            if((currentSessionStatus).status !== dto.status){
+                
+                 this.sessionRepository.assign(currentSessionStatus, dto);
+
+                 await this.em.persistAndFlush(currentSessionStatus);
+
+            }
+
+        } catch (error){
+            console.log('HAS AN ERROR AT updateSessionStatus()')    
+            throw error;
+        }
     }
 }
