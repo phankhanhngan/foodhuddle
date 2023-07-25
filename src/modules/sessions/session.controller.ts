@@ -10,11 +10,11 @@ import { SessionService } from './session.service';
 import { Response } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
-@Controller('sessions')
+@Controller('session')
 export class SessionController {
   constructor(private readonly sessionService: SessionService) { }
 
-  @Get('/today')
+  @Get('/get-all-sessions-today')
   @UseGuards(JwtAuthGuard)
   async getAllSessionsToday(
     @Res() res: Response) {
