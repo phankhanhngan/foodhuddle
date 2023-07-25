@@ -36,10 +36,14 @@ export class SessionController {
     });
   }
 
-  @Get('/host-payment-infor/:host_id')
+  @UseGuards(JwtAuthGuard)
+  @Get('/host-payment-infor')
   async getHostPaymentInfor(
-    @Param('host_id') hostId: string, 
     @Res() res: Response) {
+
+    console.log(res.req.user)
+
+    const hostId = "asdasd";
 
     const sessionByHostId = await (this.sessionService.getLatestSessionByHostId(hostId));
 
