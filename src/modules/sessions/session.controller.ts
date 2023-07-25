@@ -1,19 +1,26 @@
-import { Body, Post, Controller, Get, Put, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  HttpStatus,
+  Res 
+} from '@nestjs/common';
 import { SessionService } from './session.service';
+import { Response } from 'express';
 
-
-@Controller('sessions')
-export class SessionController{
-    constructor(private readonly sessionService: SessionService){}
+@Controller('session')
+export class SessionController {
+  constructor(private readonly sessionService: SessionService) { }
 
   @Get('/today')
-  getAllSessionsToday() {
-    return this.sessionService.getAllSessionsToday();
-  }
+  async getAllSessionsToday(
+    @Res() res: Response) {
 
-  @Get('/today/:id')
-  getSessionsByUserID(@Param('id') id: number) {
-    return this.sessionService.getSessionsByUserID(id);
+    const allSessionToday = await (this.sessionService.getAllSessionsToday());
+
+    return res.status(HttpStatus.OK).json({
+      allSessionToday: allSessionToday
+    });
   }
 
 }

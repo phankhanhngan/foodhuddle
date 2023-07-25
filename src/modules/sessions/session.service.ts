@@ -3,7 +3,6 @@ import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityManager, EntityRepository } from '@mikro-orm/core';
 import { Session } from 'src/entities/session.entity';
 
-
 @Injectable()
 export class SessionService {
     constructor(
@@ -13,10 +12,21 @@ export class SessionService {
     ) { }
 
     async getAllSessionsToday(): Promise<Session[]> {
-        return this.sessionRepository.findAll();
+
+        const today = new Date();
+        const currentDate = today.getDate();
+        const currentMonth = today.getMonth() + 1;
+        const currentYear = today.getFullYear();
+
+        const allSessions = this.sessionRepository.findAll();
+
+        const listSessionsToday = (await allSessions).filter((v) =>
+            (v.created_at.getDate() === currentDate) &&
+            ((v.created_at.getMonth() + 1) === currentMonth) &&
+            (v.created_at.getFullYear() === currentYear)
+        );
+
+        return listSessionsToday;
     }
 
-    async getSessionsByUserID(id: number): Promise<Session[]> {
-        return this.sessionRepository.find({hostId: id});
-    }
 }

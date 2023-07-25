@@ -7,7 +7,7 @@ import { MorganModule, MorganInterceptor } from 'nest-morgan';
 import { AppService } from './app.service';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AuthModule } from './modules/auth/auth.module';
-import { SessionModule } from './modules/sessions/sessions.module';
+import { SessionModule } from './modules/sessions/session.module';
 
 @Module({
   imports: [
