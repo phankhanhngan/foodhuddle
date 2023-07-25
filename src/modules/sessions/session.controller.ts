@@ -10,7 +10,7 @@ import { SessionService } from './session.service';
 import { Response } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
-@Controller('session')
+@Controller('sessions')
 export class SessionController {
   constructor(private readonly sessionService: SessionService) { }
 
