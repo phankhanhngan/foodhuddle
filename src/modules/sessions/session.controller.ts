@@ -28,12 +28,19 @@ export class SessionController {
   async getAllSessionsToday(
     @Res() res: Response) {
 
-    const allSessionToday = await (this.sessionService.getAllSessionsToday());
+    try {
 
-    return res.status(HttpStatus.OK).json({
-      status: "success",
-      data: allSessionToday
-    });
+      const allSessionToday = await (this.sessionService.getAllSessionsToday());
+
+      return res.status(HttpStatus.OK).json({
+        status: "success",
+        data: allSessionToday
+      });
+
+    } catch (error) {
+      console.log('HAS AN ERROR AT GETTING ALL SESSIONS TODAY');
+      throw error;
+    }
   }
 
   @UseGuards(JwtAuthGuard)
