@@ -2,7 +2,7 @@ import { Enum, Property } from '@mikro-orm/core';
 
 export class CreateSession {
     @Property({ nullable: false })
-    hostId: string;
+    host_id: string;
 
     @Property({ nullable: false })
     title: string;
@@ -11,13 +11,13 @@ export class CreateSession {
     description: string;
 
     @Property({ nullable: false, type: 'text' })
-    shopLink: string;
+    shop_link: string;
 
     @Property({ nullable: false, type: 'text' })
-    hostPaymentInfor: string
+    host_payment_info: string
 
     @Property({ nullable: true, type: 'text' })
-    qrImage: string;
+    qr_images: string;
 
     @Enum(() => SessionStatus)
     status!: SessionStatus;

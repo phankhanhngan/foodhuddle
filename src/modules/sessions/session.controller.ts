@@ -41,9 +41,7 @@ export class SessionController {
   async getHostPaymentInfor(
     @Res() res: Response) {
 
-    console.log(res.req.user)
-
-    const hostId = "asdasd";
+    const hostId = Object(res.req.user).googleId;
 
     const sessionByHostId = await (this.sessionService.getLatestSessionByHostId(hostId));
 
@@ -56,6 +54,7 @@ export class SessionController {
   }
 
   @Post('/today')
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file'))
   async createNewSessionToday(
     @Body() dto: CreateSession, 
@@ -66,6 +65,10 @@ export class SessionController {
     // const originalFilename = file.originalname;
 
     // const fileKey = await this.awsService.uploadFileToS3(fileBuffer, originalFilename);
+
+    const hostId = Object(res.req.user).googleId;
+
+    dto.host_id = hostId;
 
     const newSession = await this.sessionService.createNewSessionToday(dto);
 
