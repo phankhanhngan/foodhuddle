@@ -1,5 +1,4 @@
 import {
-  Get,
   Controller,
   Res,
   HttpStatus,
@@ -39,19 +38,6 @@ export class AuthController {
         message: 'Login successfully',
         accessToken: token,
         profile: user,
-      });
-    } catch (err) {
-      console.log(err);
-      throw new InternalServerErrorException();
-    }
-  }
-
-  @Get('logout')
-  async logout(@Res() res: Response) {
-    try {
-      return res.status(HttpStatus.OK).json({
-        status: 'Success',
-        message: 'Logout successfully',
       });
     } catch (err) {
       console.log(err);
