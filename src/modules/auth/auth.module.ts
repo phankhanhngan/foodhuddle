@@ -6,7 +6,7 @@ import { PassportModule } from '@nestjs/passport';
 import { ConfigService } from '@nestjs/config';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { EntityRepository } from '@mikro-orm/mysql';
-import { OAuth2Client } from './google_client/google_client.config';
+import { OAuth2Client } from './google_client/google-client.config';
 
 @Module({
   imports: [
@@ -15,7 +15,7 @@ import { OAuth2Client } from './google_client/google_client.config';
       useFactory: async (configService: ConfigService) => ({
         secret: configService.get<string>('PRIVATE_KEY'),
         signOptions: {
-          expiresIn: configService.get<string>('TOKEN_EXPIRE_TIME'),
+          expiresIn: configService.get<number>('TOKEN_EXPIRE_TIME'),
         },
       }),
       inject: [ConfigService],
