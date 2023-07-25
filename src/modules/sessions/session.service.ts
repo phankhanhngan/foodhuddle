@@ -30,12 +30,8 @@ export class SessionService {
         return listSessionsToday;
     }
 
-    async getSessionsByUserID(id: number): Promise<Session[]> {
-        return this.sessionRepository.find({ id: id });
-    }
-
     async getLatestSessionByHostId(hostId: number){
-        return this.sessionRepository.findOne({ hostId: hostId }, { orderBy: { id: 'DESC' } });
+        return this.sessionRepository.findOne({ host_id: hostId }, { orderBy: { id: 'DESC' } });
     }
 
     async createNewSessionToday(dto: CreateSession) {

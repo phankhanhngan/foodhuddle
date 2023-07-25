@@ -33,18 +33,6 @@ export class SessionController {
     });
   }
 
-  @Get('/today/:id')
-  async getSessionsByUserID(
-    @Param('id') id: number, 
-    @Res() res: Response) {
-
-    const sessionById = await (this.sessionService.getSessionsByUserID(id));
-
-    return res.status(HttpStatus.OK).json({
-      sessionById: sessionById
-    });
-  }
-
   @Get('/today/host-payment-infor/:host_id')
   async getHostPaymentInfor(
     @Param('host_id') hostId: number, 
@@ -52,7 +40,7 @@ export class SessionController {
 
     const sessionByHostId = await (this.sessionService.getLatestSessionByHostId(hostId));
 
-    const hostPaymentInfor = sessionByHostId.hostPaymentInfor;
+    const hostPaymentInfor = sessionByHostId.host_payment_infor;
 
     return res.status(HttpStatus.OK).json({
       hostPaymentInfor: hostPaymentInfor
