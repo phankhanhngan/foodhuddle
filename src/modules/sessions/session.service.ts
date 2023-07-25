@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityManager, EntityRepository } from '@mikro-orm/core';
 import { Session } from 'src/entities/session.entity';
+import { CreateSession } from './dto/create_session.dto';
 
 @Injectable()
 export class SessionService {
@@ -29,4 +30,27 @@ export class SessionService {
         return listSessionsToday;
     }
 
+    async getSessionsByUserID(id: number): Promise<Session[]> {
+        return this.sessionRepository.find({ id: id });
+    }
+
+    async getLatestSessionByHostId(hostId: number){
+        return this.sessionRepository.findOne({ hostId: hostId }, { orderBy: { id: 'DESC' } });
+    }
+
+    async createNewSessionToday(dto: CreateSession) {
+        
+        try {
+            const newSession = this.sessionRepository.create(dto);
+
+            await this.em.persistAndFlush(newSession);
+
+            return newSession;
+
+        } catch (error) {
+            console.log("HAS AN ERROR AT createNewSessionToday()");
+            throw error;
+        }
+
+    }
 }

@@ -1,16 +1,25 @@
 import {
+  Body,
+  Post,
   Controller,
   Get,
   Param,
   HttpStatus,
-  Res 
+  InternalServerErrorException,
+  UploadedFile,
+  Res,
+  UseInterceptors 
 } from '@nestjs/common';
 import { SessionService } from './session.service';
 import { Response } from 'express';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { CreateSession } from './dto/create_session.dto';
+import { AwsService } from '../aws/aws.service';
 
 @Controller('session')
 export class SessionController {
-  constructor(private readonly sessionService: SessionService) { }
+  constructor(private readonly sessionService: SessionService,
+              private readonly awsService: AwsService) { }
 
   @Get('/today')
   async getAllSessionsToday(
@@ -21,6 +30,59 @@ export class SessionController {
     return res.status(HttpStatus.OK).json({
       allSessionToday: allSessionToday
     });
+  }
+
+  @Get('/today/:id')
+  async getSessionsByUserID(
+    @Param('id') id: number, 
+    @Res() res: Response) {
+
+    const sessionById = await (this.sessionService.getSessionsByUserID(id));
+
+    return res.status(HttpStatus.OK).json({
+      sessionById: sessionById
+    });
+  }
+
+  @Get('/today/host-payment-infor/:host_id')
+  async getHostPaymentInfor(
+    @Param('host_id') hostId: number, 
+    @Res() res: Response) {
+
+    const sessionByHostId = await (this.sessionService.getLatestSessionByHostId(hostId));
+
+    const hostPaymentInfor = sessionByHostId.hostPaymentInfor;
+
+    return res.status(HttpStatus.OK).json({
+      hostPaymentInfor: hostPaymentInfor
+    });
+
+  }
+
+  @Post('/today')
+  @UseInterceptors(FileInterceptor('file'))
+  async createNewSessionToday(
+    @Body() dto: CreateSession, 
+    @UploadedFile() file: Express.Multer.File,
+    @Res() res: Response) {
+
+    const fileBuffer = file.buffer;
+    const originalFilename = file.originalname;
+
+    const fileKey = await this.awsService.uploadFileToS3(fileBuffer, originalFilename);
+
+    //const newSession = await this.sessionService.createNewSessionToday(dto);
+
+    // if (!newSession) {
+    //   throw new InternalServerErrorException();
+    // }
+
+    // return res.status(HttpStatus.OK).json({
+    //   status: 200,
+    //   message: 'Create new session successfully !',
+    //   newSession
+    // });
+
   }
 
 }
