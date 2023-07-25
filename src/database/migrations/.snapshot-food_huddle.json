@@ -142,8 +142,8 @@
           "length": 0,
           "mappedType": "datetime"
         },
-        "host_id_id": {
-          "name": "host_id_id",
+        "host_id": {
+          "name": "host_id",
           "type": "int",
           "unsigned": true,
           "autoincrement": false,
@@ -216,10 +216,10 @@
       "indexes": [
         {
           "columnNames": [
-            "host_id_id"
+            "host_id"
           ],
           "composite": false,
-          "keyName": "session_host_id_id_index",
+          "keyName": "session_host_id_index",
           "primary": false,
           "unique": false
         },
@@ -235,10 +235,10 @@
       ],
       "checks": [],
       "foreignKeys": {
-        "session_host_id_id_foreign": {
-          "constraintName": "session_host_id_id_foreign",
+        "session_host_id_foreign": {
+          "constraintName": "session_host_id_foreign",
           "columnNames": [
-            "host_id_id"
+            "host_id"
           ],
           "localTableName": "session",
           "referencedColumnNames": [
