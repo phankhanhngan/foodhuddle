@@ -41,11 +41,11 @@ export class SessionController {
   async getHostPaymentInfor(
     @Res() res: Response) {
 
-    const hostId = Object(res.req.user).googleId;
+    const hostId = Object(res.req.user).id;
 
     const sessionByHostId = await (this.sessionService.getLatestSessionByHostId(hostId));
 
-    const hostPaymentInfor = sessionByHostId.host_payment_info;
+    const hostPaymentInfor = sessionByHostId ? sessionByHostId.host_payment_info : '';
 
     return res.status(HttpStatus.OK).json({
       hostPaymentInfor: hostPaymentInfor
@@ -66,7 +66,7 @@ export class SessionController {
 
     // const fileKey = await this.awsService.uploadFileToS3(fileBuffer, originalFilename);
 
-    const hostId = Object(res.req.user).googleId;
+    const hostId = Object(res.req.user).id;
 
     dto.host_id = hostId;
 
