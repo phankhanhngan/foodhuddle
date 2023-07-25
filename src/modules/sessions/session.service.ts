@@ -12,7 +12,7 @@ export class SessionService {
         private readonly em: EntityManager
     ) { }
 
-    async getAllSessionsToday(): Promise<Session[]> {
+    async getAllSessionsToday() {
 
         const today = new Date();
         const currentDate = today.getDate();
@@ -27,8 +27,15 @@ export class SessionService {
             (v.created_at.getFullYear() === currentYear)
         );
 
-        const listSessionsReturn = (listSessionsToday).map((v) =>{
-            return {...v, number_of_joiners:0};
+        const listSessionsReturn = (await listSessionsToday).map((v) =>{
+            return {
+                id: v.id,
+                title: v.title,
+                host: v.host_id.email,
+                status: v.status,
+                created_at: v.created_at,
+                number_of_joiners: 0
+            };
         });
 
         return listSessionsReturn;
