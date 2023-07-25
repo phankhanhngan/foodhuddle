@@ -18,10 +18,10 @@ export class Session extends Base {
   shop_link: string;
 
   @Property({ nullable: false, type: 'text' })
-  host_payment_infor: string
+  host_payment_info: string
 
   @Property({ nullable: true, type: 'text' })
-  qr_image: string;
+  qr_images: string;
 
   @Enum(()  => SessionStatus)
   status!: SessionStatus;
