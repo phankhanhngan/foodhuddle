@@ -9,7 +9,7 @@ import {
 import { AuthService } from './auth.service';
 import { Response } from 'express';
 import { IUserAuthen } from './interfaces';
-import { OAuth2Client } from './google_client/google_client.config';
+import { OAuth2Client } from './google_client/google-client.config';
 import { ConfigService } from '@nestjs/config';
 
 @Controller('auth')
