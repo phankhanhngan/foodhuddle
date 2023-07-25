@@ -3,16 +3,19 @@ import {
   Get,
   Param,
   HttpStatus,
-  Res 
+  Res,
+  UseGuards
 } from '@nestjs/common';
 import { SessionService } from './session.service';
 import { Response } from 'express';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @Controller('session')
 export class SessionController {
   constructor(private readonly sessionService: SessionService) { }
 
   @Get('/today')
+  @UseGuards(JwtAuthGuard)
   async getAllSessionsToday(
     @Res() res: Response) {
 
