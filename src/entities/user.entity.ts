@@ -19,6 +19,6 @@ export class User extends Base {
   @Property({ nullable: true })
   photo?: string;
 
-  @OneToMany (() => Session, (session) => session.host_id)
+  @OneToMany (() => Session, (session) => session.host)
   sessions = new Collection<Session>(this);
 }

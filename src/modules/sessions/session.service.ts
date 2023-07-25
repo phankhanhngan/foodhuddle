@@ -18,7 +18,7 @@ export class SessionService {
         const currentMonth = today.getMonth() + 1;
         const currentYear = today.getFullYear();
 
-        const allSessions = this.sessionRepository.findAll({ fields: ['id', 'title', 'host_id', 'status', 'created_at'] })
+        const allSessions = this.sessionRepository.findAll({ fields: ['id', 'title', 'host', 'status', 'created_at'] })
 
         const listSessionsToday = (await allSessions).filter((v) =>
             (v.created_at.getDate() === currentDate) &&
@@ -30,7 +30,7 @@ export class SessionService {
             return {
                 id: v.id,
                 title: v.title,
-                host: v.host_id.email,
+                host: v.host.email,
                 status: v.status,
                 created_at: v.created_at,
                 number_of_joiners: 0

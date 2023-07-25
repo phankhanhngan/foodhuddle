@@ -7,7 +7,7 @@ import { User } from './user.entity';
 export class Session extends Base {
 
   @ManyToOne(() => User)
-  host_id!: User;
+  host!: User;
 
   @Property({ nullable: false })
   title: string;
@@ -32,6 +32,6 @@ export class Session extends Base {
 export enum SessionStatus {
   OPEN = 'OPEN',
   LOCKED = 'LOCKED',
-  PENDING_PAYMENTS = "PENDING PAYMENTS",
+  PENDING_PAYMENTS = 'PENDING PAYMENTS',
   FINISHED = 'FINISHED',
 }
