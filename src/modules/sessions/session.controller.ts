@@ -4,7 +4,6 @@ import {
   Controller,
   Get,
   Param,
-  HttpStatus,
   InternalServerErrorException,
   UploadedFile,
   Res,
@@ -35,7 +34,7 @@ export class SessionController {
 
       const allSessionToday = await (this.sessionService.getAllSessionsToday());
 
-      return res.status(HttpStatus.OK).json({
+      return res.status(200).json({
         statusCode: 200,
         data: allSessionToday
       });
@@ -57,7 +56,7 @@ export class SessionController {
 
       const hostPaymentInfor = sessionByHostId ? sessionByHostId.host_payment_info : '';
 
-      return res.status(HttpStatus.OK).json({
+      return res.status(200).json({
         hostPaymentInfor: hostPaymentInfor
       });
 
@@ -92,7 +91,7 @@ export class SessionController {
         throw new InternalServerErrorException();
       }
 
-      return res.status(HttpStatus.OK).json({
+      return res.status(200).json({
         statusCode: 200,
         message: 'Create new session successfully !',
         id: newSession.id
