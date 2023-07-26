@@ -47,4 +47,31 @@ export class SessionService {
       throw error;
     }
   }
+
+  async getLatestSessionByHostId(hostId: number) {
+    try {
+      const latestSessionByHostId = this.sessionRepository.findOne(
+        { host: hostId },
+        { orderBy: { id: 'DESC' } },
+      );
+
+      return latestSessionByHostId;
+    } catch (error) {
+      console.log('HAS AN ERROR AT getLatestSessionByHostId()');
+      throw error;
+    }
+  }
+
+  async createNewSessionToday(dto: CreateSession) {
+    try {
+      const newSession = this.sessionRepository.create(dto);
+
+      await this.em.persistAndFlush(newSession);
+
+      return newSession;
+    } catch (error) {
+      console.log('HAS AN ERROR AT createNewSessionToday()');
+      throw error;
+    }
+  }
 }
