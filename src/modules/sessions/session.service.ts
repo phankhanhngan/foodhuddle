@@ -79,6 +79,15 @@ export class SessionService {
 
   async updateSessionStatus(id: number, dto: UpdateSessionStatus) {
     try {
+      const sessionById = await this.sessionRepository.findOne({ id: id });
+
+      if (!sessionById) {
+        return {
+          status: 400,
+          message: 'Session is not exited !',
+        };
+      }
+
       const statusSessionList = [
         'OPEN',
         'LOCKED',
@@ -93,14 +102,11 @@ export class SessionService {
         };
       }
 
-      const sessionById = await this.sessionRepository.findOne({ id: id });
-
-      if (!sessionById) {
-        return {
-          status: 400,
-          message: 'Session is not exited !',
-        };
-      }
+      const updateStatusSuccess = {
+        status: 200,
+        message: '',
+        statusSession: dto.status,
+      };
 
       switch (dto.status) {
         case SessionStatus.LOCKED:
@@ -109,11 +115,9 @@ export class SessionService {
 
             await this.em.persistAndFlush(sessionById);
 
-            return {
-              status: 200,
-              message: 'Locked session successfully !',
-              statusSession: dto.status,
-            };
+            updateStatusSuccess.message = 'Locked session successfully !';
+
+            return updateStatusSuccess;
           }
 
           break;
@@ -124,11 +128,10 @@ export class SessionService {
 
             await this.em.persistAndFlush(sessionById);
 
-            return {
-              status: 200,
-              message: 'Pending payments session successfully !',
-              statusSession: dto.status,
-            };
+            updateStatusSuccess.message =
+              'Pending payments session successfully !';
+
+            return updateStatusSuccess;
           }
 
           break;
@@ -139,11 +142,9 @@ export class SessionService {
 
             await this.em.persistAndFlush(sessionById);
 
-            return {
-              status: 200,
-              message: 'Finished session successfully !',
-              statusSession: dto.status,
-            };
+            updateStatusSuccess.message = 'Finished session successfully !';
+
+            return updateStatusSuccess;
           }
       }
 
