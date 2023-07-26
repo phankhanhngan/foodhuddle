@@ -134,16 +134,29 @@ export class SessionService {
     async deleteSession(id: number) {
         try {
 
-            const sessionById = await (this.sessionRepository.findOneOrFail({ id: id }));
+            const sessionById = await (this.sessionRepository.findOne({ id: id }));
+
+            if(!sessionById){
+                return {
+                    statusCode: 400,
+                    message: 'Session is not exited !'
+                }
+            }
 
             if ((sessionById).status === 'OPEN') {
 
                 await this.em.removeAndFlush(sessionById);
 
-                return true;
+                return {
+                    statusCode: 200,
+                    message: 'Delete session successfully !'
+                };
             }
 
-            return false;
+            return {
+                statusCode: 500,
+                message: 'Has an error when deleting session !'
+            }
 
         } catch (error) {
             console.log('HAS AN ERRO AT deleteSession()')
