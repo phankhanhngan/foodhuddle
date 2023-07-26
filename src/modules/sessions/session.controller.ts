@@ -144,7 +144,15 @@ export class SessionController {
 
       const resultDeleting = await this.sessionService.deleteSession(id);
 
-      return res.json(resultDeleting);
+      if (resultDeleting.statusCode === 200) {
+        return res.status(HttpStatus.OK).json(
+          resultDeleting
+        );
+      }
+
+      return res.status(HttpStatus.FAILED_DEPENDENCY).json(
+        resultDeleting
+      );
 
     } catch (error) {
       console.log('HAS AN ERROR WHEN DELETING SESSION !');
