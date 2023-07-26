@@ -81,7 +81,14 @@ export class SessionService {
     async updateSessionStatus(id: number, dto: UpdateSessionStatus) {
         try {
 
-            const sessionById = await (this.sessionRepository.findOneOrFail({ id: id }))
+            const sessionById = await (this.sessionRepository.findOne({ id: id }))
+
+            if(!sessionById){
+                return {
+                    status: 400,
+                    message: 'Session is not exited !'
+                }
+            }
 
             switch (dto.status) {
                 case SessionStatus.LOCKED:
@@ -136,7 +143,7 @@ export class SessionService {
 
             const sessionById = await (this.sessionRepository.findOne({ id: id }));
 
-            if(!sessionById){
+            if (!sessionById) {
                 return {
                     statusCode: 400,
                     message: 'Session is not exited !'
