@@ -4,6 +4,8 @@ import { EntityManager, EntityRepository, wrap } from '@mikro-orm/core';
 import { Session } from 'src/entities/session.entity';
 import { CreateSession } from './dto/create_session.dto';
 import { UpdateSessionStatus } from './dto/update_session_status.dto';
+import { SessionStatus } from '../../constant/constantData';
+
 
 @Injectable()
 export class SessionService {
@@ -76,24 +78,75 @@ export class SessionService {
 
     }
 
-    async updateSessionStatus(dto: UpdateSessionStatus){
-        try{
-            
-            const currentSessionStatus = await (this.sessionRepository.findOneOrFail({ id: dto.id}))
+    async updateSessionStatus(id: number, dto: UpdateSessionStatus) {
+        try {
 
-            if((currentSessionStatus).status !== dto.status){
-                
-                 this.sessionRepository.assign(currentSessionStatus, dto);
+            const sessionById = await (this.sessionRepository.findOneOrFail({ id: id }))
 
-                 await this.em.persistAndFlush(currentSessionStatus);
+            switch (dto.status) {
+                case SessionStatus.LOCKED:
 
-                 return true;
+                    if (sessionById.status === 'OPEN') {
+                        this.sessionRepository.assign(sessionById, dto);
+
+                        await this.em.persistAndFlush(sessionById);
+
+                        return true;
+                    }
+
+                    break;
+
+                case SessionStatus.PENDING_PAYMENTS:
+
+                    if (sessionById.status === 'LOCKED') {
+                        this.sessionRepository.assign(sessionById, dto);
+
+                        await this.em.persistAndFlush(sessionById);
+
+                        return true;
+                    }
+
+                    break;
+
+                case SessionStatus.FINISHED:
+
+                    if (sessionById.status === 'PENDING PAYMENTS') {
+
+                        this.sessionRepository.assign(sessionById, dto);
+
+                        await this.em.persistAndFlush(sessionById);
+
+                        return true;
+
+                    }
+
+                    break;
             }
 
             return false;
 
-        } catch (error){
-            console.log('HAS AN ERROR AT updateSessionStatus()')    
+        } catch (error) {
+            console.log('HAS AN ERROR AT updateSessionStatus()')
+            throw error;
+        }
+    }
+
+    async deleteSession(id: number) {
+        try {
+
+            const sessionById = await (this.sessionRepository.findOneOrFail({ id: id }));
+
+            if ((sessionById).status === 'OPEN') {
+
+                await this.em.removeAndFlush(sessionById);
+
+                return true;
+            }
+
+            return false;
+
+        } catch (error) {
+            console.log('HAS AN ERRO AT deleteSession()')
             throw error;
         }
     }

@@ -9,7 +9,9 @@ import {
   UploadedFile,
   Res,
   UseGuards,
-  UseInterceptors
+  UseInterceptors,
+  Delete,
+  Put
 } from '@nestjs/common';
 import { SessionService } from './session.service';
 import { Response } from 'express';
@@ -102,15 +104,16 @@ export class SessionController {
     }
   }
 
-  @Post('/update-status')
+  @Put('/:id')
   @UseGuards(JwtAuthGuard)
   async updateSessionStatus(
     @Body() dto: UpdateSessionStatus,
+    @Param('id') id: number,
     @Res() res: Response) {
 
     try {
 
-      const resultUpdating = await this.sessionService.updateSessionStatus(dto);
+      const resultUpdating = await this.sessionService.updateSessionStatus(id, dto);
 
       if (resultUpdating) {
         return res.status(HttpStatus.OK).json({
@@ -124,12 +127,41 @@ export class SessionController {
         message: `HAS AN ERROR WHEN MARKING ${dto.status} SESSION !`,
       });
 
-    } catch (error) {
+    }
+    catch (error) {
       console.log('HAS AN ERROR AT UPDATING SESSION STATUS');
+      throw error;
+    }
+  }
+
+  @Delete('/:id')
+  @UseGuards(JwtAuthGuard)
+  async deleteSession(
+    @Param('id') id: number,
+    @Res() res: Response) {
+
+    try {
+
+      const resultDeleting = await this.sessionService.deleteSession(id);
+
+      if (resultDeleting) {
+        return res.status(HttpStatus.OK).json({
+          statusCode: 200,
+          message: `DELETING session successfully !`,
+        });
+      }
+
+      return res.status(HttpStatus.FAILED_DEPENDENCY).json({
+        statusCode: 400,
+        message: `HAS AN ERROR WHEN DELETING SESSION !`,
+      });
+
+    } catch (error) {
+      console.log('HAS AN ERROR WHEN DELETING SESSION !');
       throw error;
     }
 
   }
 
-
 }
+
