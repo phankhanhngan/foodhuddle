@@ -2,7 +2,6 @@ import {
   Controller,
   Get,
   Param,
-  HttpStatus,
   Res,
   UseGuards
 } from '@nestjs/common';
@@ -23,7 +22,7 @@ export class SessionController {
 
       const allSessionToday = await (this.sessionService.getAllSessionsToday());
 
-      return res.status(HttpStatus.OK).json({
+      return res.status(200).json({
         statusCode: 200,
         data: allSessionToday
       });
