@@ -5,9 +5,8 @@ import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { Session } from 'src/entities/session.entity';
 
 @Module({
-    imports: [MikroOrmModule.forFeature([Session])],
-    controllers: [SessionController],
-    providers: [SessionService]
+  imports: [MikroOrmModule.forFeature([Session])],
+  controllers: [SessionController],
+  providers: [SessionService],
 })
-
 export class SessionModule {}
