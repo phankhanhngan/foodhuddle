@@ -79,6 +79,20 @@ export class SessionService {
 
   async updateSessionStatus(id: number, dto: UpdateSessionStatus) {
     try {
+      const statusSessionList = [
+        'OPEN',
+        'LOCKED',
+        'PENDING PAYMENTS',
+        'FINISHED',
+      ];
+
+      if (!statusSessionList.includes(dto.status)) {
+        return {
+          status: 500,
+          message: `The status session is invalid !`,
+        };
+      }
+
       const sessionById = await this.sessionRepository.findOne({ id: id });
 
       if (!sessionById) {
@@ -131,8 +145,6 @@ export class SessionService {
               statusSession: dto.status,
             };
           }
-
-          break;
       }
 
       return {
