@@ -8,7 +8,7 @@ import { Observable } from 'rxjs';
 import { FoodOrderDTO } from '../dtos/food-order.dto';
 
 @Injectable()
-export class FoodTransformInterceptor implements NestInterceptor {
+export class RequestFoodTransformInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const body = context.switchToHttp().getRequest().body;
 

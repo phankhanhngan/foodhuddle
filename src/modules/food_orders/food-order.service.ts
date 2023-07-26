@@ -49,4 +49,20 @@ export class FoodOrderService {
       throw err;
     }
   }
+
+  async getFoodOrdersByUser(
+    user: User,
+    sessionId: number,
+  ): Promise<FoodOrder[]> {
+    const session = await this.sessionRepository.findOne({ id: sessionId });
+    if (!session) {
+      throw new BadRequestException(
+        `Can not find session with id: ${sessionId}`,
+      );
+    }
+    return await this.foodOrderRepository.find({
+      user,
+      session,
+    });
+  }
 }
