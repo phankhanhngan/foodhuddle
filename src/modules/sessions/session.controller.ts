@@ -33,7 +33,7 @@ export class SessionController {
       const allSessionToday = await (this.sessionService.getAllSessionsToday());
 
       return res.status(HttpStatus.OK).json({
-        status: "success",
+        statusCode: "success",
         data: allSessionToday
       });
 
