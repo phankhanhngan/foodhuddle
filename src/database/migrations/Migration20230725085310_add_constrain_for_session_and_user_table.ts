@@ -1,6 +1,6 @@
 import { Migration } from '@mikro-orm/migrations';
 
-export class Migration20230725085310 extends Migration {
+export class Migration20230725085310_add_constrain_for_session_and_user_table extends Migration {
 
   async up(): Promise<void> {
     this.addSql('alter table `session` add `host_id` int unsigned not null;');
