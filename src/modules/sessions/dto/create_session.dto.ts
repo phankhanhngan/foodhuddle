@@ -25,6 +25,4 @@ export class CreateSession {
 
 export enum SessionStatus {
     OPEN = 'OPEN',
-    LOCKED = 'LOCKED',
-    FINISHED = 'FINISHED',
 }

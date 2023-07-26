@@ -91,7 +91,7 @@ export class SessionController {
       }
 
       return res.status(HttpStatus.OK).json({
-        status: 200,
+        statusCode: 200,
         message: 'Create new session successfully !',
         id: newSession.id
       });
