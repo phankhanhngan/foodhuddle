@@ -10,7 +10,7 @@ import {
   UseGuards,
   UseInterceptors,
   Delete,
-  Put
+  Put,
 } from '@nestjs/common';
 import { SessionService } from './session.service';
 import { Response } from 'express';
@@ -22,23 +22,21 @@ import { UpdateSessionStatus } from './dto/update_session_status.dto';
 
 @Controller('session')
 export class SessionController {
-  constructor(private readonly sessionService: SessionService,
-    private readonly awsService: AwsService) { }
+  constructor(
+    private readonly sessionService: SessionService,
+    private readonly awsService: AwsService,
+  ) {}
 
   @Get('/get-all-sessions-today')
   @UseGuards(JwtAuthGuard)
-  async getAllSessionsToday(
-    @Res() res: Response) {
-
+  async getAllSessionsToday(@Res() res: Response) {
     try {
-
-      const allSessionToday = await (this.sessionService.getAllSessionsToday());
+      const allSessionToday = await this.sessionService.getAllSessionsToday();
 
       return res.status(200).json({
         statusCode: 200,
-        data: allSessionToday
+        data: allSessionToday,
       });
-
     } catch (error) {
       console.log('HAS AN ERROR AT GETTING ALL SESSIONS TODAY');
       throw error;
@@ -46,25 +44,24 @@ export class SessionController {
   }
 
   @Get('/host-payment-infor')
-  async getHostPaymentInfor(
-    @Res() res: Response) {
-
+  async getHostPaymentInfor(@Res() res: Response) {
     try {
       const hostId = Object(res.req.user).id;
 
-      const sessionByHostId = await (this.sessionService.getLatestSessionByHostId(hostId));
+      const sessionByHostId =
+        await this.sessionService.getLatestSessionByHostId(hostId);
 
-      const hostPaymentInfor = sessionByHostId ? sessionByHostId.host_payment_info : '';
+      const hostPaymentInfor = sessionByHostId
+        ? sessionByHostId.host_payment_info
+        : '';
 
       return res.status(200).json({
-        hostPaymentInfor: hostPaymentInfor
+        hostPaymentInfor: hostPaymentInfor,
       });
-
     } catch (error) {
       console.log('HAS AN ERROR AT GETTING HOST PAYMENT INFORMATION');
       throw error;
     }
-
   }
 
   @Post('/create-new-session')
@@ -73,8 +70,8 @@ export class SessionController {
   async createNewSessionToday(
     @Body() dto: CreateSession,
     @UploadedFile() file: Express.Multer.File,
-    @Res() res: Response) {
-
+    @Res() res: Response,
+  ) {
     try {
       // const fileBuffer = file.buffer;
       // const originalFilename = file.originalname;
@@ -94,9 +91,8 @@ export class SessionController {
       return res.status(200).json({
         statusCode: 200,
         message: 'Create new session successfully !',
-        id: newSession.id
+        id: newSession.id,
       });
-
     } catch (error) {
       console.log('HAS AN ERROR WHEN CREATING NEW SESSION TODAY');
       throw error;
@@ -108,26 +104,16 @@ export class SessionController {
   async updateSessionStatus(
     @Body() dto: UpdateSessionStatus,
     @Param('id') id: number,
-    @Res() res: Response) {
-
+    @Res() res: Response,
+  ) {
     try {
+      const resultUpdating = await this.sessionService.updateSessionStatus(
+        id,
+        dto,
+      );
 
-      const resultUpdating = await this.sessionService.updateSessionStatus(id, dto);
-
-      if (resultUpdating) {
-        return res.status(HttpStatus.OK).json({
-          statusCode: 200,
-          message: `${dto.status} session successfully !`,
-        });
-      }
-
-      return res.status(HttpStatus.FAILED_DEPENDENCY).json({
-        statusCode: 400,
-        message: `HAS AN ERROR WHEN MARKING ${dto.status} SESSION !`,
-      });
-
-    }
-    catch (error) {
+      return res.status(resultUpdating.status).json(resultUpdating);
+    } catch (error) {
       console.log('HAS AN ERROR AT UPDATING SESSION STATUS');
       throw error;
     }
@@ -135,24 +121,14 @@ export class SessionController {
 
   @Delete('/:id')
   @UseGuards(JwtAuthGuard)
-  async deleteSession(
-    @Param('id') id: number,
-    @Res() res: Response) {
-
+  async deleteSession(@Param('id') id: number, @Res() res: Response) {
     try {
-
       const resultDeleting = await this.sessionService.deleteSession(id);
 
-      return res.status(resultDeleting.statusCode).json(
-        resultDeleting
-      );
-
+      return res.status(resultDeleting.statusCode).json(resultDeleting);
     } catch (error) {
       console.log('HAS AN ERROR WHEN DELETING SESSION !');
       throw error;
     }
-
   }
-
 }
-

@@ -6,9 +6,8 @@ import { SessionService } from './session.service';
 import { AwsService } from '../aws/aws.service';
 
 @Module({
-    imports: [MikroOrmModule.forFeature([Session])],
-    controllers: [SessionController],
-    providers: [SessionService, AwsService]
+  imports: [MikroOrmModule.forFeature([Session])],
+  controllers: [SessionController],
+  providers: [SessionService, AwsService],
 })
-
 export class SessionModule {}
