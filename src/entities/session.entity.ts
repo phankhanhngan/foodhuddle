@@ -1,12 +1,13 @@
-import { Entity, Enum, Index, Property, Unique } from '@mikro-orm/core';
+import { Entity, Enum, Index, Property, Unique, ManyToOne, Collection } from '@mikro-orm/core';
 import { Base } from './base.entity';
+import { User } from './user.entity';
 
 @Unique()
 @Entity()
 export class Session extends Base {
 
-  @Property({ nullable: false })
-  host_id: string;
+  @ManyToOne(() => User)
+  host!: User;
 
   @Property({ nullable: false })
   title: string;
@@ -18,10 +19,10 @@ export class Session extends Base {
   shop_link: string;
 
   @Property({ nullable: false, type: 'text' })
-  host_payment_infor: string
+  host_payment_info: string
 
   @Property({ nullable: true, type: 'text' })
-  qr_image: string;
+  qr_images: string;
 
   @Enum(()  => SessionStatus)
   status!: SessionStatus;
@@ -31,5 +32,6 @@ export class Session extends Base {
 export enum SessionStatus {
   OPEN = 'OPEN',
   LOCKED = 'LOCKED',
+  PENDING_PAYMENTS = 'PENDING PAYMENTS',
   FINISHED = 'FINISHED',
 }

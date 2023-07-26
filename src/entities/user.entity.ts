@@ -1,5 +1,12 @@
-import { Entity, Index, Property, Unique } from '@mikro-orm/core';
-import { Base } from './index';
+import {
+  Entity,
+  Index,
+  Property,
+  Unique,
+  OneToMany,
+  Collection,
+} from '@mikro-orm/core';
+import { Base, Session } from './index';
 
 @Entity()
 export class User extends Base {
@@ -17,4 +24,7 @@ export class User extends Base {
 
   @Property({ nullable: true })
   photo?: string;
+
+  @OneToMany(() => Session, (session) => session.host)
+  sessions = new Collection<Session>(this);
 }
