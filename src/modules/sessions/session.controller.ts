@@ -144,13 +144,7 @@ export class SessionController {
 
       const resultDeleting = await this.sessionService.deleteSession(id);
 
-      if (resultDeleting.statusCode === 200) {
-        return res.status(HttpStatus.OK).json(
-          resultDeleting
-        );
-      }
-
-      return res.status(HttpStatus.FAILED_DEPENDENCY).json(
+      return res.status(resultDeleting.statusCode).json(
         resultDeleting
       );
 
