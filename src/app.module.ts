@@ -6,8 +6,7 @@ import { AppController } from './app.controller';
 import { MorganModule, MorganInterceptor } from 'nest-morgan';
 import { AppService } from './app.service';
 import { APP_INTERCEPTOR } from '@nestjs/core';
-import { AuthModule } from './modules/auth/auth.module';
-import { SessionModule } from './modules/sessions/session.module';
+import { AuthModule, SessionModule, FoodOrderModule } from './modules/';
 
 @Module({
   imports: [
@@ -16,7 +15,9 @@ import { SessionModule } from './modules/sessions/session.module';
     MikroOrmModule.forRootAsync({
       useFactory: () => MikroOrmConfig(),
     }),
-    AuthModule, SessionModule
+    AuthModule,
+    SessionModule,
+    FoodOrderModule,
   ],
 
   controllers: [AppController],

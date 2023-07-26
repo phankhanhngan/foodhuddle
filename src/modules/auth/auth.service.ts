@@ -5,7 +5,7 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { User } from 'src/entities/user.entity';
+import { User } from 'src/entities';
 import { IAuthPayload, IUserAuthen } from './interfaces/index';
 import { ConfigService } from '@nestjs/config';
 
