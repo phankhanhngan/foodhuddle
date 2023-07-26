@@ -34,7 +34,7 @@ export class SessionController {
       const allSessionToday = await (this.sessionService.getAllSessionsToday());
 
       return res.status(HttpStatus.OK).json({
-        status: "success",
+        statusCode: "success",
         data: allSessionToday
       });
 
@@ -91,7 +91,7 @@ export class SessionController {
       }
 
       return res.status(HttpStatus.OK).json({
-        status: 400,
+        statusCode: 200,
         message: 'Create new session successfully !',
         id: newSession.id
       });
