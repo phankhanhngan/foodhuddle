@@ -9,7 +9,7 @@ import {
   UploadedFile,
   Res,
   UseGuards,
-  UseInterceptors 
+  UseInterceptors
 } from '@nestjs/common';
 import { SessionService } from './session.service';
 import { Response } from 'express';
@@ -22,34 +22,47 @@ import { UpdateSessionStatus } from './dto/update_session_status.dto';
 @Controller('session')
 export class SessionController {
   constructor(private readonly sessionService: SessionService,
-              private readonly awsService: AwsService) { }
+    private readonly awsService: AwsService) { }
 
   @Get('/get-all-sessions-today')
   @UseGuards(JwtAuthGuard)
   async getAllSessionsToday(
     @Res() res: Response) {
 
-    const allSessionToday = await (this.sessionService.getAllSessionsToday());
+    try {
 
-    return res.status(HttpStatus.OK).json({
-      status: "success",
-      data: allSessionToday
-    });
+      const allSessionToday = await (this.sessionService.getAllSessionsToday());
+
+      return res.status(HttpStatus.OK).json({
+        status: "success",
+        data: allSessionToday
+      });
+
+    } catch (error) {
+      console.log('HAS AN ERROR AT GETTING ALL SESSIONS TODAY');
+      throw error;
+    }
   }
 
   @Get('/host-payment-infor')
   async getHostPaymentInfor(
     @Res() res: Response) {
 
-    const hostId = Object(res.req.user).id;
+    try {
+      const hostId = Object(res.req.user).id;
 
-    const sessionByHostId = await (this.sessionService.getLatestSessionByHostId(hostId));
+      const sessionByHostId = await (this.sessionService.getLatestSessionByHostId(hostId));
 
-    const hostPaymentInfor = sessionByHostId ? sessionByHostId.host_payment_info : '';
+      const hostPaymentInfor = sessionByHostId ? sessionByHostId.host_payment_info : '';
 
-    return res.status(HttpStatus.OK).json({
-      hostPaymentInfor: hostPaymentInfor
-    });
+      return res.status(HttpStatus.OK).json({
+        hostPaymentInfor: hostPaymentInfor
+      });
+
+    } catch (error) {
+      console.log('HAS AN ERROR AT GETTING HOST PAYMENT INFORMATION');
+      throw error;
+    }
 
   }
 
@@ -57,45 +70,64 @@ export class SessionController {
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file'))
   async createNewSessionToday(
-    @Body() dto: CreateSession, 
+    @Body() dto: CreateSession,
     @UploadedFile() file: Express.Multer.File,
     @Res() res: Response) {
 
-    // const fileBuffer = file.buffer;
-    // const originalFilename = file.originalname;
+    try {
+      // const fileBuffer = file.buffer;
+      // const originalFilename = file.originalname;
 
-    // const fileKey = await this.awsService.uploadFileToS3(fileBuffer, originalFilename);
+      // const fileKey = await this.awsService.uploadFileToS3(fileBuffer, originalFilename);
 
-    const hostId = Object(res.req.user).id;
+      const hostId = Object(res.req.user).id;
 
-    dto.host = hostId;
+      dto.host = hostId;
 
-    const newSession = await this.sessionService.createNewSessionToday(dto);
+      const newSession = await this.sessionService.createNewSessionToday(dto);
 
-    if (!newSession) {
-      throw new InternalServerErrorException();
+      if (!newSession) {
+        throw new InternalServerErrorException();
+      }
+
+      return res.status(HttpStatus.OK).json({
+        status: 400,
+        message: 'Create new session successfully !',
+        id: newSession.id
+      });
+
+    } catch (error) {
+      console.log('HAS AN ERROR WHEN CREATING NEW SESSION TODAY');
+      throw error;
     }
-
-    return res.status(HttpStatus.OK).json({
-      status: 200,
-      message: 'Create new session successfully !',
-      id: newSession.id
-    });
-
   }
 
   @Post('/update-status')
   @UseGuards(JwtAuthGuard)
   async updateSessionStatus(
-    @Body() dto: UpdateSessionStatus, 
+    @Body() dto: UpdateSessionStatus,
     @Res() res: Response) {
 
-    const updateStatusSession = await this.sessionService.updateSessionStatus(dto);
+    try {
 
-    return res.status(HttpStatus.OK).json({
-      status: 200,
-      message: 'Create new session successfully !',
-    });
+      const resultUpdating = await this.sessionService.updateSessionStatus(dto);
+
+      if (resultUpdating) {
+        return res.status(HttpStatus.OK).json({
+          statusCode: 200,
+          message: `${dto.status} session successfully !`,
+        });
+      }
+
+      return res.status(HttpStatus.FAILED_DEPENDENCY).json({
+        statusCode: 400,
+        message: `HAS AN ERROR WHEN MARKING ${dto.status} SESSION !`,
+      });
+
+    } catch (error) {
+      console.log('HAS AN ERROR AT UPDATING SESSION STATUS');
+      throw error;
+    }
 
   }
 
