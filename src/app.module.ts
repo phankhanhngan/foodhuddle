@@ -22,11 +22,6 @@ import { AppController } from './app.controller';
     AuthModule,
     SessionModule,
     FoodOrderModule,
-    WinstonModule.forRootAsync({
-      useFactory: () => NestWinsternConfig(),
-    }),
-    AuthModule,
-    SessionModule,
   ],
 
   controllers: [AppController],
