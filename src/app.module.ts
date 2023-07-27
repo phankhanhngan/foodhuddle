@@ -16,6 +16,9 @@ import { AppController } from './app.controller';
     MikroOrmModule.forRootAsync({
       useFactory: () => MikroOrmConfig(),
     }),
+    WinstonModule.forRootAsync({
+      useFactory: () => NestWinsternConfig(),
+    }),
     AuthModule,
     SessionModule,
     FoodOrderModule,

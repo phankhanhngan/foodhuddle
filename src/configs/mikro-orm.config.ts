@@ -20,3 +20,5 @@ export const MikroOrmConfig = (): Options => {
     },
   };
 };
+
+export default MikroOrmConfig;
