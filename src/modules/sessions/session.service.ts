@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityManager, EntityRepository } from '@mikro-orm/core';
 import { Session } from 'src/entities/session.entity';
-import { CreateSession } from './dto/create_session.dto';
+import { CreateSession } from './dtos/create-session.dto';
 
 @Injectable()
 export class SessionService {

@@ -13,7 +13,7 @@ import {
 import { SessionService } from './session.service';
 import { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { CreateSession } from './dto/create_session.dto';
+import { CreateSession } from './dtos/create-session.dto';
 import { AwsService } from '../aws/aws.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
@@ -62,7 +62,7 @@ export class SessionController {
     }
   }
 
-  @Post('/create-new-session')
+  @Post()
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file'))
   async createNewSessionToday(
