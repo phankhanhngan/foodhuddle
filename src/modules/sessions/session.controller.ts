@@ -24,7 +24,7 @@ export class SessionController {
     private readonly awsService: AwsService,
   ) {}
 
-  @Get('/get-all-sessions-today')
+  @Get()
   @UseGuards(JwtAuthGuard)
   async getAllSessionsToday(@Res() res: Response) {
     try {
