@@ -17,3 +17,5 @@ export const NestWinsternConfig = (): WinstonModuleOptions => {
     ],
   };
 };
+
+export default NestWinsternConfig;
