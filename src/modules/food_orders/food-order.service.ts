@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { EntityManager, EntityRepository } from '@mikro-orm/mysql';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { plainToClass } from 'class-transformer';
-import { FoodOrder, Session, User } from 'src/entities';
+import { FoodOrder, Session, SessionStatus, User } from 'src/entities';
 import { FoodOrderDTO } from './dtos/food-order.dto';
 
 @Injectable()
@@ -26,6 +26,10 @@ export class FoodOrderService {
         throw new BadRequestException(
           `Can not find session with id: ${sessionId}`,
         );
+      }
+
+      if (session.status !== SessionStatus.OPEN) {
+        throw new BadRequestException(`This session is not OPEN for ordering`);
       }
 
       const userFoodOrdersBySession = await this.foodOrderRepository.find({
