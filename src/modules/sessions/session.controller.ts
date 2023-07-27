@@ -4,7 +4,6 @@ import {
   Get,
   Param,
   ParseIntPipe,
-  Put,
   Res,
   UseGuards,
 } from '@nestjs/common';
@@ -17,7 +16,9 @@ import { SessionInfoDTO } from './dtos/session-info.dto';
 @Controller('session')
 export class SessionController {
   constructor(private readonly sessionService: SessionService) {}
-  @Get('/get-all-sessions-today')
+
+  @Get()
+  @UseGuards(JwtAuthGuard)
   async getAllSessionsToday(@Res() res: Response) {
     try {
       const allSessionToday = await this.sessionService.getAllSessionsToday();
