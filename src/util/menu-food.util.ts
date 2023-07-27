@@ -39,30 +39,28 @@ export class MenuShopUtil {
     const reponseData = (await axios.get(urlGetShopMenu, config)).data;
 
     const menuFoodFormated = reponseData.reply.menu_infos.map((v) => {
-      const optionsFood =
-        v.options !== undefined
-          ? v.options.map((op) => {
-              const optionItems =
-                op.option_items.items !== undefined
-                  ? op.option_items.items.map((opi) => {
-                      const optionItem = {
-                        name: opi.name,
-                        price: opi.price.value,
-                      };
+      const optionsFood = v.dishes[0].options
+        ? v.dishes[0].options.map((op) => {
+            const optionItems = op.option_items.items
+              ? op.option_items.items.map((opi) => {
+                  const optionItem = {
+                    name: opi.name,
+                    price: opi.price.value,
+                  };
 
-                      return optionItem;
-                    })
-                  : '';
+                  return optionItem;
+                })
+              : '';
 
-              const option = {
-                id: op.id,
-                mandatory: op.mandatory,
-                name: op.name,
-                option_items: optionItems,
-              };
-              return option;
-            })
-          : '';
+            const option = {
+              id: op.id,
+              mandatory: op.mandatory,
+              name: op.name,
+              option_items: optionItems,
+            };
+            return option;
+          })
+        : '';
 
       const menuFood = {
         dish_type_id: v.dish_type_id,
