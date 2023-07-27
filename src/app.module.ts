@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
-import MikroOrmConfig from './mikro-orm.config';
-import { AppController } from './app.controller';
 import { MorganModule, MorganInterceptor } from 'nest-morgan';
-import { AppService } from './app.service';
 import { APP_INTERCEPTOR } from '@nestjs/core';
+import { WinstonModule } from 'nest-winston';
 import { AuthModule, SessionModule, FoodOrderModule } from './modules/';
+import { MikroOrmConfig, NestWinsternConfig } from './configs';
+import { AppService } from './app.service';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -18,6 +19,11 @@ import { AuthModule, SessionModule, FoodOrderModule } from './modules/';
     AuthModule,
     SessionModule,
     FoodOrderModule,
+    WinstonModule.forRootAsync({
+      useFactory: () => NestWinsternConfig(),
+    }),
+    AuthModule,
+    SessionModule,
   ],
 
   controllers: [AppController],

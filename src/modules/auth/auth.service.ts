@@ -1,17 +1,21 @@
 import { EntityManager, EntityRepository } from '@mikro-orm/mysql';
 import {
   BadRequestException,
+  Inject,
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { User } from 'src/entities';
-import { IAuthPayload, IUserAuthen } from './interfaces/index';
 import { ConfigService } from '@nestjs/config';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
+import { IAuthPayload, IUserAuthen } from './interfaces/index';
+import { User } from 'src/entities';
 
 @Injectable()
 export class AuthService {
   constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     private readonly jwtService: JwtService,
     private readonly configservice: ConfigService,
     private readonly em: EntityManager,
@@ -27,7 +31,7 @@ export class AuthService {
         expiresIn: this.configservice.get<string>('TOKEN_EXPIRE_TIME'),
       });
     } catch (err) {
-      console.log('HAS AN ERROR AT GENERATE JWT SERVICE', err);
+      this.logger.error('Calling generateJwt()', err, AuthService.name);
       throw new InternalServerErrorException();
     }
   }
@@ -49,8 +53,8 @@ export class AuthService {
         email: userExists.email,
       });
     } catch (err) {
-      console.log('HAS AN ERROR AT LOGIN SERVICE', err);
-      throw err;
+      this.logger.error('Calling logIn()', err, AuthService.name);
+      throw new InternalServerErrorException();
     }
   }
 
@@ -71,7 +75,7 @@ export class AuthService {
         email: newUser.email,
       });
     } catch (err) {
-      console.log('HAS AN ERROR AT REGISTER SERVICE', err);
+      this.logger.error('Calling register()', err, AuthService.name);
       throw new InternalServerErrorException();
     }
   }
@@ -80,7 +84,7 @@ export class AuthService {
     try {
       return await this.userRepository.findOne({ email });
     } catch (err) {
-      console.log('HAS AN ERROR AT FIND USER BY EMAIL SERVICE', err);
+      this.logger.error('Calling findUserByEmail()', err, AuthService.name);
       throw new InternalServerErrorException();
     }
   }
