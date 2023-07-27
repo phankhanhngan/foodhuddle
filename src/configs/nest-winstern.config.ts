@@ -1,7 +1,7 @@
 import { utilities, WinstonModuleOptions } from 'nest-winston';
 import * as winston from 'winston';
 
-const NestWinsternConfig = (): WinstonModuleOptions => {
+export const NestWinsternConfig = (): WinstonModuleOptions => {
   return {
     transports: [
       new winston.transports.Console({
@@ -17,5 +17,3 @@ const NestWinsternConfig = (): WinstonModuleOptions => {
     ],
   };
 };
-
-export default NestWinsternConfig;

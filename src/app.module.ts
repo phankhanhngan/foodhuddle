@@ -1,14 +1,13 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
-import MikroOrmConfig from './configs/mikro-orm.config';
-import { AppController } from './app.controller';
 import { MorganModule, MorganInterceptor } from 'nest-morgan';
-import { AppService } from './app.service';
 import { APP_INTERCEPTOR } from '@nestjs/core';
-import { AuthModule } from './modules/auth/auth.module';
 import { WinstonModule } from 'nest-winston';
-import NestWinsternConfig from './configs/nest-winstern.config';
+import { MikroOrmConfig, NestWinsternConfig } from './configs';
+import { AppService } from './app.service';
+import { AppController } from './app.controller';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [

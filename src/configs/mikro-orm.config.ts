@@ -1,6 +1,6 @@
 import { Options } from '@mikro-orm/core';
 
-const MikroOrmConfig = (): Options => {
+export const MikroOrmConfig = (): Options => {
   return {
     debug: process.env.LOCAL_MODE === 'true',
     allowGlobalContext: true,
@@ -20,5 +20,3 @@ const MikroOrmConfig = (): Options => {
     },
   };
 };
-
-export default MikroOrmConfig;
