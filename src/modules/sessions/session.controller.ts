@@ -15,10 +15,10 @@ import {
 import { SessionService } from './session.service';
 import { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { CreateSession } from './dto/create_session.dto';
+import { CreateSession } from './dtos/create-session.dto';
 import { AwsService } from '../aws/aws.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { UpdateSessionStatus } from './dto/update_session_status.dto';
+import { UpdateSessionStatus } from './dtos/update-session_status.dto';
 
 @Controller('session')
 export class SessionController {
@@ -27,7 +27,7 @@ export class SessionController {
     private readonly awsService: AwsService,
   ) {}
 
-  @Get('/get-all-sessions-today')
+  @Get()
   @UseGuards(JwtAuthGuard)
   async getAllSessionsToday(@Res() res: Response) {
     try {
@@ -64,7 +64,7 @@ export class SessionController {
     }
   }
 
-  @Post('/create-new-session')
+  @Post()
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file'))
   async createNewSessionToday(

@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityManager, EntityRepository, wrap } from '@mikro-orm/core';
 import { Session } from 'src/entities/session.entity';
-import { CreateSession } from './dto/create_session.dto';
-import { UpdateSessionStatus } from './dto/update_session_status.dto';
 import { SessionStatus } from '../../constant/constantData';
+import { CreateSession } from './dtos/create-session.dto';
+import { UpdateSessionStatus } from './dtos/update-session_status.dto';
 
 @Injectable()
 export class SessionService {
