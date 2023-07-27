@@ -7,7 +7,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 export class SessionController {
   constructor(private readonly sessionService: SessionService) {}
 
-  @Get()
+  @Get('/today')
   @UseGuards(JwtAuthGuard)
   async getAllSessionsToday(@Res() res: Response) {
     try {
