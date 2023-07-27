@@ -16,7 +16,8 @@ import { SessionModule } from './modules/sessions/session.module';
     MikroOrmModule.forRootAsync({
       useFactory: () => MikroOrmConfig(),
     }),
-    AuthModule, SessionModule
+    AuthModule,
+    SessionModule,
   ],
 
   controllers: [AppController],
