@@ -19,7 +19,7 @@ export class FoodOrderService {
     foodOrderList: FoodOrderDTO[],
     sessionId: number,
     user: User,
-  ) {
+  ): Promise<void> {
     try {
       const session = await this.sessionRepository.findOne({ id: sessionId });
       if (!session) {

@@ -34,7 +34,9 @@ export class SessionController {
   }
 
   @Get(':id')
-  async getSession(@Param('id', ParseIntPipe) id: number) {
+  async getSession(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<SessionInfoDTO> {
     try {
       const session = await this.sessionService.getSession(id);
 
