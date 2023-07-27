@@ -8,7 +8,6 @@ export class User extends Base {
   googleId!: string;
 
   @Unique()
-  @Index()
   @Property({ nullable: false })
   email!: string;
 

@@ -19,7 +19,6 @@ export class Migration20230725085207_new_user_table extends Migration {
     this.addSql(
       `ALTER TABLE user ADD UNIQUE user_google_id_unique (google_id);`,
     );
-    this.addSql(`ALTER TABLE user ADD INDEX user_email_index (email);`);
     this.addSql(`ALTER TABLE user ADD UNIQUE user_email_unique (email);`);
   }
 
