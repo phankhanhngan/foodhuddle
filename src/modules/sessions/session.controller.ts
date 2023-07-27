@@ -17,7 +17,7 @@ import { SessionInfoDTO } from './dtos/session-info.dto';
 export class SessionController {
   constructor(private readonly sessionService: SessionService) {}
 
-  @Get()
+  @Get('/today')
   @UseGuards(JwtAuthGuard)
   async getAllSessionsToday(@Res() res: Response) {
     try {
