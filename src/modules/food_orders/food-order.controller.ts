@@ -35,12 +35,17 @@ export class FoodOrderController {
     @Body('foodList', new ParseArrayPipe({ items: FoodOrderDTO }))
     foodList: FoodOrderDTO[],
   ) {
-    const { user } = req;
-    await this.foodOrderService.changeFoodOrders(foodList, sessionId, user);
-    return res.status(200).json({
-      status: 'success',
-      message: 'Submit food orders successfully',
-    });
+    try {
+      const { user } = req;
+      await this.foodOrderService.changeFoodOrders(foodList, sessionId, user);
+      return res.status(200).json({
+        status: 'success',
+        message: 'Submit food orders successfully',
+      });
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
   }
 
   @Get()
@@ -49,7 +54,12 @@ export class FoodOrderController {
     @Query('sessionId', ParseIntPipe) sessionId: number,
     @Req() req,
   ): Promise<FoodOrder[]> {
-    const { user } = req;
-    return await this.foodOrderService.getFoodOrdersByUser(user, sessionId);
+    try {
+      const { user } = req;
+      return await this.foodOrderService.getFoodOrdersByUser(user, sessionId);
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
   }
 }
