@@ -22,9 +22,8 @@ import {
 } from './interceptors';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { FoodOrderService } from './food-order.service';
-import { FoodDTO, FoodOrderDTO } from './dtos/index';
+import { FoodOrderDTO } from './dtos/index';
 import { FoodOrder } from 'src/entities';
-import { SessionInfoDTO } from '../sessions/dtos/session-info.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('food-order')
@@ -86,9 +85,15 @@ export class FoodOrderController {
   @Get('menu')
   async getFoodMenu(
     @Query('sessionId', ParseIntPipe) sessionId: number,
-  ): Promise<FoodDTO[]> {
+    @Res() res: Response,
+  ) {
     try {
-      return await this.foodOrderService.getFoodMenu(sessionId);
+      const foodMenu = await this.foodOrderService.getFoodMenu(sessionId);
+      res.status(200).json({
+        status: 'success',
+        message: 'Get food menu successfully',
+        data: foodMenu,
+      });
     } catch (err) {
       this.logger.error('Calling getFoodMenu()', err, FoodOrderController.name);
       throw new InternalServerErrorException();

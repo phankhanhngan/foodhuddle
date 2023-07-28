@@ -1,12 +1,11 @@
 import {
   Controller,
   Get,
-  Inject,
-  InternalServerErrorException,
   Param,
   ParseIntPipe,
   Res,
   UseGuards,
+  Inject,
 } from '@nestjs/common';
 import { SessionService } from './session.service';
 import { Response } from 'express';
@@ -20,8 +19,8 @@ import { SessionInfoDTO } from './dtos/session-info.dto';
 @Controller('session')
 export class SessionController {
   constructor(
-    private readonly sessionService: SessionService,
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    private readonly sessionService: SessionService,
   ) {}
 
   @Get('/today')
