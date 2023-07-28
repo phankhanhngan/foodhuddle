@@ -5,16 +5,22 @@ import {
   ParseIntPipe,
   Res,
   UseGuards,
+  Inject,
+  Logger,
 } from '@nestjs/common';
 import { SessionService } from './session.service';
 import { Response } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { plainToInstance } from 'class-transformer';
 import { SessionInfoDTO } from './dtos/session-info.dto';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 @UseGuards(JwtAuthGuard)
 @Controller('session')
 export class SessionController {
-  constructor(private readonly sessionService: SessionService) {}
+  constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    private readonly sessionService: SessionService,
+  ) {}
 
   @Get('/today')
   @UseGuards(JwtAuthGuard)
