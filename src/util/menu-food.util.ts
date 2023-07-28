@@ -52,7 +52,7 @@ export class MenuShopUtil {
 
                       return optionItem;
                     })
-                  : '';
+                  : [];
 
                 const option = {
                   id: op.id,
@@ -62,14 +62,14 @@ export class MenuShopUtil {
                 };
                 return option;
               })
-            : '';
+            : [];
 
           const menuFood = {
             id: fbd.id,
             name: fbd.name,
             description: fbd.description,
             price: fbd.price.value,
-            discount_price: fbd.discount_price ? fbd.discount_price.value : '',
+            discount_price: fbd.discount_price ? fbd.discount_price.value : 0,
             photo: fbd.photos[0].value,
             options: optionsFood,
           };
