@@ -18,8 +18,9 @@ import {
 } from './interceptors';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { FoodOrderService } from './food-order.service';
-import { FoodOrderDTO } from './dtos/food-order.dto';
+import { FoodDTO, FoodOrderDTO } from './dtos/index';
 import { FoodOrder } from 'src/entities';
+import { SessionInfoDTO } from '../sessions/dtos/session-info.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('food-order')
@@ -57,6 +58,18 @@ export class FoodOrderController {
     try {
       const { user } = req;
       return await this.foodOrderService.getFoodOrdersByUser(user, sessionId);
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
+  }
+
+  @Get('menu')
+  async getFoodMenu(
+    @Query('sessionId', ParseIntPipe) sessionId: number,
+  ): Promise<FoodDTO[]> {
+    try {
+      return await this.foodOrderService.getFoodMenu(sessionId);
     } catch (err) {
       console.log(err);
       throw err;

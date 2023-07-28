@@ -7,8 +7,8 @@ import {
   ValidateNested,
   IsOptional,
 } from 'class-validator';
-import { OptionDTO } from './option-dto';
 import { Exclude, Expose, Type } from 'class-transformer';
+import { OptionItemDTO } from './index';
 
 @Exclude()
 export class FoodOrderDTO {
@@ -37,8 +37,8 @@ export class FoodOrderDTO {
   @ArrayMinSize(1, {
     message: 'Food option must be null or at least have one item',
   })
-  @Type(() => OptionDTO)
-  options: OptionDTO[];
+  @Type(() => OptionItemDTO)
+  options: OptionItemDTO[];
 
   @Expose()
   sessionId: number;

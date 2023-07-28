@@ -3,7 +3,9 @@ import { EntityManager, EntityRepository } from '@mikro-orm/mysql';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { plainToClass } from 'class-transformer';
 import { FoodOrder, Session, SessionStatus, User } from 'src/entities';
-import { FoodOrderDTO } from './dtos/food-order.dto';
+import { FoodDTO, FoodOrderDTO } from './dtos/index';
+import { MenuShopUtil } from 'src/utils/menu-food.util';
+import { Loaded } from '@mikro-orm/core';
 
 @Injectable()
 export class FoodOrderService {
@@ -13,6 +15,7 @@ export class FoodOrderService {
     private readonly foodOrderRepository: EntityRepository<FoodOrder>,
     @InjectRepository(Session)
     private readonly sessionRepository: EntityRepository<Session>,
+    private readonly foodMenuUtil: MenuShopUtil,
   ) {}
 
   async changeFoodOrders(
@@ -73,5 +76,18 @@ export class FoodOrderService {
       console.log('HAS AN ERROR AT SERVICE GET FOOD ORDERS BY USER', err);
       throw err;
     }
+  }
+
+  async getFoodMenu(sessionId: number): Promise<FoodDTO[]> {
+    try {
+      const shopLink: Loaded<Session, 'shop_link'> =
+        await this.sessionRepository.findOne(
+          { id: sessionId },
+          { fields: ['shop_link'] },
+        );
+
+      const foodMenu = await this.foodMenuUtil.getMenuFood(shopLink.shop_link);
+      return foodMenu;
+    } catch (err) {}
   }
 }
