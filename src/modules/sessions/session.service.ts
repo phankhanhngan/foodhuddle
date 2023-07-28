@@ -67,6 +67,17 @@ export class SessionService {
     }
   }
 
+  async getSessionById(id: number) {
+    try {
+      const sessionById = this.sessionRepository.findOne({ id: id });
+
+      return sessionById;
+    } catch (error) {
+      this.logger.error('HAS AN ERROR AT getSessionById()');
+      throw error;
+    }
+  }
+
   async createNewSessionToday(dto: CreateSession) {
     try {
       const newSession = this.sessionRepository.create(dto);

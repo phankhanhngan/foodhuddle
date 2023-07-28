@@ -111,6 +111,18 @@ export class SessionController {
     @Res() res: Response,
   ) {
     try {
+      const hostId = Object(res.req.user).id;
+
+      const sessionById = await this.sessionService.getSessionById(id);
+      const hostIdSession = sessionById.host;
+
+      if (hostId !== hostIdSession) {
+        return res.status(500).json({
+          status: 500,
+          message: `Only host can change session's status to ${dto.status}`,
+        });
+      }
+
       const resultUpdating = await this.sessionService.updateSessionStatus(
         id,
         dto,
@@ -127,6 +139,18 @@ export class SessionController {
   @UseGuards(JwtAuthGuard)
   async deleteSession(@Param('id') id: number, @Res() res: Response) {
     try {
+      const hostId = Object(res.req.user).id;
+
+      const sessionById = await this.sessionService.getSessionById(id);
+      const hostIdSession = sessionById.host;
+
+      if (hostId !== hostIdSession) {
+        return res.status(500).json({
+          status: 500,
+          message: `Only host can delete session !`,
+        });
+      }
+
       const resultDeleting = await this.sessionService.deleteSession(id);
 
       return res.status(resultDeleting.statusCode).json(resultDeleting);
