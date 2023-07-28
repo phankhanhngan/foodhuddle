@@ -60,7 +60,7 @@ export class FoodOrderController {
         err,
         FoodOrderController.name,
       );
-      throw new InternalServerErrorException();
+      throw err;
     }
   }
 
@@ -79,7 +79,7 @@ export class FoodOrderController {
         err,
         FoodOrderController.name,
       );
-      throw new InternalServerErrorException();
+      throw err;
     }
   }
 

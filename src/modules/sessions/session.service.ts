@@ -55,7 +55,7 @@ export class SessionService {
         error,
         SessionService.name,
       );
-      throw new InternalServerErrorException();
+      throw error;
     }
   }
 
@@ -73,7 +73,7 @@ export class SessionService {
       return session;
     } catch (err) {
       this.logger.error('Calling getSession()', err, SessionService.name);
-      throw new InternalServerErrorException();
+      throw err;
     }
   }
 }
