@@ -6,14 +6,15 @@ import {
   Res,
   UseGuards,
   Inject,
-  Logger,
 } from '@nestjs/common';
 import { SessionService } from './session.service';
 import { Response } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 import { plainToInstance } from 'class-transformer';
 import { SessionInfoDTO } from './dtos/session-info.dto';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+
 @UseGuards(JwtAuthGuard)
 @Controller('session')
 export class SessionController {
@@ -33,7 +34,11 @@ export class SessionController {
         data: allSessionToday,
       });
     } catch (error) {
-      console.log('HAS AN ERROR AT GETTING ALL SESSIONS TODAY');
+      this.logger.error(
+        'Calling getAllSessionsToday()',
+        error,
+        SessionService.name,
+      );
       throw error;
     }
   }
@@ -49,7 +54,7 @@ export class SessionController {
         enableCircularCheck: true,
       });
     } catch (err) {
-      console.log(err);
+      this.logger.error('Calling getSession()', err, SessionService.name);
       throw err;
     }
   }

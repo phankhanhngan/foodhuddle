@@ -11,6 +11,7 @@ export class SessionService {
     @InjectRepository(Session)
     private readonly sessionRepository: EntityRepository<Session>,
     private readonly em: EntityManager,
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
   ) {}
 
   async getAllSessionsToday() {
@@ -44,7 +45,11 @@ export class SessionService {
 
       return listSessionsReturn;
     } catch (error) {
-      console.log('HAS AN ERRO AT getAllSessionsToday()');
+      this.logger.error(
+        'Calling getAllSessionsToday()',
+        error,
+        SessionService.name,
+      );
       throw error;
     }
   }
@@ -62,7 +67,7 @@ export class SessionService {
 
       return session;
     } catch (err) {
-      console.log('HAS AN ERROR AT SERVICE GET SESSION', err);
+      this.logger.error('Calling getSession()', err, SessionService.name);
       throw err;
     }
   }

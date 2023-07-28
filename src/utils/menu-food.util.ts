@@ -48,52 +48,55 @@ export class MenuShopUtil {
 
       const menuFoodFormated = reponseData.reply.menu_infos.map((v) => {
         const foodByDish = v.dishes.map((fbd) => {
-          const optionsFood = fbd.options
-            ? fbd.options.map((op) => {
-                const optionItems = op.option_items.items
-                  ? op.option_items.items.map((opi) => {
-                      const optionItem = {
-                        name: opi.name,
-                        price: opi.price.value,
-                      };
+          const isFetchData = fbd.is_active && fbd.is_available;
 
-                      return optionItem;
-                    })
-                  : '';
+          if (isFetchData) {
+            const optionsFood: OptionListDTO[] = fbd.options
+              ? fbd.options.map((op) => {
+                  const optionItems: OptionItemDTO[] =
+                    Array.from<OptionItemDTO>(
+                      op.option_items.items
+                        ? op.option_items.items.map((opi) => {
+                            const optionItem = {
+                              name: opi.name,
+                              price: opi.price.value,
+                            };
 
-                const option = {
-                  id: op.id,
-                  mandatory: op.mandatory,
-                  name: op.name,
-                  option_items: optionItems,
-                };
-                return option;
-              })
-            : '';
+                            return optionItem;
+                          })
+                        : [],
+                    );
 
-          const menuFood = {
-            id: fbd.id,
-            name: fbd.name,
-            description: fbd.description,
-            price: fbd.price.value,
-            discount_price: fbd.discount_price ? fbd.discount_price.value : '',
-            photo: fbd.photos[0].value,
-            options: optionsFood,
-          };
+                  const option: OptionListDTO = {
+                    id: op.id,
+                    mandatory: op.mandatory,
+                    name: op.name,
+                    optionItems: optionItems,
+                  };
+                  return option;
+                })
+              : [];
 
-          return menuFood;
+            const menuFood: FoodDTO = {
+              id: fbd.id,
+              foodName: fbd.name,
+              description: fbd.description,
+              price: fbd.price.value,
+              discountPrice: fbd.discount_price ? fbd.discount_price.value : 0,
+              photo: fbd.photos[0].value,
+              options: optionsFood,
+            };
+
+            return menuFood;
+          }
         });
 
-        const dishTypeFoods = {
-          dish_type_id: v.dish_type_id,
-          dish_type_name: v.dish_type_name,
-          dishes: foodByDish,
-        };
-
-        return dishTypeFoods;
+        return foodByDish;
       });
 
-      return menuFoodFormated;
+      return menuFoodFormated
+        .flat(Infinity)
+        .filter((food: FoodDTO | undefined) => food);
     } catch (error) {
       throw error;
     }

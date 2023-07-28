@@ -4,6 +4,8 @@ import {
   Delete,
   Get,
   Param,
+  Inject,
+  InternalServerErrorException,
   ParseArrayPipe,
   ParseIntPipe,
   Put,
@@ -15,13 +17,15 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { Response } from 'express';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 import {
   RequestFoodTransformInterceptor,
   ResponseFoodTransformInterceptor,
 } from './interceptors';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { FoodOrderService } from './food-order.service';
-import { FoodDTO, FoodOrderDTO, UpdateFoodOrderDTO } from './dtos/index';
+import { FoodOrderDTO, UpdateFoodOrderDTO } from './dtos/index';
 import { FoodOrder } from 'src/entities';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { plainToClass } from 'class-transformer';
@@ -29,7 +33,10 @@ import { plainToClass } from 'class-transformer';
 @UseGuards(JwtAuthGuard)
 @Controller('food-order')
 export class FoodOrderController {
-  constructor(private readonly foodOrderService: FoodOrderService) {}
+  constructor(
+    private readonly foodOrderService: FoodOrderService,
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+  ) {}
 
   @Put()
   @UseInterceptors(new RequestFoodTransformInterceptor())
@@ -52,7 +59,11 @@ export class FoodOrderController {
         message: 'Submit food orders successfully',
       });
     } catch (err) {
-      console.log(err);
+      this.logger.error(
+        'Calling changeFoodOrders()',
+        err,
+        FoodOrderController.name,
+      );
       throw err;
     }
   }
@@ -67,7 +78,11 @@ export class FoodOrderController {
       const { user } = req;
       return await this.foodOrderService.getFoodOrdersByUser(user, sessionId);
     } catch (err) {
-      console.log(err);
+      this.logger.error(
+        'Calling getFoodOrdersByUser()',
+        err,
+        FoodOrderController.name,
+      );
       throw err;
     }
   }
@@ -75,12 +90,18 @@ export class FoodOrderController {
   @Get('menu')
   async getFoodMenu(
     @Query('sessionId', ParseIntPipe) sessionId: number,
-  ): Promise<FoodDTO[]> {
+    @Res() res: Response,
+  ) {
     try {
-      return await this.foodOrderService.getFoodMenu(sessionId);
+      const foodMenu = await this.foodOrderService.getFoodMenu(sessionId);
+      res.status(200).json({
+        status: 'success',
+        message: 'Get food menu successfully',
+        data: foodMenu,
+      });
     } catch (err) {
-      console.log(err);
-      throw err;
+      this.logger.error('Calling getFoodMenu()', err, FoodOrderController.name);
+      throw new InternalServerErrorException();
     }
   }
 
