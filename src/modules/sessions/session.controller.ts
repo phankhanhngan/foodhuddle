@@ -123,7 +123,7 @@ export class SessionController {
         });
       }
 
-      const hostIdSession = sessionById.host;
+      const hostIdSession = sessionById.host.id;
 
       if (hostId !== hostIdSession) {
         return res.status(400).json({
@@ -152,8 +152,6 @@ export class SessionController {
 
       const sessionById = await this.sessionService.getSessionById(id);
 
-      console.log(sessionById);
-
       if (sessionById === null) {
         return res.status(400).json({
           status: 400,
@@ -161,7 +159,7 @@ export class SessionController {
         });
       }
 
-      const hostIdSession = sessionById.host;
+      const hostIdSession = sessionById.host.id;
 
       if (hostId !== hostIdSession) {
         return res.status(400).json({
