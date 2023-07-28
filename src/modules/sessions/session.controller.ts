@@ -11,6 +11,7 @@ import {
   UseInterceptors,
   Delete,
   Put,
+  Inject,
 } from '@nestjs/common';
 import { SessionService } from './session.service';
 import { Response } from 'express';
@@ -19,10 +20,13 @@ import { CreateSession } from './dtos/create-session.dto';
 import { AwsService } from '../aws/aws.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UpdateSessionStatus } from './dtos/update-session_status.dto';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
 @Controller('session')
 export class SessionController {
   constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     private readonly sessionService: SessionService,
     private readonly awsService: AwsService,
   ) {}
@@ -38,7 +42,7 @@ export class SessionController {
         data: allSessionToday,
       });
     } catch (error) {
-      console.log('HAS AN ERROR AT GETTING ALL SESSIONS TODAY');
+      this.logger.error('HAS AN ERROR AT GETTING ALL SESSIONS TODAY');
       throw error;
     }
   }
@@ -59,7 +63,7 @@ export class SessionController {
         hostPaymentInfor: hostPaymentInfor,
       });
     } catch (error) {
-      console.log('HAS AN ERROR AT GETTING HOST PAYMENT INFORMATION');
+      this.logger.error('HAS AN ERROR AT GETTING HOST PAYMENT INFORMATION');
       throw error;
     }
   }
@@ -94,7 +98,7 @@ export class SessionController {
         id: newSession.id,
       });
     } catch (error) {
-      console.log('HAS AN ERROR WHEN CREATING NEW SESSION TODAY');
+      this.logger.error('HAS AN ERROR WHEN CREATING NEW SESSION TODAY');
       throw error;
     }
   }

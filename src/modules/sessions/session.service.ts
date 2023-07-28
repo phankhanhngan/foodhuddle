@@ -1,16 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityManager, EntityRepository, wrap } from '@mikro-orm/core';
 import { Session } from 'src/entities/session.entity';
 import { SessionStatus } from '../../constant/constantData';
 import { CreateSession } from './dtos/create-session.dto';
 import { UpdateSessionStatus } from './dtos/update-session_status.dto';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
 @Injectable()
 export class SessionService {
   constructor(
     @InjectRepository(Session)
     private readonly sessionRepository: EntityRepository<Session>,
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     private readonly em: EntityManager,
   ) {}
 
@@ -45,7 +48,7 @@ export class SessionService {
 
       return listSessionsReturn;
     } catch (error) {
-      console.log('HAS AN ERRO AT getAllSessionsToday()');
+      this.logger.error('HAS AN ERRO AT getAllSessionsToday()');
       throw error;
     }
   }
@@ -59,7 +62,7 @@ export class SessionService {
 
       return latestSessionByHostId;
     } catch (error) {
-      console.log('HAS AN ERROR AT getLatestSessionByHostId()');
+      this.logger.error('HAS AN ERROR AT getLatestSessionByHostId()');
       throw error;
     }
   }
@@ -72,7 +75,7 @@ export class SessionService {
 
       return newSession;
     } catch (error) {
-      console.log('HAS AN ERROR AT createNewSessionToday()');
+      this.logger.error('HAS AN ERROR AT createNewSessionToday()');
       throw error;
     }
   }
