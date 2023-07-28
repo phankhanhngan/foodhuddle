@@ -114,6 +114,14 @@ export class SessionController {
       const hostId = Object(res.req.user).id;
 
       const sessionById = await this.sessionService.getSessionById(id);
+
+      if (!sessionById) {
+        return {
+          status: 400,
+          message: 'Session is not exited !',
+        };
+      }
+
       const hostIdSession = sessionById.host;
 
       if (hostId !== hostIdSession) {
@@ -142,6 +150,14 @@ export class SessionController {
       const hostId = Object(res.req.user).id;
 
       const sessionById = await this.sessionService.getSessionById(id);
+
+      if (!sessionById) {
+        return {
+          status: 400,
+          message: 'Session is not exited !',
+        };
+      }
+
       const hostIdSession = sessionById.host;
 
       if (hostId !== hostIdSession) {

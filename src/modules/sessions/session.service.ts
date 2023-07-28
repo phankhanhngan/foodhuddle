@@ -95,13 +95,6 @@ export class SessionService {
     try {
       const sessionById = await this.sessionRepository.findOne({ id: id });
 
-      if (!sessionById) {
-        return {
-          status: 400,
-          message: 'Session is not exited !',
-        };
-      }
-
       const statusSessionList = [
         'OPEN',
         'LOCKED',
@@ -175,13 +168,6 @@ export class SessionService {
   async deleteSession(id: number) {
     try {
       const sessionById = await this.sessionRepository.findOne({ id: id });
-
-      if (!sessionById) {
-        return {
-          statusCode: 400,
-          message: 'Session is not exited !',
-        };
-      }
 
       if (
         sessionById.status === SessionStatus.OPEN ||
