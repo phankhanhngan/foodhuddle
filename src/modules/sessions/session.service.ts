@@ -156,7 +156,7 @@ export class SessionService {
         message: `Current session status is ${sessionById.status}, you can not change status to ${dto.status}`,
       };
     } catch (error) {
-      console.log('HAS AN ERROR AT updateSessionStatus()');
+      this.logger.error('HAS AN ERROR AT updateSessionStatus()');
       throw error;
     }
   }
@@ -189,7 +189,7 @@ export class SessionService {
         message: `Current status is ${sessionById.status}, you can not delete this session`,
       };
     } catch (error) {
-      console.log('HAS AN ERROR AT deleteSession()');
+      this.logger.error('HAS AN ERROR AT deleteSession()');
       throw error;
     }
   }

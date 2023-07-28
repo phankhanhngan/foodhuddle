@@ -118,7 +118,7 @@ export class SessionController {
 
       return res.status(resultUpdating.status).json(resultUpdating);
     } catch (error) {
-      console.log('HAS AN ERROR AT UPDATING SESSION STATUS');
+      this.logger.error('HAS AN ERROR AT UPDATING SESSION STATUS');
       throw error;
     }
   }
@@ -131,7 +131,7 @@ export class SessionController {
 
       return res.status(resultDeleting.statusCode).json(resultDeleting);
     } catch (error) {
-      console.log('HAS AN ERROR WHEN DELETING SESSION !');
+      this.logger.error('HAS AN ERROR WHEN DELETING SESSION !');
       throw error;
     }
   }
