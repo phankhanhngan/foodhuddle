@@ -43,9 +43,6 @@ export class FoodOrderDTO {
   @Expose()
   sessionId: number;
 
-  @IsOptional()
-  userId: number;
-
   @Expose()
   @IsOptional()
   actualPrice: number;
