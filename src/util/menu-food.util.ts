@@ -63,14 +63,16 @@ export class MenuShopUtil {
         : '';
 
       const menuFood = {
-        dish_type_id: v.dish_type_id,
-        dish_type_name: v.dish_type_name,
-        description: v.description,
+        dish_type_id: v.dishes[0].id,
+        dish_type_name: v.dishes[0].name,
+        description: v.dishes[0].description,
         price: v.dishes[0].price.value,
         discount_price: v.dishes[0].discount_price.value,
         photo: v.dishes[0].photos[0].value,
         options: optionsFood,
       };
+
+      console.log(v.dishes[0].name);
 
       return menuFood;
     });
