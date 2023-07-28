@@ -2,6 +2,8 @@ import {
   Body,
   Controller,
   Get,
+  Inject,
+  InternalServerErrorException,
   ParseArrayPipe,
   ParseIntPipe,
   Put,
@@ -12,6 +14,8 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { Response } from 'express';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 import {
   RequestFoodTransformInterceptor,
   ResponseFoodTransformInterceptor,
@@ -25,7 +29,10 @@ import { SessionInfoDTO } from '../sessions/dtos/session-info.dto';
 @UseGuards(JwtAuthGuard)
 @Controller('food-order')
 export class FoodOrderController {
-  constructor(private readonly foodOrderService: FoodOrderService) {}
+  constructor(
+    private readonly foodOrderService: FoodOrderService,
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+  ) {}
 
   @Put()
   @UseInterceptors(new RequestFoodTransformInterceptor())
@@ -48,8 +55,12 @@ export class FoodOrderController {
         message: 'Submit food orders successfully',
       });
     } catch (err) {
-      console.log(err);
-      throw err;
+      this.logger.error(
+        'Calling changeFoodOrders()',
+        err,
+        FoodOrderController.name,
+      );
+      throw new InternalServerErrorException();
     }
   }
 
@@ -63,8 +74,12 @@ export class FoodOrderController {
       const { user } = req;
       return await this.foodOrderService.getFoodOrdersByUser(user, sessionId);
     } catch (err) {
-      console.log(err);
-      throw err;
+      this.logger.error(
+        'Calling getFoodOrdersByUser()',
+        err,
+        FoodOrderController.name,
+      );
+      throw new InternalServerErrorException();
     }
   }
 
@@ -75,8 +90,8 @@ export class FoodOrderController {
     try {
       return await this.foodOrderService.getFoodMenu(sessionId);
     } catch (err) {
-      console.log(err);
-      throw err;
+      this.logger.error('Calling getFoodMenu()', err, FoodOrderController.name);
+      throw new InternalServerErrorException();
     }
   }
 }
