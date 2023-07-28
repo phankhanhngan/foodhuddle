@@ -33,12 +33,16 @@ export class FoodOrderController {
     @Req() req,
     @Res() res: Response,
     @Body('sessionId', ParseIntPipe) sessionId: number,
-    @Body('foodList', new ParseArrayPipe({ items: FoodOrderDTO }))
-    foodList: FoodOrderDTO[],
+    @Body('foodOrderList', new ParseArrayPipe({ items: FoodOrderDTO }))
+    foodOrderList: FoodOrderDTO[],
   ) {
     try {
       const { user } = req;
-      await this.foodOrderService.changeFoodOrders(foodList, sessionId, user);
+      await this.foodOrderService.changeFoodOrders(
+        foodOrderList,
+        sessionId,
+        user,
+      );
       return res.status(200).json({
         status: 'success',
         message: 'Submit food orders successfully',
@@ -51,7 +55,7 @@ export class FoodOrderController {
 
   @Get()
   @UseInterceptors(new ResponseFoodTransformInterceptor())
-  async getFoodOrders(
+  async getFoodOrdersByUser(
     @Query('sessionId', ParseIntPipe) sessionId: number,
     @Req() req,
   ): Promise<FoodOrder[]> {
