@@ -1,6 +1,13 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityManager, EntityRepository } from '@mikro-orm/core';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 import { Session } from 'src/entities/session.entity';
 
 @Injectable()
@@ -9,6 +16,7 @@ export class SessionService {
     @InjectRepository(Session)
     private readonly sessionRepository: EntityRepository<Session>,
     private readonly em: EntityManager,
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
   ) {}
 
   async getAllSessionsToday() {
@@ -42,8 +50,12 @@ export class SessionService {
 
       return listSessionsReturn;
     } catch (error) {
-      console.log('HAS AN ERRO AT getAllSessionsToday()');
-      throw error;
+      this.logger.error(
+        'Calling getAllSessionsToday()',
+        error,
+        SessionService.name,
+      );
+      throw new InternalServerErrorException();
     }
   }
 
@@ -60,8 +72,8 @@ export class SessionService {
 
       return session;
     } catch (err) {
-      console.log('HAS AN ERROR AT SERVICE GET SESSION', err);
-      throw err;
+      this.logger.error('Calling getSession()', err, SessionService.name);
+      throw new InternalServerErrorException();
     }
   }
 }

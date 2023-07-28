@@ -1,6 +1,13 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { EntityManager, EntityRepository } from '@mikro-orm/mysql';
 import { InjectRepository } from '@mikro-orm/nestjs';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 import { plainToClass } from 'class-transformer';
 import { FoodOrder, Session, SessionStatus, User } from 'src/entities';
 import { FoodOrderDTO } from './dtos/food-order.dto';
@@ -13,6 +20,7 @@ export class FoodOrderService {
     private readonly foodOrderRepository: EntityRepository<FoodOrder>,
     @InjectRepository(Session)
     private readonly sessionRepository: EntityRepository<Session>,
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
   ) {}
 
   async changeFoodOrders(
@@ -49,8 +57,12 @@ export class FoodOrderService {
 
       await this.em.flush();
     } catch (err) {
-      console.log('HAS AN ERROR AT SERVICE CHANGE FOOD ORDERS ', err);
-      throw err;
+      this.logger.error(
+        'Calling changeFoodOrders()',
+        err,
+        FoodOrderService.name,
+      );
+      throw new InternalServerErrorException();
     }
   }
 
@@ -70,8 +82,12 @@ export class FoodOrderService {
         session,
       });
     } catch (err) {
-      console.log('HAS AN ERROR AT SERVICE GET FOOD ORDERS BY USER', err);
-      throw err;
+      this.logger.error(
+        'Calling getFoodOrdersByUser()',
+        err,
+        FoodOrderService.name,
+      );
+      throw new InternalServerErrorException();
     }
   }
 }
