@@ -61,7 +61,7 @@ export class SessionController {
         hostPaymentInfor: hostPaymentInfor,
       });
     } catch (error) {
-      console.log('HAS AN ERROR AT GETTING HOST PAYMENT INFORMATION');
+      this.logger.error('HAS AN ERROR AT GETTING HOST PAYMENT INFORMATION');
       throw error;
     }
   }
@@ -96,7 +96,7 @@ export class SessionController {
         id: newSession.id,
       });
     } catch (error) {
-      console.log('HAS AN ERROR WHEN CREATING NEW SESSION TODAY');
+      this.logger.error('HAS AN ERROR WHEN CREATING NEW SESSION TODAY');
       throw error;
     }
   }

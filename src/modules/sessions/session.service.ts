@@ -60,7 +60,7 @@ export class SessionService {
 
       return latestSessionByHostId;
     } catch (error) {
-      console.log('HAS AN ERROR AT getLatestSessionByHostId()');
+      this.logger.error('HAS AN ERROR AT getLatestSessionByHostId()');
       throw error;
     }
   }
@@ -73,7 +73,7 @@ export class SessionService {
 
       return newSession;
     } catch (error) {
-      console.log('HAS AN ERROR AT createNewSessionToday()');
+      this.logger.error('HAS AN ERROR AT createNewSessionToday()');
       throw error;
     }
   }
