@@ -106,7 +106,7 @@ export class FoodOrderService {
       return foodMenu;
     } catch (err) {
       this.logger.error('Calling getFoodMenu()', err, FoodOrderService.name);
-      throw new InternalServerErrorException();
+      throw err;
     }
   }
 
@@ -134,6 +134,11 @@ export class FoodOrderService {
 
       await this.em.persistAndFlush(foodOrderEntity);
     } catch (err) {
+      this.logger.error(
+        'Calling updateFoodOrder()',
+        err,
+        FoodOrderService.name,
+      );
       throw err;
     }
   }
@@ -150,6 +155,11 @@ export class FoodOrderService {
 
       await this.em.removeAndFlush(this.foodOrderRepository.getReference(id));
     } catch (err) {
+      this.logger.error(
+        'Calling deleteFoodOrder()',
+        err,
+        FoodOrderService.name,
+      );
       throw err;
     }
   }

@@ -101,7 +101,7 @@ export class FoodOrderController {
       });
     } catch (err) {
       this.logger.error('Calling getFoodMenu()', err, FoodOrderController.name);
-      throw new InternalServerErrorException();
+      throw err;
     }
   }
 
@@ -145,7 +145,11 @@ export class FoodOrderController {
         message: 'Delete food order successfully',
       });
     } catch (err) {
-      console.log(err);
+      this.logger.error(
+        'Calling deleteFoodOrder()',
+        err,
+        FoodOrderController.name,
+      );
       throw err;
     }
   }
