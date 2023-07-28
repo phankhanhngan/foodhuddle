@@ -5,16 +5,21 @@ import {
   Post,
   Body,
   BadRequestException,
+  Inject,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Response } from 'express';
-import { IUserAuthen } from './interfaces';
 import { OAuth2Client } from './google_client/google-client.config';
 import { ConfigService } from '@nestjs/config';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
+import { IUserAuthen } from './interfaces';
 
 @Controller('auth')
 export class AuthController {
   constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     private readonly configService: ConfigService,
     private readonly authService: AuthService,
     private readonly oauth2Client: OAuth2Client,
@@ -49,8 +54,12 @@ export class AuthController {
         profile: user,
       });
     } catch (err) {
-      console.log(err);
-      throw err;
+      this.logger.error(
+        'Calling googleAuthCallback()',
+        err,
+        AuthController.name,
+      );
+      throw new InternalServerErrorException();
     }
   }
 }
