@@ -104,7 +104,7 @@ export class SessionService {
 
       if (!statusSessionList.includes(dto.status)) {
         return {
-          status: 500,
+          status: 400,
           message: `The status session is invalid !`,
         };
       }
@@ -122,7 +122,7 @@ export class SessionService {
 
             await this.em.persistAndFlush(sessionById);
 
-            updateStatusSuccess.message = 'Locked session successfully !';
+            updateStatusSuccess.message = 'Locked session successfully!';
 
             return updateStatusSuccess;
           }
@@ -136,7 +136,7 @@ export class SessionService {
             await this.em.persistAndFlush(sessionById);
 
             updateStatusSuccess.message =
-              'Pending payments session successfully !';
+              'Pending payments session successfully!';
 
             return updateStatusSuccess;
           }
@@ -149,7 +149,7 @@ export class SessionService {
 
             await this.em.persistAndFlush(sessionById);
 
-            updateStatusSuccess.message = 'Finished session successfully !';
+            updateStatusSuccess.message = 'Finished session successfully!';
 
             return updateStatusSuccess;
           }
@@ -177,12 +177,12 @@ export class SessionService {
 
         return {
           statusCode: 200,
-          message: 'Delete session successfully !',
+          message: 'Delete session successfully!',
         };
       }
 
       return {
-        statusCode: 500,
+        statusCode: 400,
         message: `Current status is ${sessionById.status}, you can not delete this session`,
       };
     } catch (error) {

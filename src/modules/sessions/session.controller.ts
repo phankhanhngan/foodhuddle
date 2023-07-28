@@ -22,6 +22,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UpdateSessionStatus } from './dtos/update-session_status.dto';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { session } from 'passport';
 
 @Controller('session')
 export class SessionController {
@@ -94,7 +95,7 @@ export class SessionController {
 
       return res.status(200).json({
         statusCode: 200,
-        message: 'Create new session successfully !',
+        message: 'Create new session successfully!',
         id: newSession.id,
       });
     } catch (error) {
@@ -116,17 +117,17 @@ export class SessionController {
       const sessionById = await this.sessionService.getSessionById(id);
 
       if (!sessionById) {
-        return {
+        return res.status(400).json({
           status: 400,
-          message: 'Session is not exited !',
-        };
+          message: 'Session does not exist!',
+        });
       }
 
       const hostIdSession = sessionById.host;
 
       if (hostId !== hostIdSession) {
-        return res.status(500).json({
-          status: 500,
+        return res.status(400).json({
+          status: 400,
           message: `Only host can change session's status to ${dto.status}`,
         });
       }
@@ -151,19 +152,21 @@ export class SessionController {
 
       const sessionById = await this.sessionService.getSessionById(id);
 
-      if (!sessionById) {
-        return {
+      console.log(sessionById);
+
+      if (sessionById === null) {
+        return res.status(400).json({
           status: 400,
-          message: 'Session is not exited !',
-        };
+          message: 'Session does not exist!',
+        });
       }
 
       const hostIdSession = sessionById.host;
 
       if (hostId !== hostIdSession) {
-        return res.status(500).json({
-          status: 500,
-          message: `Only host can delete session !`,
+        return res.status(400).json({
+          status: 400,
+          message: `Only host can delete session!`,
         });
       }
 
