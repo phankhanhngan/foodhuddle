@@ -15,7 +15,7 @@ export class ResponseFoodTransformInterceptor implements NestInterceptor {
     return next.handle().pipe(
       map((foodOrderList: FoodOrder[]) => {
         const { sessionId } = context.switchToHttp().getRequest().query;
-        const formattedFoodList = foodOrderList.map((foodOrder) => {
+        const formattedFoodOrderList = foodOrderList.map((foodOrder) => {
           foodOrder.options = JSON.parse(foodOrder?.options);
           return plainToInstance(FoodOrderDTO, foodOrder, {
             enableCircularCheck: true,
@@ -27,7 +27,7 @@ export class ResponseFoodTransformInterceptor implements NestInterceptor {
           message: 'Get food orders successfully',
           data: {
             sessionId,
-            foodList: formattedFoodList,
+            foodOrderList: formattedFoodOrderList,
           },
         };
       }),

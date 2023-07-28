@@ -12,16 +12,16 @@ export class RequestFoodTransformInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const body = context.switchToHttp().getRequest().body;
 
-    const { sessionId, foodList } = body;
+    const { sessionId, foodOrderList } = body;
 
-    const formattedFoodList: FoodOrderDTO[] = foodList?.map(
+    const formattedFoodOrderList: FoodOrderDTO[] = foodOrderList?.map(
       (food: FoodOrderDTO) => ({
         ...food,
         sessionId,
       }),
     );
 
-    body.foodList = formattedFoodList;
+    body.foodOrderList = formattedFoodOrderList;
     return next.handle();
   }
 }
