@@ -14,7 +14,7 @@ import {
 import { SessionService } from './session.service';
 import { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { CreateSession } from './dtos/create-session.dto';
+import { CreateSession, SessionStatus } from './dtos/create-session.dto';
 import { AwsService } from '../aws/aws.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -78,11 +78,17 @@ export class SessionController {
       // const fileBuffer = file.buffer;
       // const originalFilename = file.originalname;
 
-      // const fileKey = await this.awsService.uploadFileToS3(fileBuffer, originalFilename);
+      // const fileKey = await this.awsService.uploadFileToS3(
+      //   fileBuffer,
+      //   originalFilename,
+      // );
+
+      // console.log(fileKey);
 
       const hostId = Object(res.req.user).id;
 
       dto.host = hostId;
+      dto.status = SessionStatus.OPEN;
 
       const newSession = await this.sessionService.createNewSessionToday(dto);
 
