@@ -5,13 +5,12 @@ import {
   ArrayMinSize,
   IsString,
   ValidateNested,
-  IsOptional,
 } from 'class-validator';
 import { Exclude, Expose, Type } from 'class-transformer';
 import { OptionItemDTO } from './index';
 
 @Exclude()
-export class FoodOrderDTO {
+export class UpdateFoodOrderDTO {
   @Expose()
   @IsString({
     message: 'Food name must be a string',
@@ -19,20 +18,16 @@ export class FoodOrderDTO {
   foodName: string;
 
   @Expose()
-  @IsInt({ message: 'Food price must be an integer' })
-  originPrice: number;
-
-  @Expose()
   @IsInt({ message: 'Food quantity must be an integer' })
   quantity: number;
 
   @Expose()
-  @ValidateIf((object, value) => value)
+  @ValidateIf((value) => value)
   @IsString({ message: 'Food note must be a string' })
   note?: string;
 
   @Expose()
-  @ValidateIf((object, value) => Array.isArray(value) && value.length > 0)
+  @ValidateIf((value) => Array.isArray(value) && value.length > 0)
   @IsArray()
   @ValidateNested({ each: true })
   @ArrayMinSize(1, {
@@ -42,9 +37,10 @@ export class FoodOrderDTO {
   options: OptionItemDTO[];
 
   @Expose()
-  sessionId: number;
+  @IsInt({ message: 'Actual Price must be an integer' })
+  actualPrice: number;
 
   @Expose()
-  @IsOptional()
-  actualPrice: number;
+  @IsInt({ message: 'Origin Price must be an integer' })
+  originPrice: number;
 }

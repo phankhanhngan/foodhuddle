@@ -1,7 +1,9 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  Param,
   ParseArrayPipe,
   ParseIntPipe,
   Put,
@@ -10,6 +12,7 @@ import {
   Res,
   UseGuards,
   UseInterceptors,
+  ValidationPipe,
 } from '@nestjs/common';
 import { Response } from 'express';
 import {
@@ -18,9 +21,10 @@ import {
 } from './interceptors';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { FoodOrderService } from './food-order.service';
-import { FoodDTO, FoodOrderDTO } from './dtos/index';
+import { FoodDTO, FoodOrderDTO, UpdateFoodOrderDTO } from './dtos/index';
 import { FoodOrder } from 'src/entities';
-import { SessionInfoDTO } from '../sessions/dtos/session-info.dto';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { plainToClass } from 'class-transformer';
 
 @UseGuards(JwtAuthGuard)
 @Controller('food-order')
@@ -74,6 +78,51 @@ export class FoodOrderController {
   ): Promise<FoodDTO[]> {
     try {
       return await this.foodOrderService.getFoodMenu(sessionId);
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
+  }
+
+  @Put(':id')
+  @UseGuards(RolesGuard)
+  async updateFoodOrder(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('sessionId', ParseIntPipe) sessionId: number,
+    @Body(new ValidationPipe()) foodOrder: UpdateFoodOrderDTO,
+    @Res() res: Response,
+  ) {
+    try {
+      await this.foodOrderService.updateFoodOrder(
+        id,
+        sessionId,
+        plainToClass(UpdateFoodOrderDTO, foodOrder),
+      );
+
+      res.status(200).json({
+        status: 'success',
+        message: 'Submit food order successfully',
+      });
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
+  }
+
+  @Delete(':id')
+  @UseGuards(RolesGuard)
+  async deleteFoodOrder(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('sessionId', ParseIntPipe) sessionId: number,
+    @Res() res: Response,
+  ) {
+    try {
+      await this.foodOrderService.deleteFoodOrder(id, sessionId);
+
+      res.status(200).json({
+        status: 'success',
+        message: 'Delete food order successfully',
+      });
     } catch (err) {
       console.log(err);
       throw err;

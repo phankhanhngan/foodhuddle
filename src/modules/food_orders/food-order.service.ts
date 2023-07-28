@@ -3,9 +3,9 @@ import { EntityManager, EntityRepository } from '@mikro-orm/mysql';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { plainToClass } from 'class-transformer';
 import { FoodOrder, Session, SessionStatus, User } from 'src/entities';
-import { FoodDTO, FoodOrderDTO } from './dtos/index';
+import { FoodDTO, FoodOrderDTO, UpdateFoodOrderDTO } from './dtos/index';
 import { MenuShopUtil } from 'src/utils/menu-food.util';
-import { Loaded } from '@mikro-orm/core';
+import { Loaded, wrap } from '@mikro-orm/core';
 
 @Injectable()
 export class FoodOrderService {
@@ -89,5 +89,49 @@ export class FoodOrderService {
       const foodMenu = await this.foodMenuUtil.getMenuFood(shopLink.shop_link);
       return foodMenu;
     } catch (err) {}
+  }
+
+  async updateFoodOrder(
+    id: number,
+    sessionId: number,
+    foodOrder: UpdateFoodOrderDTO,
+  ) {
+    try {
+      const foodOrderEntity: Loaded<FoodOrder> =
+        await this.foodOrderRepository.findOne({
+          id,
+          session: this.sessionRepository.getReference(sessionId),
+        });
+      if (!foodOrderEntity) {
+        throw new BadRequestException(`Can not find food order with id: ${id}`);
+      }
+      wrap(foodOrderEntity).assign(
+        {
+          ...foodOrder,
+          options: JSON.stringify(foodOrder.options),
+        },
+        { updateByPrimaryKey: false },
+      );
+
+      await this.em.persistAndFlush(foodOrderEntity);
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async deleteFoodOrder(id: number, sessionId: number) {
+    try {
+      const foodOrderCount: number = await this.foodOrderRepository.count({
+        id,
+        session: this.sessionRepository.getReference(sessionId),
+      });
+      if (!foodOrderCount) {
+        throw new BadRequestException(`Can not find food order with id: ${id}`);
+      }
+
+      await this.em.removeAndFlush(this.foodOrderRepository.getReference(id));
+    } catch (err) {
+      throw err;
+    }
   }
 }
