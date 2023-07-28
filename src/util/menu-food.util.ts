@@ -39,42 +39,50 @@ export class MenuShopUtil {
     const reponseData = (await axios.get(urlGetShopMenu, config)).data;
 
     const menuFoodFormated = reponseData.reply.menu_infos.map((v) => {
-      const optionsFood = v.dishes[0].options
-        ? v.dishes[0].options.map((op) => {
-            const optionItems = op.option_items.items
-              ? op.option_items.items.map((opi) => {
-                  const optionItem = {
-                    name: opi.name,
-                    price: opi.price.value,
-                  };
+      const foodByDish = v.dishes.map((fbd) => {
+        const optionsFood = fbd.options
+          ? fbd.options.map((op) => {
+              const optionItems = op.option_items.items
+                ? op.option_items.items.map((opi) => {
+                    const optionItem = {
+                      name: opi.name,
+                      price: opi.price.value,
+                    };
 
-                  return optionItem;
-                })
-              : '';
+                    return optionItem;
+                  })
+                : '';
 
-            const option = {
-              id: op.id,
-              mandatory: op.mandatory,
-              name: op.name,
-              option_items: optionItems,
-            };
-            return option;
-          })
-        : '';
+              const option = {
+                id: op.id,
+                mandatory: op.mandatory,
+                name: op.name,
+                option_items: optionItems,
+              };
+              return option;
+            })
+          : '';
 
-      const menuFood = {
-        dish_type_id: v.dishes[0].id,
-        dish_type_name: v.dishes[0].name,
-        description: v.dishes[0].description,
-        price: v.dishes[0].price.value,
-        discount_price: v.dishes[0].discount_price.value,
-        photo: v.dishes[0].photos[0].value,
-        options: optionsFood,
+        const menuFood = {
+          id: fbd.id,
+          name: fbd.name,
+          description: fbd.description,
+          price: fbd.price.value,
+          discount_price: fbd.discount_price ? fbd.discount_price.value : '',
+          photo: fbd.photos[0].value,
+          options: optionsFood,
+        };
+
+        return menuFood;
+      });
+
+      const dishTypeFoods = {
+        dish_type_id: v.dish_type_id,
+        dish_type_name: v.dish_type_name,
+        dishes: foodByDish,
       };
 
-      console.log(v.dishes[0].name);
-
-      return menuFood;
+      return dishTypeFoods;
     });
 
     return menuFoodFormated;
