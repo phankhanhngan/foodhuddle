@@ -40,7 +40,7 @@ export class SessionController {
         error,
         SessionService.name,
       );
-      throw new InternalServerErrorException();
+      throw error;
     }
   }
 
@@ -56,7 +56,7 @@ export class SessionController {
       });
     } catch (err) {
       this.logger.error('Calling getSession()', err, SessionService.name);
-      throw new InternalServerErrorException();
+      throw err;
     }
   }
 }

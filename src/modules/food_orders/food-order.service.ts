@@ -62,7 +62,7 @@ export class FoodOrderService {
         err,
         FoodOrderService.name,
       );
-      throw new InternalServerErrorException();
+      throw err;
     }
   }
 
@@ -87,7 +87,7 @@ export class FoodOrderService {
         err,
         FoodOrderService.name,
       );
-      throw new InternalServerErrorException();
+      throw err;
     }
   }
 }
