@@ -9,10 +9,19 @@ export class SessionInfoDTO {
 
   shop_link: string;
 
+  created_at: Date;
+
   @Expose()
   @Transform(({ obj }) => obj.host.name)
   host: string;
 
+  @Transform(({ obj }) =>
+    new Date(obj.created_at).toLocaleDateString('en-GB', {
+      month: '2-digit',
+      day: '2-digit',
+      year: 'numeric',
+    }),
+  )
   @Expose()
   date: Date;
 
