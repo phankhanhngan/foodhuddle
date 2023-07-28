@@ -1,14 +1,17 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityManager, EntityRepository } from '@mikro-orm/core';
 import { Session } from 'src/entities/session.entity';
 import { CreateSession } from './dtos/create-session.dto';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
 @Injectable()
 export class SessionService {
   constructor(
     @InjectRepository(Session)
     private readonly sessionRepository: EntityRepository<Session>,
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     private readonly em: EntityManager,
   ) {}
 
@@ -43,7 +46,7 @@ export class SessionService {
 
       return listSessionsReturn;
     } catch (error) {
-      console.log('HAS AN ERRO AT getAllSessionsToday()');
+      this.logger.error('HAS AN ERRO AT getAllSessionsToday()');
       throw error;
     }
   }

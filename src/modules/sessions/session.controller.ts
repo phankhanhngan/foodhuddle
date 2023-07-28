@@ -9,6 +9,7 @@ import {
   Res,
   UseGuards,
   UseInterceptors,
+  Inject,
 } from '@nestjs/common';
 import { SessionService } from './session.service';
 import { Response } from 'express';
@@ -16,10 +17,13 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateSession } from './dtos/create-session.dto';
 import { AwsService } from '../aws/aws.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
 @Controller('session')
 export class SessionController {
   constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     private readonly sessionService: SessionService,
     private readonly awsService: AwsService,
   ) {}
@@ -35,7 +39,7 @@ export class SessionController {
         data: allSessionToday,
       });
     } catch (error) {
-      console.log('HAS AN ERROR AT GETTING ALL SESSIONS TODAY');
+      this.logger.error('HAS AN ERROR AT GETTING ALL SESSIONS TODAY');
       throw error;
     }
   }
