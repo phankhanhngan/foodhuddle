@@ -5,7 +5,7 @@ import {
   CallHandler,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { FoodOrderDTO } from '../dtos/food-order.dto';
+import { CreateFoodOrderDTO } from '../dtos/create-food-order.dto';
 
 @Injectable()
 export class RequestFoodTransformInterceptor implements NestInterceptor {
@@ -14,8 +14,8 @@ export class RequestFoodTransformInterceptor implements NestInterceptor {
 
     const { sessionId, foodOrderList } = body;
 
-    const formattedFoodOrderList: FoodOrderDTO[] = foodOrderList?.map(
-      (food: FoodOrderDTO) => ({
+    const formattedFoodOrderList: CreateFoodOrderDTO[] = foodOrderList?.map(
+      (food: CreateFoodOrderDTO) => ({
         ...food,
         sessionId,
       }),
