@@ -62,8 +62,11 @@ export class SessionController {
         ? sessionByHostId.host_payment_info
         : '';
 
+      const qr_images = sessionByHostId ? sessionByHostId.qr_images : '';
+
       return res.status(200).json({
         hostPaymentInfor: hostPaymentInfor,
+        qr_images: qr_images,
       });
     } catch (error) {
       this.logger.error('HAS AN ERROR AT GETTING HOST PAYMENT INFORMATION');
