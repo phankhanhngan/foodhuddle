@@ -5,7 +5,6 @@ import {
   Get,
   Param,
   Inject,
-  InternalServerErrorException,
   ParseArrayPipe,
   ParseIntPipe,
   Put,
@@ -15,6 +14,7 @@ import {
   UseGuards,
   UseInterceptors,
   ValidationPipe,
+  ParseEnumPipe,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -25,10 +25,11 @@ import {
 } from './interceptors';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { FoodOrderService } from './food-order.service';
-import { FoodOrderDTO, UpdateFoodOrderDTO } from './dtos/index';
+import { CreateFoodOrderDTO, UpdateFoodOrderDTO } from './dtos/index';
 import { FoodOrder } from 'src/entities';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { plainToClass } from 'class-transformer';
+import { GroupedBy } from './enums/grouped-by.enum';
 
 @UseGuards(JwtAuthGuard)
 @Controller('food-order')
@@ -44,8 +45,8 @@ export class FoodOrderController {
     @Req() req,
     @Res() res: Response,
     @Body('sessionId', ParseIntPipe) sessionId: number,
-    @Body('foodOrderList', new ParseArrayPipe({ items: FoodOrderDTO }))
-    foodOrderList: FoodOrderDTO[],
+    @Body('foodOrderList', new ParseArrayPipe({ items: CreateFoodOrderDTO }))
+    foodOrderList: CreateFoodOrderDTO[],
   ) {
     try {
       const { user } = req;
@@ -150,6 +151,32 @@ export class FoodOrderController {
         err,
         FoodOrderController.name,
       );
+      throw err;
+    }
+  }
+
+  @Get('/summary')
+  async getSummaryFoodOrders(
+    @Res() res: Response,
+    @Query('sessionId', ParseIntPipe) sessionId: number,
+    @Query('groupedBy', new ParseEnumPipe(GroupedBy))
+    groupedBy: GroupedBy,
+  ) {
+    try {
+      const response = await this.foodOrderService.getSummaryFoodOrders(
+        sessionId,
+        groupedBy,
+      );
+      res.status(200).json({
+        status: 'success',
+        message: 'Get food order summary successfully',
+        data: {
+          sessionId,
+          foodOrderList: response,
+        },
+      });
+    } catch (err) {
+      console.log(err);
       throw err;
     }
   }

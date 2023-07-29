@@ -1,5 +1,5 @@
-export enum GroupedByEnum {
-  'none' = 'none',
-  'user' = 'user',
-  'food' = 'food',
+export enum GroupedBy {
+  none = 'none',
+  user = 'user',
+  food = 'food',
 }

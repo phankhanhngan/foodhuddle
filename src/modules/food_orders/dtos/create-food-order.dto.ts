@@ -11,7 +11,7 @@ import { Exclude, Expose, Type } from 'class-transformer';
 import { OptionItemDTO } from './index';
 
 @Exclude()
-export class FoodOrderDTO {
+export class CreateFoodOrderDTO {
   @Expose()
   @IsString({
     message: 'Food name must be a string',

@@ -1,18 +1,15 @@
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { EntityManager, EntityRepository } from '@mikro-orm/mysql';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { plainToClass } from 'class-transformer';
+import { plainToClass, plainToInstance } from 'class-transformer';
 import { FoodOrder, Session, SessionStatus, User } from 'src/entities';
-import { FoodDTO, FoodOrderDTO, UpdateFoodOrderDTO } from './dtos/index';
+import { CreateFoodOrderDTO, FoodDTO, UpdateFoodOrderDTO } from './dtos/index';
 import { MenuShopUtil } from 'src/utils/menu-food.util';
 import { Loaded, wrap } from '@mikro-orm/core';
+import { GroupedBy } from './enums/grouped-by.enum';
+import { SummaryFoodOrderDTO } from './dtos/summary-food-order.dto';
 
 @Injectable()
 export class FoodOrderService {
@@ -27,7 +24,7 @@ export class FoodOrderService {
   ) {}
 
   async changeFoodOrders(
-    foodOrderList: FoodOrderDTO[],
+    foodOrderList: CreateFoodOrderDTO[],
     sessionId: number,
     user: User,
   ): Promise<void> {
@@ -162,5 +159,73 @@ export class FoodOrderService {
       );
       throw err;
     }
+  }
+
+  async getAllFoodOrders(sessionId: number): Promise<SummaryFoodOrderDTO[]> {
+    try {
+      const sessionRef = this.sessionRepository.getReference(sessionId);
+      const foodOrders = await this.foodOrderRepository.find(
+        {
+          session: sessionRef,
+        },
+        { orderBy: { foodName: 'asc' }, populate: ['user'] },
+      );
+
+      return plainToInstance(SummaryFoodOrderDTO, foodOrders, {
+        enableCircularCheck: true,
+      });
+    } catch (err) {
+      this.logger.error(
+        'Calling getAllFoodOrders()',
+        err,
+        FoodOrderService.name,
+      );
+      throw err;
+    }
+  }
+
+  formatFOGroupedBy(foodOrders: SummaryFoodOrderDTO[], groupedBy: GroupedBy) {
+    let formattedFO: Array<any>;
+    switch (groupedBy) {
+      case GroupedBy.food:
+        const foodName = [...new Set(foodOrders.map((fo) => fo.foodName))];
+
+        formattedFO = foodName.reduce((prev, curr) => {
+          const foGrouped = foodOrders
+            .filter((fo) => fo.foodName === curr)
+            .map(({ foodName, ...restProps }) => restProps);
+          return [
+            ...prev,
+            {
+              foodName: curr,
+              orders: foGrouped,
+            },
+          ];
+        }, []);
+
+        break;
+      case GroupedBy.user:
+        break;
+    }
+    return formattedFO;
+  }
+
+  async getSummaryFoodOrders(sessionId: number, groupedBy: GroupedBy) {
+    try {
+      const session = await this.sessionRepository.count({ id: sessionId });
+
+      if (!session) {
+        throw new BadRequestException(
+          `Can not find session with id: ${sessionId}`,
+        );
+      }
+
+      const foodOrders = await this.getAllFoodOrders(sessionId);
+      if (groupedBy === GroupedBy.none) {
+        return foodOrders;
+      }
+
+      return this.formatFOGroupedBy(foodOrders, groupedBy);
+    } catch (err) {}
   }
 }
