@@ -7,7 +7,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Exclude, Expose, Type } from 'class-transformer';
-import { OptionItemDTO } from './index';
+import { OptionDTO } from './index';
 
 @Exclude()
 export class UpdateFoodOrderDTO {
@@ -27,14 +27,10 @@ export class UpdateFoodOrderDTO {
   note?: string;
 
   @Expose()
-  @ValidateIf((value) => Array.isArray(value) && value.length > 0)
   @IsArray()
   @ValidateNested({ each: true })
-  @ArrayMinSize(1, {
-    message: 'Food option must be null or at least have one item',
-  })
-  @Type(() => OptionItemDTO)
-  options: OptionItemDTO[];
+  @Type(() => OptionDTO)
+  options: OptionDTO[];
 
   @Expose()
   @IsInt({ message: 'Actual Price must be an integer' })

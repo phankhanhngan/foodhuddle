@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import axios from 'axios';
 import {
   FoodDTO,
-  OptionItemDTO,
+  OptionDTO,
   OptionListDTO,
 } from 'src/modules/food_orders/dtos';
 
@@ -53,19 +53,18 @@ export class MenuShopUtil {
           if (isFetchData) {
             const optionsFood: OptionListDTO[] = fbd.options
               ? fbd.options.map((op) => {
-                  const optionItems: OptionItemDTO[] =
-                    Array.from<OptionItemDTO>(
-                      op.option_items.items
-                        ? op.option_items.items.map((opi) => {
-                            const optionItem = {
-                              name: opi.name,
-                              price: opi.price.value,
-                            };
+                  const optionItems: OptionDTO[] = Array.from<OptionDTO>(
+                    op.option_items.items
+                      ? op.option_items.items.map((opi) => {
+                          const optionItem = {
+                            name: opi.name,
+                            price: opi.price.value,
+                          };
 
-                            return optionItem;
-                          })
-                        : [],
-                    );
+                          return optionItem;
+                        })
+                      : [],
+                  );
 
                   const option: OptionListDTO = {
                     id: op.id,

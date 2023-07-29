@@ -1,5 +1,5 @@
 import { Exclude, Expose, Transform } from 'class-transformer';
-import { OptionItemDTO } from './index';
+import { OptionDTO } from './index';
 
 @Exclude()
 export class SummaryFoodOrderDTO {
@@ -31,7 +31,7 @@ export class SummaryFoodOrderDTO {
 
   @Expose()
   @Transform(({ obj, key }) => (obj[key] = JSON.parse(obj[key])))
-  options: OptionItemDTO[];
+  options: OptionDTO[];
 
   @Expose()
   actualPrice: number;
