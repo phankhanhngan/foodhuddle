@@ -69,8 +69,8 @@ export class MenuShopUtil {
                   const option: OptionListDTO = {
                     id: op.id,
                     mandatory: op.mandatory,
-                    name: op.name,
-                    optionItems: optionItems,
+                    category: op.name,
+                    detail: optionItems,
                   };
                   return option;
                 })
