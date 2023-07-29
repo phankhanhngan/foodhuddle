@@ -6,7 +6,7 @@ import {
   ValidateNested,
   IsOptional,
 } from 'class-validator';
-import { OptionDTO } from './option-dto';
+import { OptionDTO } from './option.dto';
 import { Exclude, Expose, Type } from 'class-transformer';
 
 @Exclude()
