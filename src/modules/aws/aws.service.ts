@@ -29,9 +29,8 @@ export class AwsService {
 
     try {
       const data = await this.s3.upload(params).promise();
-      return data.Location; // Return the URL of the uploaded image in S3
+      return data.Location;
     } catch (error) {
-      // Handle any error that may occur during the S3 upload
       throw new Error('Failed to upload the image to S3.');
     }
   }

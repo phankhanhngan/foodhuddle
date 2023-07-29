@@ -4,14 +4,10 @@ import * as sharp from 'sharp';
 
 @Injectable()
 export class ImageResize {
-  async resizeImage(
-    fileBuffer: Buffer,
-    width: number,
-    height: number,
-  ): Promise<Buffer> {
+  async resizeImage(fileBuffer: Buffer): Promise<Buffer> {
     try {
       const resizedImageBuffer = await sharp(fileBuffer)
-        .resize(width, height)
+        .resize(800, 600)
         .toBuffer();
 
       return resizedImageBuffer;

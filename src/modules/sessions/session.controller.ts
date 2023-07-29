@@ -10,8 +10,7 @@ import {
   UseInterceptors,
   Inject,
   UploadedFiles,
-  ParseFilePipeBuilder,
-  HttpStatus,
+  ParseFilePipe,
 } from '@nestjs/common';
 import { SessionService } from './session.service';
 import { Response } from 'express';
@@ -78,31 +77,24 @@ export class SessionController {
   async createNewSessionToday(
     @Body() dto: CreateSession,
     @UploadedFiles(
-      new ParseFilePipeBuilder()
-        .addValidator(
+      new ParseFilePipe({
+        validators: [
           new MaxFileSize({
             maxSize: 5,
           }),
-        )
-        .addValidator(
           new AcceptImageType({
             fileType: ['image/jpeg', 'image/png'],
           }),
-        )
-        .build({
-          errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
-        }),
+        ],
+        fileIsRequired: false,
+      }),
     )
     files: Array<Express.Multer.File>,
     @Res() res: Response,
   ) {
     try {
-      const listImagesResized: Promise<string>[] = files.map(async (img) => {
-        const resizedImage = await this.imageResize.resizeImage(
-          img.buffer,
-          800,
-          600,
-        );
+      const urlImages: Promise<string>[] = files.map(async (img) => {
+        const resizedImage = await this.imageResize.resizeImage(img.buffer);
 
         const imageUrl = await this.awsService.uploadImage(
           resizedImage,
@@ -112,14 +104,14 @@ export class SessionController {
         return imageUrl;
       });
 
-      const results = await Promise.all(listImagesResized);
+      const listUrlImages = await Promise.all(urlImages);
 
-      const arrayToString = JSON.stringify(Object.assign({}, results));
+      const qrImagesUrl = JSON.stringify(Object.assign({}, listUrlImages));
 
       const hostId = Object(res.req.user).id;
       dto.host = hostId;
       dto.status = SessionStatus.OPEN;
-      dto.qr_images = arrayToString;
+      dto.qr_images = qrImagesUrl;
 
       const newSession = await this.sessionService.createNewSessionToday(dto);
       if (!newSession) {
