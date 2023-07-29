@@ -1,9 +1,13 @@
-import { IsString, IsInt } from 'class-validator';
+import { IsString, IsArray, ValidateNested } from 'class-validator';
+import { OptionItemDTO } from './option-item.dto';
+import { Type } from 'class-transformer';
 
 export class OptionDTO {
-  @IsString({ message: 'Option name must be astring' })
-  name: string;
+  @IsString({ message: 'Option category must be a string' })
+  category: string;
 
-  @IsInt({ message: 'Option price must be an integer' })
-  price: number;
+  @IsArray({ message: 'Option detail must be an array of Option Item' })
+  @ValidateNested({ each: true })
+  @Type(() => OptionItemDTO)
+  detail: OptionItemDTO[];
 }

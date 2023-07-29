@@ -2,7 +2,6 @@ import {
   IsInt,
   IsArray,
   ValidateIf,
-  ArrayMinSize,
   IsString,
   ValidateNested,
   IsOptional,
@@ -11,7 +10,7 @@ import { OptionDTO } from './option-dto';
 import { Exclude, Expose, Type } from 'class-transformer';
 
 @Exclude()
-export class FoodOrderDTO {
+export class CreateFoodOrderDTO {
   @Expose()
   @IsString({
     message: 'Food name must be a string',
@@ -31,12 +30,8 @@ export class FoodOrderDTO {
   note?: string;
 
   @Expose()
-  @ValidateIf((object, value) => Array.isArray(value) && value.length > 0)
   @IsArray()
   @ValidateNested({ each: true })
-  @ArrayMinSize(1, {
-    message: 'Food option must be null or at least have one item',
-  })
   @Type(() => OptionDTO)
   options: OptionDTO[];
 
