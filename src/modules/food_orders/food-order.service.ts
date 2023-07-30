@@ -211,6 +211,21 @@ export class FoodOrderService {
 
         break;
       case GroupedBy.user:
+        const userIds = [...new Set(foodOrders.map((fo) => fo.user.googleId))];
+        formattedFO = userIds.reduce((prev, curr) => {
+          const foGrouped = foodOrders.filter(
+            (fo) => fo.user.googleId === curr,
+          );
+
+          const currUser = foGrouped[0].user;
+          return [
+            ...prev,
+            {
+              user: currUser,
+              orders: foGrouped.map(({ user: {}, ...restProps }) => restProps),
+            },
+          ];
+        }, []);
         break;
     }
     return formattedFO;
@@ -227,6 +242,7 @@ export class FoodOrderService {
       }
 
       const foodOrders = await this.getAllFoodOrders(sessionId);
+
       if (groupedBy === GroupedBy.none) {
         return foodOrders;
       }

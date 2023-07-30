@@ -15,7 +15,7 @@ export class SummaryFoodOrderDTO {
       photo: obj[key].photo,
     };
   })
-  user: object;
+  user: any;
 
   @Expose()
   foodName: string;
