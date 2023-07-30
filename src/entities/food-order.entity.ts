@@ -17,7 +17,7 @@ export class FoodOrder extends Base {
   @Property({ nullable: false })
   originPrice!: number;
 
-  @Property({ nullable: true })
+  @Property({ nullable: true, type: 'text' })
   @Transform(
     ({ value, key, obj }) => {
       obj[key] = JSON.stringify(value);
