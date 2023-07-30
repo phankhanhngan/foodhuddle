@@ -13,7 +13,8 @@ export const SessionStatusGuard = (acceptedStatus: Array<string>) => {
       @Inject(SessionService) readonly sessionService: SessionService,
     ) {}
     async canActivate(context: ExecutionContext): Promise<boolean> {
-      const { body, params } = context.switchToHttp().getRequest();
+      const req = context.switchToHttp().getRequest();
+      const { body, params } = req;
 
       const sessionId = body.sessionId ? body.sessionId : params.id;
       const session = await this.sessionService.getSession(sessionId);
@@ -29,6 +30,8 @@ export const SessionStatusGuard = (acceptedStatus: Array<string>) => {
           `Can not perform this action because Session is in status '${session.status}'`,
         );
       }
+
+      req.session = session;
       return true;
     }
   }

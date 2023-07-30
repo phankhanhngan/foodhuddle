@@ -43,6 +43,7 @@ export class FoodOrderController {
   ) {}
 
   @Put()
+  @UseGuards(SessionStatusGuard([SessionStatus.OPEN]))
   @UseInterceptors(new RequestFoodTransformInterceptor())
   async changeFoodOrders(
     @Req() req,
@@ -52,11 +53,11 @@ export class FoodOrderController {
     foodOrderList: CreateFoodOrderDTO[],
   ) {
     try {
-      const { user } = req;
+      const { user, session } = req;
       await this.foodOrderService.changeFoodOrders(
         foodOrderList,
-        sessionId,
         user,
+        session,
       );
       return res.status(200).json({
         status: 'success',
@@ -116,12 +117,14 @@ export class FoodOrderController {
     @Param('id', ParseIntPipe) id: number,
     @Body('sessionId', ParseIntPipe) sessionId: number,
     @Body(new ValidationPipe()) foodOrder: UpdateFoodOrderDTO,
+    @Req() req,
     @Res() res: Response,
   ) {
     try {
+      const { session } = req;
       await this.foodOrderService.updateFoodOrder(
         id,
-        sessionId,
+        session,
         plainToClass(UpdateFoodOrderDTO, foodOrder),
       );
 
@@ -142,9 +145,11 @@ export class FoodOrderController {
     @Param('id', ParseIntPipe) id: number,
     @Body('sessionId', ParseIntPipe) sessionId: number,
     @Res() res: Response,
+    @Req() req,
   ) {
     try {
-      await this.foodOrderService.deleteFoodOrder(id, sessionId);
+      const { session } = req;
+      await this.foodOrderService.deleteFoodOrder(id, session);
 
       res.status(200).json({
         status: 'success',

@@ -97,22 +97,11 @@ export class SessionService {
   }
 
   async submitSessionPayment(
-    sessionId: number,
+    session: Session,
     receiptScreenshot: Array<Express.Multer.File>,
     sessionPayment: SessionPaymentDTO,
   ): Promise<void> {
     try {
-      const sessionExists: number = await this.sessionRepository.count({
-        id: sessionId,
-      });
-
-      if (!sessionExists) {
-        throw new BadRequestException(
-          `Can not find session with id: ${sessionId}`,
-        );
-      }
-      const session: Session = this.sessionRepository.getReference(sessionId);
-
       const existedSessionPayment: Loaded<SessionPayment> =
         await this.sessionPaymentRepository.findOne({
           session,
@@ -126,7 +115,7 @@ export class SessionService {
       }
 
       const filePathArray: string[] = await this.awsService.bulkPutObject(
-        sessionId.toString(),
+        session.id.toString(),
         receiptScreenshot,
       );
 

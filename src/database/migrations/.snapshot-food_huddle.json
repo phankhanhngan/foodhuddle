@@ -423,12 +423,12 @@
         },
         "options": {
           "name": "options",
-          "type": "varchar(255)",
+          "type": "text",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": true,
-          "mappedType": "string"
+          "mappedType": "text"
         },
         "quantity": {
           "name": "quantity",

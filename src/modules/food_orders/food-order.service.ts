@@ -25,21 +25,10 @@ export class FoodOrderService {
 
   async changeFoodOrders(
     foodOrderList: CreateFoodOrderDTO[],
-    sessionId: number,
     user: User,
+    session: Session,
   ): Promise<void> {
     try {
-      const session = await this.sessionRepository.findOne({ id: sessionId });
-      if (!session) {
-        throw new BadRequestException(
-          `Can not find session with id: ${sessionId}`,
-        );
-      }
-
-      if (session.status !== SessionStatus.OPEN) {
-        throw new BadRequestException(`This session is not OPEN for ordering`);
-      }
-
       const userFoodOrdersBySession = await this.foodOrderRepository.find({
         user: user,
         session: session,
@@ -109,14 +98,14 @@ export class FoodOrderService {
 
   async updateFoodOrder(
     id: number,
-    sessionId: number,
+    session: Session,
     foodOrder: UpdateFoodOrderDTO,
   ) {
     try {
       const foodOrderEntity: Loaded<FoodOrder> =
         await this.foodOrderRepository.findOne({
           id,
-          session: this.sessionRepository.getReference(sessionId),
+          session,
         });
       if (!foodOrderEntity) {
         throw new BadRequestException(`Can not find food order with id: ${id}`);
@@ -147,11 +136,11 @@ export class FoodOrderService {
     }
   }
 
-  async deleteFoodOrder(id: number, sessionId: number) {
+  async deleteFoodOrder(id: number, session: Session) {
     try {
       const foodOrderCount: number = await this.foodOrderRepository.count({
         id,
-        session: this.sessionRepository.getReference(sessionId),
+        session,
       });
       if (!foodOrderCount) {
         throw new BadRequestException(`Can not find food order with id: ${id}`);

@@ -11,6 +11,7 @@ import {
   UseInterceptors,
   UploadedFiles,
   Put,
+  Req,
 } from '@nestjs/common';
 import { SessionService } from './session.service';
 import { Response } from 'express';
@@ -99,6 +100,7 @@ export class SessionController {
   @UseInterceptors(FilesInterceptor('receiptScreenshot', 5, fileFilter))
   async submitSessionPayment(
     @Res() res: Response,
+    @Req() req,
     @Param('id', ParseIntPipe) sessionId: number,
     @Body(
       new ValidationPipe({
@@ -110,8 +112,9 @@ export class SessionController {
     @UploadedFiles() receiptScreenshot: Array<Express.Multer.File>,
   ) {
     try {
+      const { session } = req;
       await this.sessionService.submitSessionPayment(
-        sessionId,
+        session,
         receiptScreenshot,
         body,
       );
