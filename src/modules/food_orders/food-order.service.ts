@@ -121,6 +121,7 @@ export class FoodOrderService {
       if (!foodOrderEntity) {
         throw new BadRequestException(`Can not find food order with id: ${id}`);
       }
+
       wrap(foodOrderEntity).assign(
         {
           ...foodOrder,

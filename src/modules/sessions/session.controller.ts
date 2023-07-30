@@ -14,15 +14,18 @@ import {
 } from '@nestjs/common';
 import { SessionService } from './session.service';
 import { Response } from 'express';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { plainToClass, plainToInstance } from 'class-transformer';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { SessionInfoDTO, SessionPaymentDTO } from './dtos/';
 import { fileFilter } from './helpers/file-filter.helper';
-import { SessionPayment } from 'src/entities';
-import { RolesGuard } from '../auth/guards/roles.guard';
+import { SessionPayment, SessionStatus } from 'src/entities';
+import {
+  SessionStatusGuard,
+  JwtAuthGuard,
+  RolesGuard,
+} from 'src/common/guards';
 
 @UseGuards(JwtAuthGuard)
 @Controller('session')
@@ -92,6 +95,7 @@ export class SessionController {
 
   @Put(':id/payment')
   @UseGuards(RolesGuard)
+  @UseGuards(SessionStatusGuard([SessionStatus.OPEN, SessionStatus.LOCKED]))
   @UseInterceptors(FilesInterceptor('receiptScreenshot', 5, fileFilter))
   async submitSessionPayment(
     @Res() res: Response,

@@ -23,13 +23,16 @@ import {
   RequestFoodTransformInterceptor,
   ResponseFoodTransformInterceptor,
 } from './interceptors';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { FoodOrderService } from './food-order.service';
 import { CreateFoodOrderDTO, UpdateFoodOrderDTO } from './dtos/index';
-import { FoodOrder } from 'src/entities';
-import { RolesGuard } from '../auth/guards/roles.guard';
+import { FoodOrder, SessionStatus } from 'src/entities';
 import { plainToClass } from 'class-transformer';
 import { GroupedBy } from './enums/grouped-by.enum';
+import {
+  SessionStatusGuard,
+  JwtAuthGuard,
+  RolesGuard,
+} from 'src/common/guards';
 
 @UseGuards(JwtAuthGuard)
 @Controller('food-order')
@@ -108,6 +111,7 @@ export class FoodOrderController {
 
   @Put(':id')
   @UseGuards(RolesGuard)
+  @UseGuards(SessionStatusGuard([SessionStatus.OPEN, SessionStatus.LOCKED]))
   async updateFoodOrder(
     @Param('id', ParseIntPipe) id: number,
     @Body('sessionId', ParseIntPipe) sessionId: number,
@@ -133,6 +137,7 @@ export class FoodOrderController {
 
   @Delete(':id')
   @UseGuards(RolesGuard)
+  @UseGuards(SessionStatusGuard([SessionStatus.OPEN, SessionStatus.LOCKED]))
   async deleteFoodOrder(
     @Param('id', ParseIntPipe) id: number,
     @Body('sessionId', ParseIntPipe) sessionId: number,
