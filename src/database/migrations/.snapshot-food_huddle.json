@@ -85,15 +85,6 @@
             "email"
           ],
           "composite": false,
-          "keyName": "user_email_index",
-          "primary": false,
-          "unique": false
-        },
-        {
-          "columnNames": [
-            "email"
-          ],
-          "composite": false,
           "keyName": "user_email_unique",
           "primary": false,
           "unique": true
@@ -318,12 +309,12 @@
         },
         "options": {
           "name": "options",
-          "type": "varchar(255)",
+          "type": "text",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": true,
-          "mappedType": "string"
+          "mappedType": "text"
         },
         "quantity": {
           "name": "quantity",
