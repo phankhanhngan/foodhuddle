@@ -1,2 +1,2 @@
 export * from './session-info.dto';
-export * from './sesion-payment.dto';
+export * from './session-payment.dto';
