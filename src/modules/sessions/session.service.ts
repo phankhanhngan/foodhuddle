@@ -115,7 +115,7 @@ export class SessionService {
       }
 
       const filePathArray: string[] = await this.awsService.bulkPutObject(
-        session.id.toString(),
+        `${session.id}/sessionpayment`,
         receiptScreenshot,
       );
 
