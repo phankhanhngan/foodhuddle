@@ -85,15 +85,6 @@
             "email"
           ],
           "composite": false,
-          "keyName": "user_email_index",
-          "primary": false,
-          "unique": false
-        },
-        {
-          "columnNames": [
-            "email"
-          ],
-          "composite": false,
           "keyName": "user_email_unique",
           "primary": false,
           "unique": true
@@ -245,6 +236,120 @@
             "id"
           ],
           "referencedTableName": "user",
+          "updateRule": "cascade"
+        }
+      }
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "mappedType": "integer"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 0,
+          "mappedType": "datetime"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 0,
+          "mappedType": "datetime"
+        },
+        "session_id": {
+          "name": "session_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "integer"
+        },
+        "shipping_fee": {
+          "name": "shipping_fee",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "integer"
+        },
+        "other_fee": {
+          "name": "other_fee",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "integer"
+        },
+        "discount_amount": {
+          "name": "discount_amount",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "integer"
+        },
+        "receipt_screenshot": {
+          "name": "receipt_screenshot",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "string"
+        }
+      },
+      "name": "session_payment",
+      "indexes": [
+        {
+          "columnNames": [
+            "session_id"
+          ],
+          "composite": false,
+          "keyName": "session_payment_session_id_unique",
+          "primary": false,
+          "unique": true
+        },
+        {
+          "keyName": "PRIMARY",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "session_payment_session_id_foreign": {
+          "constraintName": "session_payment_session_id_foreign",
+          "columnNames": [
+            "session_id"
+          ],
+          "localTableName": "session_payment",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "session",
           "updateRule": "cascade"
         }
       }

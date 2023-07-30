@@ -1,17 +1,23 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { EntityManager, EntityRepository } from '@mikro-orm/core';
-import { Session } from 'src/entities/session.entity';
+import { EntityManager, EntityRepository, Loaded } from '@mikro-orm/core';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { SessionPaymentDTO } from './dtos/session-payment.dto';
+import { plainToClass } from 'class-transformer';
+import { Session, SessionPayment } from 'src/entities/';
+import { AWSService } from '../aws/aws.service';
 
 @Injectable()
 export class SessionService {
   constructor(
     @InjectRepository(Session)
     private readonly sessionRepository: EntityRepository<Session>,
+    @InjectRepository(SessionPayment)
+    private readonly sessionPaymentRepository: EntityRepository<SessionPayment>,
     private readonly em: EntityManager,
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    private readonly awsService: AWSService,
   ) {}
 
   async getAllSessionsToday() {
@@ -68,6 +74,73 @@ export class SessionService {
       return session;
     } catch (err) {
       this.logger.error('Calling getSession()', err, SessionService.name);
+      throw err;
+    }
+  }
+
+  async getSessionPayment(sessionId: number): Promise<SessionPayment> {
+    try {
+      const sessionRef: Session =
+        this.sessionRepository.getReference(sessionId);
+
+      return await this.sessionPaymentRepository.findOne({
+        session: sessionRef,
+      });
+    } catch (err) {
+      this.logger.error(
+        'Calling getSessionPayment()',
+        err,
+        SessionService.name,
+      );
+      throw err;
+    }
+  }
+
+  async submitSessionPayment(
+    sessionId: number,
+    receiptScreenshot: Array<Express.Multer.File>,
+    sessionPayment: SessionPaymentDTO,
+  ): Promise<void> {
+    try {
+      const sessionExists: number = await this.sessionRepository.count({
+        id: sessionId,
+      });
+
+      if (!sessionExists) {
+        throw new BadRequestException(
+          `Can not find session with id: ${sessionId}`,
+        );
+      }
+      const session: Session = this.sessionRepository.getReference(sessionId);
+
+      const existedSessionPayment: Loaded<SessionPayment> =
+        await this.sessionPaymentRepository.findOne({
+          session,
+        });
+
+      if (existedSessionPayment) {
+        await this.awsService.bulkDeleteObject(
+          JSON.parse(existedSessionPayment.receiptScreenshot),
+        );
+        this.em.remove(existedSessionPayment);
+      }
+
+      const filePathArray: string[] = await this.awsService.bulkPutObject(
+        sessionId.toString(),
+        receiptScreenshot,
+      );
+
+      const sessionPaymentEntity = plainToClass(SessionPayment, sessionPayment);
+      sessionPaymentEntity.session = session;
+      sessionPaymentEntity.receiptScreenshot = JSON.stringify(filePathArray);
+
+      await this.em.persistAndFlush(sessionPaymentEntity);
+    } catch (err) {
+      this.logger.error(
+        'Calling submitSessionPayment()',
+        err,
+        SessionService.name,
+      );
       throw err;
     }
   }

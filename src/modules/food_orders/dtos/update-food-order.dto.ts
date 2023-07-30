@@ -2,7 +2,6 @@ import {
   IsInt,
   IsArray,
   ValidateIf,
-  ArrayMinSize,
   IsString,
   ValidateNested,
 } from 'class-validator';

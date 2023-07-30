@@ -6,14 +6,23 @@ import {
   Res,
   UseGuards,
   Inject,
+  Body,
+  ValidationPipe,
+  UseInterceptors,
+  UploadedFiles,
+  Put,
 } from '@nestjs/common';
 import { SessionService } from './session.service';
 import { Response } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { plainToInstance } from 'class-transformer';
-import { SessionInfoDTO } from './dtos/session-info.dto';
+import { plainToClass, plainToInstance } from 'class-transformer';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { SessionInfoDTO, SessionPaymentDTO } from './dtos/';
+import { fileFilter } from './helpers/file-filter.helper';
+import { SessionPayment } from 'src/entities';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
 @UseGuards(JwtAuthGuard)
 @Controller('session')
@@ -55,6 +64,63 @@ export class SessionController {
       });
     } catch (err) {
       this.logger.error('Calling getSession()', err, SessionService.name);
+      throw err;
+    }
+  }
+
+  @Get(':id/payment')
+  async getSessionpayment(
+    @Res() res: Response,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    try {
+      const sessionPayment: SessionPayment =
+        await this.sessionService.getSessionPayment(id);
+
+      res.status(200).json({
+        status: 'success',
+        message: 'Get session payment detail successfully',
+        data: plainToClass(SessionPaymentDTO, sessionPayment, {
+          enableCircularCheck: true,
+        }),
+      });
+    } catch (err) {
+      this.logger.error('Calling getSession()', err, SessionService.name);
+      throw err;
+    }
+  }
+
+  @Put(':id/payment')
+  @UseGuards(RolesGuard)
+  @UseInterceptors(FilesInterceptor('receiptScreenshot', 5, fileFilter))
+  async submitSessionPayment(
+    @Res() res: Response,
+    @Param('id', ParseIntPipe) sessionId: number,
+    @Body(
+      new ValidationPipe({
+        transform: true,
+        transformOptions: { enableImplicitConversion: true },
+      }),
+    )
+    body: SessionPaymentDTO,
+    @UploadedFiles() receiptScreenshot: Array<Express.Multer.File>,
+  ) {
+    try {
+      await this.sessionService.submitSessionPayment(
+        sessionId,
+        receiptScreenshot,
+        body,
+      );
+      return res.status(200).json({
+        status: 'success',
+        message: 'Submit session payment successfully',
+      });
+    } catch (err) {
+      this.logger.error(
+        'Calling submitSessionPayment()',
+        err,
+        SessionService.name,
+      );
       throw err;
     }
   }
