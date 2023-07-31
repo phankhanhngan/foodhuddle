@@ -1,6 +1,13 @@
-import { Injectable, Inject } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityManager, EntityRepository } from '@mikro-orm/core';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 import { Session } from 'src/entities/session.entity';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
@@ -12,6 +19,7 @@ export class SessionService {
     private readonly sessionRepository: EntityRepository<Session>,
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     private readonly em: EntityManager,
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
   ) {}
 
   async getAllSessionsToday() {
@@ -45,8 +53,30 @@ export class SessionService {
 
       return listSessionsReturn;
     } catch (error) {
-      this.logger.error('HAS AN ERRO AT getAllSessionsToday()');
+      this.logger.error(
+        'Calling getAllSessionsToday()',
+        error,
+        SessionService.name,
+      );
       throw error;
+    }
+  }
+
+  async getSession(id: number) {
+    try {
+      const session = await this.sessionRepository.findOne(
+        { id },
+        { populate: ['host'] },
+      );
+
+      if (!session) {
+        throw new BadRequestException(`Can not find session with id: ${id}`);
+      }
+
+      return session;
+    } catch (err) {
+      this.logger.error('Calling getSession()', err, SessionService.name);
+      throw err;
     }
   }
 }

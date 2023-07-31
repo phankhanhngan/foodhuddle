@@ -1,13 +1,11 @@
 import {
   Entity,
-  Index,
   Property,
   Unique,
   OneToMany,
   Collection,
 } from '@mikro-orm/core';
-import { Base } from './base.entity';
-import { Session } from './session.entity';
+import { Base, Session } from './index';
 
 @Entity()
 export class User extends Base {
