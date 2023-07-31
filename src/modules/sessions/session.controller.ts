@@ -5,24 +5,27 @@ import {
   Get,
   Param,
   InternalServerErrorException,
-  UploadedFile,
   Res,
   UseGuards,
   UseInterceptors,
   Delete,
   Put,
   Inject,
+  UploadedFiles,
+  ParseFilePipe,
 } from '@nestjs/common';
 import { SessionService } from './session.service';
 import { Response } from 'express';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { CreateSession } from './dtos/create-session.dto';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { CreateSession, SessionStatus } from './dtos/create-session.dto';
 import { AwsService } from '../aws/aws.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UpdateSessionStatus } from './dtos/update-session_status.dto';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { session } from 'passport';
+import MaxFileSize from '../../helpers/validate-images-size';
+import AcceptImageType from 'src/helpers/validate-images-type';
+import { ImageResize } from 'src/helpers/resize-images';
 
 @Controller('session')
 export class SessionController {
@@ -30,6 +33,7 @@ export class SessionController {
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     private readonly sessionService: SessionService,
     private readonly awsService: AwsService,
+    private readonly imageResize: ImageResize,
   ) {}
 
   @Get('/today')
@@ -60,8 +64,11 @@ export class SessionController {
         ? sessionByHostId.host_payment_info
         : '';
 
+      const qr_images = sessionByHostId ? sessionByHostId.qr_images : '';
+
       return res.status(200).json({
         hostPaymentInfor: hostPaymentInfor,
+        qr_images: qr_images,
       });
     } catch (error) {
       this.logger.error('HAS AN ERROR AT GETTING HOST PAYMENT INFORMATION');
@@ -71,28 +78,50 @@ export class SessionController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FilesInterceptor('qr_images'))
   async createNewSessionToday(
     @Body() dto: CreateSession,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFiles(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSize({
+            maxSize: 5,
+          }),
+          new AcceptImageType({
+            fileType: ['image/jpeg', 'image/png'],
+          }),
+        ],
+        fileIsRequired: false,
+      }),
+    )
+    files: Array<Express.Multer.File>,
     @Res() res: Response,
   ) {
     try {
-      // const fileBuffer = file.buffer;
-      // const originalFilename = file.originalname;
+      const urlImages: Promise<string>[] = files.map(async (img) => {
+        const resizedImage = await this.imageResize.resizeImage(img.buffer);
 
-      // const fileKey = await this.awsService.uploadFileToS3(fileBuffer, originalFilename);
+        const imageUrl = await this.awsService.uploadImage(
+          resizedImage,
+          img.originalname,
+        );
+
+        return imageUrl;
+      });
+
+      const listUrlImages = await Promise.all(urlImages);
+
+      const qrImagesUrl = JSON.stringify(Object.assign({}, listUrlImages));
 
       const hostId = Object(res.req.user).id;
-
       dto.host = hostId;
+      dto.status = SessionStatus.OPEN;
+      dto.qr_images = qrImagesUrl;
 
       const newSession = await this.sessionService.createNewSessionToday(dto);
-
       if (!newSession) {
         throw new InternalServerErrorException();
       }
-
       return res.status(200).json({
         statusCode: 200,
         message: 'Create new session successfully!',
