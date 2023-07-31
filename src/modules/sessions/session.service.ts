@@ -238,36 +238,60 @@ export class SessionService {
     }
   }
 
-  async getAllSessionsHistory() {
+  async getAllSessionsHistory(statusFilter: Array<string>) {
     try {
       const allSessions = await this.getAllSessions();
-      return allSessions;
+      const result = allSessions.filter((v) => {
+        if (statusFilter.includes(v.status)) {
+          return v;
+        }
+      });
+
+      return result;
     } catch (error) {
       this.logger.error('HAS AN ERRO AT getAllSessionsHistory()');
       throw error;
     }
   }
 
-  async getAllSessionHostedHistoryByUserId(userId: number) {
+  async getAllSessionHostedHistoryByUserId(
+    userId: number,
+    statusFilter: Array<string>,
+  ) {
     try {
       const sessionHostedByUserId = await this.getAllSessionHostedByUserId(
         userId,
       );
 
-      return sessionHostedByUserId;
+      const result = sessionHostedByUserId.filter((v) => {
+        if (statusFilter.includes(v.status)) {
+          return v;
+        }
+      });
+
+      return result;
     } catch (error) {
       this.logger.error('HAS AN ERRO AT getAllSessionHostedHistoryByUserId()');
       throw error;
     }
   }
 
-  async getAllSessionsJoinedHistoryByUserId(userId: number) {
+  async getAllSessionsJoinedHistoryByUserId(
+    userId: number,
+    statusFilter: Array<string>,
+  ) {
     try {
       const sessionJoinedByUserId = await this.getAllSessionsJoinedByUserId(
         userId,
       );
 
-      return sessionJoinedByUserId;
+      const result = sessionJoinedByUserId.filter((v) => {
+        if (statusFilter.includes(v.status)) {
+          return v;
+        }
+      });
+
+      return result;
     } catch (error) {
       this.logger.error('HAS AN ERRO AT getAllSessionsJoinedHistoryByUserId()');
       throw error;

@@ -94,8 +94,11 @@ export class SessionController {
     @Res() res: Response,
   ) {
     try {
-      const allSessionHistory =
-        await this.sessionService.getAllSessionsHistory();
+      const statusFilter = query.status.split(',');
+
+      const allSessionHistory = await this.sessionService.getAllSessionsHistory(
+        statusFilter,
+      );
 
       return res.status(200).json({
         statusCode: 200,
@@ -113,12 +116,18 @@ export class SessionController {
 
   @Get('/history/hosted')
   @UseGuards(JwtAuthGuard)
-  async getAllSessionHostedHistoryByUserId(@Res() res: Response) {
+  async getAllSessionHostedHistoryByUserId(
+    @Query() query: { status: string },
+    @Res() res: Response,
+  ) {
     try {
       const userId = Object(res.req.user).id;
-
+      const statusFilter = query.status.split(',');
       const allSessionHostedHistoryByUserId =
-        await this.sessionService.getAllSessionHostedHistoryByUserId(userId);
+        await this.sessionService.getAllSessionHostedHistoryByUserId(
+          userId,
+          statusFilter,
+        );
 
       return res.status(200).json({
         statusCode: 200,
@@ -134,12 +143,19 @@ export class SessionController {
 
   @Get('/history/joined')
   @UseGuards(JwtAuthGuard)
-  async getAllSessionsJoinedHistoryByUserId(@Res() res: Response) {
+  async getAllSessionsJoinedHistoryByUserId(
+    @Query() query: { status: string },
+    @Res() res: Response,
+  ) {
     try {
       const userId = Object(res.req.user).id;
+      const statusFilter = query.status.split(',');
 
       const allSessionsJoinedHistoryByUserId =
-        await this.sessionService.getAllSessionsJoinedHistoryByUserId(userId);
+        await this.sessionService.getAllSessionsJoinedHistoryByUserId(
+          userId,
+          statusFilter,
+        );
 
       return res.status(200).json({
         statusCode: 200,
