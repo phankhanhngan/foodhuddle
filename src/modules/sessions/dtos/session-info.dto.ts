@@ -12,8 +12,13 @@ export class SessionInfoDTO {
   created_at: Date;
 
   @Expose()
-  @Transform(({ obj }) => obj.host.name)
-  host: string;
+  @Transform(({ obj, key }) => ({
+    googleId: obj[key].googleId,
+    email: obj[key].email,
+    name: obj[key].name,
+    photo: obj[key].photo,
+  }))
+  host: object;
 
   @Transform(({ obj }) =>
     new Date(obj.created_at).toLocaleDateString('en-GB', {
