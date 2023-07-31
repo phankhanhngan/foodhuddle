@@ -8,8 +8,6 @@ import { AuthModule, SessionModule, FoodOrderModule } from './modules/';
 import { MikroOrmConfig, NestWinsternConfig } from './configs';
 import { AppService } from './app.service';
 import { AppController } from './app.controller';
-import { AuthModule } from './modules/auth/auth.module';
-import { SessionModule } from './modules/sessions/session.module';
 
 @Module({
   imports: [
