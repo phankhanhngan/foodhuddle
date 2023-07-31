@@ -1,5 +1,4 @@
 import { Exclude, Expose, Transform } from 'class-transformer';
-import { IsInt } from 'class-validator';
 import { UserPaymentStatus } from 'src/entities';
 
 @Exclude()
@@ -25,10 +24,6 @@ export class UserPaymentDTO {
     toClassOnly: true,
   })
   status: UserPaymentStatus;
-
-  @Expose()
-  @IsInt({ message: 'Final payment must be an integer' })
-  finalPayment!: number;
 
   @Expose()
   note?: string;

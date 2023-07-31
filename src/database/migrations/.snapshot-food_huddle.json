@@ -567,21 +567,12 @@
         },
         "evidence": {
           "name": "evidence",
-          "type": "varchar(255)",
+          "type": "text",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": true,
-          "mappedType": "string"
-        },
-        "final_payment": {
-          "name": "final_payment",
-          "type": "int",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "mappedType": "integer"
+          "mappedType": "text"
         },
         "note": {
           "name": "note",
@@ -594,12 +585,17 @@
         },
         "status": {
           "name": "status",
-          "type": "varchar(255)",
+          "type": "enum('PENDING', 'REJECTED', 'APPROVED')",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "mappedType": "string"
+          "enumItems": [
+            "PENDING",
+            "REJECTED",
+            "APPROVED"
+          ],
+          "mappedType": "enum"
         }
       },
       "name": "user_payment",

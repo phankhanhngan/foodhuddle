@@ -1,9 +1,9 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { EntityManager, EntityRepository, Loaded } from '@mikro-orm/core';
+import { EntityManager, EntityRepository } from '@mikro-orm/mysql';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { plainToClass } from 'class-transformer';
+import { plainToClass, plainToInstance } from 'class-transformer';
 import {
   Session,
   SessionPayment,
@@ -13,17 +13,23 @@ import {
 } from 'src/entities/';
 import { AWSService } from '../aws/aws.service';
 import { UserPaymentDTO, SessionPaymentDTO } from './dtos';
+import { UserPaymentAction } from './enums/user-payment-action.enum';
+import { actionToStatusMapper } from './helpers/user-payment.helper';
+import { Loaded } from '@mikro-orm/core';
+import { addRemainingUserRequestPayment } from './helpers/payment-checklist.helper';
 
 @Injectable()
 export class SessionService {
   constructor(
+    private readonly em: EntityManager,
     @InjectRepository(Session)
     private readonly sessionRepository: EntityRepository<Session>,
     @InjectRepository(SessionPayment)
     private readonly sessionPaymentRepository: EntityRepository<SessionPayment>,
     @InjectRepository(UserPayment)
     private readonly userPaymentRepository: EntityRepository<UserPayment>,
-    private readonly em: EntityManager,
+    @InjectRepository(User)
+    private readonly userRepository: EntityRepository<User>,
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     private readonly awsService: AWSService,
   ) {}
@@ -191,6 +197,138 @@ export class SessionService {
       );
     } catch (err) {
       this.logger.error('Calling getUserPayment()', err, SessionService.name);
+      throw err;
+    }
+  }
+
+  async getAllUserPayments(session: Session): Promise<UserPayment[]> {
+    try {
+      return await this.userPaymentRepository.find(
+        { session },
+        { populate: ['user'], orderBy: { status: 'asc' } },
+      );
+    } catch (err) {
+      this.logger.error(
+        'Calling getAllUserPayments()',
+        err,
+        SessionService.name,
+      );
+      throw err;
+    }
+  }
+
+  async _getUserIdsWithoutRequestPayment(): Promise<number[]> {
+    try {
+      const conn = this.em.getConnection();
+
+      return (
+        await conn.execute(
+          `(SELECT DISTINCT fo.user_id as id FROM food_order fo) 
+         EXCEPT
+        (SELECT DISTINCT up.user_id as id FROM user_payment up)`,
+        )
+      ).map((userId) => userId.id);
+    } catch (err) {
+      this.logger.error(
+        'Calling _getUsersWithoutPayment()',
+        err,
+        SessionService.name,
+      );
+      throw err;
+    }
+  }
+
+  async changeUserPaymentStatus(
+    userPaymentId: number,
+    action: UserPaymentAction,
+  ) {
+    try {
+      const userPayment: Loaded<UserPayment> =
+        await this.userPaymentRepository.findOne({
+          id: userPaymentId,
+        });
+
+      if (!userPayment) {
+        throw new BadRequestException(
+          `Can not find user payment request with id: ${userPaymentId}`,
+        );
+      }
+
+      userPayment.status = actionToStatusMapper(action);
+      userPayment.updated_at = new Date();
+      this.em.persistAndFlush(userPayment);
+    } catch (err) {
+      this.logger.error(
+        'Calling changeUserPaymentStatus()',
+        err,
+        SessionService.name,
+      );
+      throw err;
+    }
+  }
+
+  async approveAllUserPayment(session: Session) {
+    try {
+      const [userIdsWithoutRequestPayment, existedUserPayment] =
+        await Promise.all([
+          this._getUserIdsWithoutRequestPayment(),
+          this.userPaymentRepository.find({
+            session,
+          }),
+        ]);
+
+      userIdsWithoutRequestPayment.forEach((id) => {
+        const userPayment = this.userPaymentRepository.create({
+          status: UserPaymentStatus.APPROVED,
+          user: this.userRepository.getReference(id),
+          session,
+        });
+        this.em.persist(userPayment);
+      });
+
+      existedUserPayment.forEach((up) => {
+        up.status = UserPaymentStatus.APPROVED;
+        this.em.persist;
+      });
+
+      await this.em.flush();
+    } catch (err) {
+      this.logger.error(
+        'Calling approveAllUserPayment()',
+        err,
+        SessionService.name,
+      );
+      throw err;
+    }
+  }
+
+  async getPaymentChecklist(session: Session) {
+    try {
+      const existedSessionPayments = plainToInstance(
+        UserPaymentDTO,
+        await this.getAllUserPayments(session),
+        { enableCircularCheck: true },
+      );
+      const userIdsWithoutRequestPayment =
+        await this._getUserIdsWithoutRequestPayment();
+
+      if (userIdsWithoutRequestPayment.length > 0) {
+        const users: Loaded<User>[] = await this.userRepository.find({
+          id: userIdsWithoutRequestPayment,
+        });
+        const remainingUserRequestPayments =
+          addRemainingUserRequestPayment(users);
+
+        return existedSessionPayments.concat(remainingUserRequestPayments);
+      }
+
+      return existedSessionPayments;
+    } catch (err) {
+      this.logger.error(
+        'Calling changeUserPaymentStatus()',
+        err,
+        SessionService.name,
+      );
       throw err;
     }
   }

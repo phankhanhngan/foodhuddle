@@ -12,6 +12,7 @@ import {
   UploadedFiles,
   Put,
   Req,
+  ParseEnumPipe,
 } from '@nestjs/common';
 import { SessionService } from './session.service';
 import { Response } from 'express';
@@ -27,6 +28,7 @@ import {
   JwtAuthGuard,
   RolesGuard,
 } from 'src/common/guards';
+import { UserPaymentAction } from './enums/user-payment-action.enum';
 
 @UseGuards(JwtAuthGuard)
 @Controller('session')
@@ -198,6 +200,85 @@ export class SessionController {
       });
     } catch (err) {
       this.logger.error('Calling getSession()', err, SessionService.name);
+      throw err;
+    }
+  }
+
+  @Put(':id/user-payment/:userPaymentId/change-status')
+  @UseGuards(RolesGuard)
+  @UseGuards(SessionStatusGuard([SessionStatus.PENDING_PAYMENTS]))
+  async changeUserPaymentStatus(
+    @Res() res: Response,
+    @Param('id', ParseIntPipe) id: number,
+    @Param('userPaymentId', ParseIntPipe) userPaymentId: number,
+    @Body('action', new ParseEnumPipe(UserPaymentAction))
+    action: UserPaymentAction,
+  ) {
+    try {
+      await this.sessionService.changeUserPaymentStatus(userPaymentId, action);
+      res.status(200).json({
+        status: 'success',
+        message: `${action} user request payment successfully`,
+      });
+    } catch (err) {
+      this.logger.error(
+        'Calling changeUserPaymentStatus()',
+        err,
+        SessionService.name,
+      );
+      throw err;
+    }
+  }
+
+  @Put(':id/user-payment/approve-all')
+  @UseGuards(RolesGuard)
+  @UseGuards(SessionStatusGuard([SessionStatus.PENDING_PAYMENTS]))
+  async approveAllUserPayment(
+    @Req() req,
+    @Res() res: Response,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    try {
+      const { session } = req;
+      await this.sessionService.approveAllUserPayment(session);
+      res.status(200).json({
+        status: 'success',
+        message: `APPROVE ALL user request payments successfully`,
+      });
+    } catch (err) {
+      this.logger.error(
+        'Calling changeUserPaymentStatus()',
+        err,
+        SessionService.name,
+      );
+      throw err;
+    }
+  }
+
+  @Get(':id/payment-checklist')
+  @UseGuards(RolesGuard)
+  @UseGuards(SessionStatusGuard([SessionStatus.PENDING_PAYMENTS]))
+  async getPaymentChecklist(
+    @Req() req,
+    @Res() res: Response,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    try {
+      const { session } = req;
+      const paymentChecklist = await this.sessionService.getPaymentChecklist(
+        session,
+      );
+      res.status(200).json({
+        status: 'success',
+        message: `Get payment checklist successfully`,
+        data: paymentChecklist,
+      });
+    } catch (err) {
+      this.logger.error(
+        'Calling changeUserPaymentStatus()',
+        err,
+        SessionService.name,
+      );
       throw err;
     }
   }

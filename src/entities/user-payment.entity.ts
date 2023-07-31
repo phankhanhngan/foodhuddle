@@ -12,17 +12,13 @@ export class UserPayment extends Base {
   @ManyToOne({ entity: () => User })
   user!: User;
 
-  @Property({ nullable: true })
+  @Property({ nullable: true, type: 'text' })
   evidence?: string;
-
-  @Property({ nullable: false })
-  finalPayment: number;
 
   @Property({ nullable: true })
   note?: string;
 
-  @Property({ nullable: false })
-  @Enum(() => UserPaymentStatus)
+  @Enum({ items: () => UserPaymentStatus, nullable: false })
   status: UserPaymentStatus;
 }
 

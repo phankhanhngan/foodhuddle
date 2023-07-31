@@ -4,7 +4,7 @@ import { InjectRepository } from '@mikro-orm/nestjs';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { plainToClass, plainToInstance } from 'class-transformer';
-import { FoodOrder, Session, SessionStatus, User } from 'src/entities';
+import { FoodOrder, Session, User } from 'src/entities';
 import { CreateFoodOrderDTO, FoodDTO, UpdateFoodOrderDTO } from './dtos/index';
 import { MenuShopUtil } from 'src/utils/menu-food.util';
 import { Loaded, wrap } from '@mikro-orm/core';
