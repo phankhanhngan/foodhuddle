@@ -634,6 +634,16 @@
           "unique": false
         },
         {
+          "keyName": "user_payment_session_id_user_id_unique",
+          "columnNames": [
+            "session_id",
+            "user_id"
+          ],
+          "composite": true,
+          "primary": false,
+          "unique": true
+        },
+        {
           "keyName": "PRIMARY",
           "columnNames": [
             "id"

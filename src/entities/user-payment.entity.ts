@@ -1,9 +1,10 @@
-import { Entity, ManyToOne, Property } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property, Enum, Unique } from '@mikro-orm/core';
 import { Base } from './base.entity';
 import { Session } from './session.entity';
 import { User } from './user.entity';
 
 @Entity()
+@Unique({ properties: ['session', 'user'] })
 export class UserPayment extends Base {
   @ManyToOne({ entity: () => Session })
   session!: Session;
@@ -21,6 +22,7 @@ export class UserPayment extends Base {
   note?: string;
 
   @Property({ nullable: false })
+  @Enum(() => UserPaymentStatus)
   status: UserPaymentStatus;
 }
 
