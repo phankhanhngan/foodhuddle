@@ -44,16 +44,18 @@ export class AWSService {
 
   async bulkDeleteObject(filePaths: Array<string>) {
     try {
-      const params = {
-        Bucket: this.configService.get<string>('AWS_BUCKET_NAME'),
-        Delete: {
-          Objects: filePaths.map((path) => ({
-            Key: this.extractObjectNameFromUrl(path),
-          })),
-        },
-      };
+      if (filePaths.length > 0) {
+        const params = {
+          Bucket: this.configService.get<string>('AWS_BUCKET_NAME'),
+          Delete: {
+            Objects: filePaths.map((path) => ({
+              Key: this.extractObjectNameFromUrl(path),
+            })),
+          },
+        };
 
-      await this.s3Client.send(new DeleteObjectsCommand(params));
+        await this.s3Client.send(new DeleteObjectsCommand(params));
+      }
     } catch (err) {
       this.logger.error('Calling deleteObject()', err, AWSService.name);
       throw err;
@@ -62,9 +64,12 @@ export class AWSService {
 
   async bulkPutObject(
     folderPath: string,
-    files: Array<Express.Multer.File>,
+    files: Array<Express.Multer.File> | Express.Multer.File,
   ): Promise<string[]> {
     try {
+      if (!Array.isArray(files)) {
+        files = [].concat(files);
+      }
       const commands = files.map((file) => {
         return new PutObjectCommand({
           Bucket: this.configService.get<string>('AWS_BUCKET_NAME'),

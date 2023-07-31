@@ -4,11 +4,14 @@ import { SessionService } from './session.service';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { Session } from 'src/entities/session.entity';
 import { AWSModule } from '../aws/aws.module';
-import { SessionPayment } from 'src/entities';
+import { SessionPayment, UserPayment } from 'src/entities';
 import { EntityRepository } from '@mikro-orm/mysql';
 
 @Module({
-  imports: [AWSModule, MikroOrmModule.forFeature([Session, SessionPayment])],
+  imports: [
+    AWSModule,
+    MikroOrmModule.forFeature([Session, SessionPayment, UserPayment]),
+  ],
   controllers: [SessionController],
   providers: [SessionService, EntityRepository],
 })

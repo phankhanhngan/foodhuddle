@@ -24,7 +24,7 @@ export class UserPayment extends Base {
   status: UserPaymentStatus;
 }
 
-enum UserPaymentStatus {
+export enum UserPaymentStatus {
   PENDING = 'PENDING',
   REJECTED = 'REJECTED',
   APPROVED = 'APPROVED',

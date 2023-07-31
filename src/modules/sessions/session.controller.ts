@@ -19,9 +19,9 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { plainToClass, plainToInstance } from 'class-transformer';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { SessionInfoDTO, SessionPaymentDTO } from './dtos/';
+import { SessionInfoDTO, SessionPaymentDTO, UserPaymentDTO } from './dtos/';
 import { fileFilter } from './helpers/file-filter.helper';
-import { SessionPayment, SessionStatus } from 'src/entities';
+import { SessionPayment, SessionStatus, UserPayment } from 'src/entities';
 import {
   SessionStatusGuard,
   JwtAuthGuard,
@@ -128,6 +128,75 @@ export class SessionController {
         err,
         SessionService.name,
       );
+      throw err;
+    }
+  }
+
+  @UseGuards(SessionStatusGuard([SessionStatus.PENDING_PAYMENTS]))
+  @UseInterceptors(FilesInterceptor('evidence', 5, fileFilter))
+  @Put(':id/user-payment')
+  async submitUserPayment(
+    @Body(
+      new ValidationPipe({
+        transform: true,
+        transformOptions: { enableImplicitConversion: true },
+      }),
+    )
+    body: UserPaymentDTO,
+    @UploadedFiles() evidence: Array<Express.Multer.File> | Express.Multer.File,
+    @Req() req,
+    @Res() res: Response,
+  ) {
+    try {
+      const { session, user } = req;
+      await this.sessionService.submitUserPayment(
+        body,
+        session,
+        evidence,
+        user,
+      );
+      res.status(200).json({
+        status: 'success',
+        message: 'Submit user request payment successfully',
+      });
+    } catch (err) {
+      this.logger.error(
+        'Calling submitUserPayment()',
+        err,
+        SessionService.name,
+      );
+      throw err;
+    }
+  }
+
+  @Get(':id/user-payment')
+  @UseGuards(
+    SessionStatusGuard([
+      SessionStatus.PENDING_PAYMENTS,
+      SessionStatus.FINISHED,
+    ]),
+  )
+  async getUserpayment(
+    @Res() res: Response,
+    @Req() req,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    try {
+      const { session, user } = req;
+      const userPayment: UserPayment = await this.sessionService.getUserPayment(
+        session,
+        user,
+      );
+
+      res.status(200).json({
+        status: 'success',
+        message: 'Get user request payment detail successfully',
+        data: plainToInstance(UserPaymentDTO, userPayment, {
+          enableCircularCheck: true,
+        }),
+      });
+    } catch (err) {
+      this.logger.error('Calling getSession()', err, SessionService.name);
       throw err;
     }
   }
