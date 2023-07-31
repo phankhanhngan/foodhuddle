@@ -109,7 +109,8 @@ export class SessionController {
       }),
     )
     body: SessionPaymentDTO,
-    @UploadedFiles() receiptScreenshot: Array<Express.Multer.File>,
+    @UploadedFiles()
+    receiptScreenshot: Array<Express.Multer.File> | Express.Multer.File,
   ) {
     try {
       const { session } = req;

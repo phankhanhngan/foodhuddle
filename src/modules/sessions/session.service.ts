@@ -106,7 +106,7 @@ export class SessionService {
 
   async submitSessionPayment(
     session: Session,
-    receiptScreenshot: Array<Express.Multer.File>,
+    receiptScreenshot: Array<Express.Multer.File> | Express.Multer.File,
     sessionPayment: SessionPaymentDTO,
   ): Promise<void> {
     try {
