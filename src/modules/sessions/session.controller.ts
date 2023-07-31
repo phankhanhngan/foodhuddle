@@ -2,7 +2,6 @@ import {
   Controller,
   Get,
   Inject,
-  InternalServerErrorException,
   Param,
   ParseIntPipe,
   Res,

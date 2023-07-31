@@ -1,16 +1,11 @@
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { EntityManager, EntityRepository } from '@mikro-orm/mysql';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { plainToClass } from 'class-transformer';
 import { FoodOrder, Session, SessionStatus, User } from 'src/entities';
-import { FoodOrderDTO } from './dtos/food-order.dto';
+import { CreateFoodOrderDTO } from './dtos/create-food-order.dto';
 
 @Injectable()
 export class FoodOrderService {
@@ -24,7 +19,7 @@ export class FoodOrderService {
   ) {}
 
   async changeFoodOrders(
-    foodOrderList: FoodOrderDTO[],
+    foodOrderList: CreateFoodOrderDTO[],
     sessionId: number,
     user: User,
   ): Promise<void> {
