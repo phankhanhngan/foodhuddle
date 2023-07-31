@@ -79,8 +79,7 @@
           "keyName": "user_google_id_unique",
           "primary": false,
           "unique": true
-        },
-        {
+        },{
           "columnNames": [
             "email"
           ],
@@ -189,7 +188,7 @@
         },
         "status": {
           "name": "status",
-          "type": "enum('OPEN', 'LOCKED', 'PENDING PAYMENTS', 'FINISHED')",
+          "type": "enum('OPEN', 'LOCKED', 'PENDINGPAYMENTS', 'FINISHED')",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
@@ -197,7 +196,7 @@
           "enumItems": [
             "OPEN",
             "LOCKED",
-            "PENDING PAYMENTS",
+            "PENDINGPAYMENTS",
             "FINISHED"
           ],
           "mappedType": "enum"
