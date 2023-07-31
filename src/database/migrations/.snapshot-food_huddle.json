@@ -479,17 +479,6 @@
           "unique": false
         },
         {
-          "keyName": "food_order_session_id_user_id_food_name_unique",
-          "columnNames": [
-            "session_id",
-            "user_id",
-            "food_name"
-          ],
-          "composite": true,
-          "primary": false,
-          "unique": true
-        },
-        {
           "keyName": "PRIMARY",
           "columnNames": [
             "id"
