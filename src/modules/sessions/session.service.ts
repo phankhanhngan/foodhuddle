@@ -241,11 +241,14 @@ export class SessionService {
   async getAllSessionsHistory(statusFilter: Array<string>) {
     try {
       const allSessions = await this.getAllSessions();
-      const result = allSessions.filter((v) => {
-        if (statusFilter.includes(v.status)) {
-          return v;
-        }
-      });
+      const result =
+        statusFilter[0] === undefined
+          ? allSessions
+          : allSessions.filter((v) => {
+              if (statusFilter.includes(v.status)) {
+                return v;
+              }
+            });
 
       return result;
     } catch (error) {
@@ -263,11 +266,14 @@ export class SessionService {
         userId,
       );
 
-      const result = sessionHostedByUserId.filter((v) => {
-        if (statusFilter.includes(v.status)) {
-          return v;
-        }
-      });
+      const result =
+        statusFilter[0] === undefined
+          ? sessionHostedByUserId
+          : sessionHostedByUserId.filter((v) => {
+              if (statusFilter.includes(v.status)) {
+                return v;
+              }
+            });
 
       return result;
     } catch (error) {
@@ -285,11 +291,14 @@ export class SessionService {
         userId,
       );
 
-      const result = sessionJoinedByUserId.filter((v) => {
-        if (statusFilter.includes(v.status)) {
-          return v;
-        }
-      });
+      const result =
+        statusFilter[0] === undefined
+          ? sessionJoinedByUserId
+          : sessionJoinedByUserId.filter((v) => {
+              if (statusFilter.includes(v.status)) {
+                return v;
+              }
+            });
 
       return result;
     } catch (error) {

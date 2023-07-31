@@ -94,7 +94,8 @@ export class SessionController {
     @Res() res: Response,
   ) {
     try {
-      const statusFilter = query.status.split(',');
+      const statusFilter =
+        query.status === undefined ? [] : query.status.split(',');
 
       const allSessionHistory = await this.sessionService.getAllSessionsHistory(
         statusFilter,
@@ -122,7 +123,8 @@ export class SessionController {
   ) {
     try {
       const userId = Object(res.req.user).id;
-      const statusFilter = query.status.split(',');
+      const statusFilter =
+        query.status === undefined ? [] : query.status.split(',');
       const allSessionHostedHistoryByUserId =
         await this.sessionService.getAllSessionHostedHistoryByUserId(
           userId,
@@ -149,7 +151,8 @@ export class SessionController {
   ) {
     try {
       const userId = Object(res.req.user).id;
-      const statusFilter = query.status.split(',');
+      const statusFilter =
+        query.status === undefined ? [] : query.status.split(',');
 
       const allSessionsJoinedHistoryByUserId =
         await this.sessionService.getAllSessionsJoinedHistoryByUserId(
