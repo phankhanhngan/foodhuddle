@@ -16,6 +16,6 @@ export class SessionPayment extends Base {
   @Property({ nullable: true })
   discountAmount?: number;
 
-  @Property({ nullable: false })
+  @Property({ nullable: false, type: 'text' })
   receiptScreenshot!: string;
 }
