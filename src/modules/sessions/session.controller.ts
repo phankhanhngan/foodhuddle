@@ -5,6 +5,7 @@ import {
   InternalServerErrorException,
   Param,
   ParseIntPipe,
+  Query,
   Res,
   UseGuards,
 } from '@nestjs/common';
@@ -88,7 +89,10 @@ export class SessionController {
 
   @Get('/history')
   @UseGuards(JwtAuthGuard)
-  async getAllSessionsHistory(@Res() res: Response) {
+  async getAllSessionsHistory(
+    @Query() query: { status: string },
+    @Res() res: Response,
+  ) {
     try {
       const allSessionHistory =
         await this.sessionService.getAllSessionsHistory();
