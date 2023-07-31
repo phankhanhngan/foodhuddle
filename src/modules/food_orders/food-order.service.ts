@@ -222,6 +222,13 @@ export class FoodOrderService {
       }
 
       return this.formatFOGroupedBy(foodOrders, groupedBy);
-    } catch (err) {}
+    } catch (err) {
+      this.logger.error(
+        'Calling getSummaryFoodOrders()',
+        err,
+        FoodOrderService.name,
+      );
+      throw err;
+    }
   }
 }
