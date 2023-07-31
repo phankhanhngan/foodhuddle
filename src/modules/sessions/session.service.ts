@@ -237,4 +237,40 @@ export class SessionService {
       throw err;
     }
   }
+
+  async getAllSessionsHistory() {
+    try {
+      const allSessions = await this.getAllSessions();
+      return allSessions;
+    } catch (error) {
+      this.logger.error('HAS AN ERRO AT getAllSessionsHistory()');
+      throw error;
+    }
+  }
+
+  async getAllSessionHostedHistoryByUserId(userId: number) {
+    try {
+      const sessionHostedByUserId = await this.getAllSessionHostedByUserId(
+        userId,
+      );
+
+      return sessionHostedByUserId;
+    } catch (error) {
+      this.logger.error('HAS AN ERRO AT getAllSessionHostedHistoryByUserId()');
+      throw error;
+    }
+  }
+
+  async getAllSessionsJoinedHistoryByUserId(userId: number) {
+    try {
+      const sessionJoinedByUserId = await this.getAllSessionsJoinedByUserId(
+        userId,
+      );
+
+      return sessionJoinedByUserId;
+    } catch (error) {
+      this.logger.error('HAS AN ERRO AT getAllSessionsJoinedHistoryByUserId()');
+      throw error;
+    }
+  }
 }
