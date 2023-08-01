@@ -5,6 +5,8 @@ import {
   Get,
   Param,
   InternalServerErrorException,
+  ParseIntPipe,
+  Query,
   Res,
   UseGuards,
   UseInterceptors,
@@ -13,7 +15,6 @@ import {
   Inject,
   UploadedFiles,
   ParseFilePipe,
-  ParseIntPipe,
   ValidationPipe,
   Req,
 } from '@nestjs/common';
@@ -149,6 +150,27 @@ export class SessionController {
     }
   }
 
+  @Get('/today/hosted')
+  @UseGuards(JwtAuthGuard)
+  async getAllSessionHostedTodayByUserId(@Res() res: Response) {
+    try {
+      const userId = Object(res.req.user).id;
+
+      const allSessionHostedTodayByUserId =
+        await this.sessionService.getAllSessionHostedTodayByUserId(userId);
+
+      return res.status(200).json({
+        statusCode: 200,
+        data: allSessionHostedTodayByUserId,
+      });
+    } catch (error) {
+      this.logger.error(
+        'HAS AN ERROR AT GETTING ALL SESSIONS HOSTED TODAY BY USER ID',
+      );
+      throw error;
+    }
+  }
+
   @Put('/:id')
   @UseGuards(JwtAuthGuard)
   async updateSessionStatus(
@@ -188,6 +210,54 @@ export class SessionController {
       throw error;
     }
   }
+  @Get('/today/joined')
+  @UseGuards(JwtAuthGuard)
+  async getAllSessionsJoinedTodayByUserId(@Res() res: Response) {
+    try {
+      const userId = Object(res.req.user).id;
+
+      const allSessionsJoinedTodayByUserId =
+        await this.sessionService.getAllSessionsJoinedTodayByUserId(userId);
+
+      return res.status(200).json({
+        statusCode: 200,
+        data: allSessionsJoinedTodayByUserId,
+      });
+    } catch (error) {
+      this.logger.error(
+        'HAS AN ERROR AT GETTING ALL SESSIONS JOINED TODAY BY USER ID',
+      );
+      throw error;
+    }
+  }
+
+  @Get('/history')
+  @UseGuards(JwtAuthGuard)
+  async getAllSessionsHistory(
+    @Query() query: { status: string },
+    @Res() res: Response,
+  ) {
+    try {
+      const statusFilter =
+        query.status === undefined ? [] : query.status.split(',');
+
+      const allSessionHistory = await this.sessionService.getAllSessionsHistory(
+        statusFilter,
+      );
+
+      return res.status(200).json({
+        statusCode: 200,
+        data: allSessionHistory,
+      });
+    } catch (error) {
+      this.logger.error(
+        'Calling getAllSessionsHistory()',
+        error,
+        SessionService.name,
+      );
+      throw error;
+    }
+  }
 
   @Delete('/:id')
   @UseGuards(JwtAuthGuard)
@@ -218,6 +288,61 @@ export class SessionController {
       return res.status(resultDeleting.statusCode).json(resultDeleting);
     } catch (error) {
       this.logger.error('HAS AN ERROR WHEN DELETING SESSION !');
+      throw error;
+    }
+  }
+  @Get('/history/hosted')
+  @UseGuards(JwtAuthGuard)
+  async getAllSessionHostedHistoryByUserId(
+    @Query() query: { status: Array<string> },
+    @Res() res: Response,
+  ) {
+    try {
+      const userId = Object(res.req.user).id;
+      const statusFilter = query.status === undefined ? [] : query.status;
+      const allSessionHostedHistoryByUserId =
+        await this.sessionService.getAllSessionHostedHistoryByUserId(
+          userId,
+          statusFilter,
+        );
+
+      return res.status(200).json({
+        statusCode: 200,
+        data: allSessionHostedHistoryByUserId,
+      });
+    } catch (error) {
+      this.logger.error(
+        'HAS AN ERROR AT GETTING ALL SESSIONS HOSTED HISTORY BY USER ID',
+      );
+      throw error;
+    }
+  }
+
+  @Get('/history/joined')
+  @UseGuards(JwtAuthGuard)
+  async getAllSessionsJoinedHistoryByUserId(
+    @Query() query: { status: string },
+    @Res() res: Response,
+  ) {
+    try {
+      const userId = Object(res.req.user).id;
+      const statusFilter =
+        query.status === undefined ? [] : query.status.split(',');
+
+      const allSessionsJoinedHistoryByUserId =
+        await this.sessionService.getAllSessionsJoinedHistoryByUserId(
+          userId,
+          statusFilter,
+        );
+
+      return res.status(200).json({
+        statusCode: 200,
+        data: allSessionsJoinedHistoryByUserId,
+      });
+    } catch (error) {
+      this.logger.error(
+        'HAS AN ERROR AT GETTING ALL SESSIONS JOINED HISTORY BY USER ID',
+      );
       throw error;
     }
   }

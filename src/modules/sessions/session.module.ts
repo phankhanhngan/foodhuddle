@@ -9,11 +9,17 @@ import { ImageResize } from 'src/helpers/resize-images';
 import { AWSModule } from '../aws/aws.module';
 import { SessionPayment, UserPayment } from 'src/entities';
 import { EntityRepository } from '@mikro-orm/mysql';
+import { FoodOrder } from 'src/entities';
 
 @Module({
   imports: [
-    AWSModule,
-    MikroOrmModule.forFeature([Session, SessionPayment, UserPayment]),
+    MikroOrmModule.forFeature([
+      Session,
+      FoodOrder,
+      SessionPayment,
+      UserPayment,
+    ]),
+    WinstonModule,
   ],
   controllers: [SessionController],
   providers: [SessionService, EntityRepository, AWSService, ImageResize],
