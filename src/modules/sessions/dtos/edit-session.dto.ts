@@ -1,7 +1,7 @@
 import { IsString, IsOptional } from 'class-validator';
 import { SessionStatus } from 'src/entities/session.entity';
 
-export class CreateSession {
+export class EditSession {
   @IsString({
     message: 'Title of session must be a string',
   })
@@ -23,5 +23,5 @@ export class CreateSession {
   @IsOptional()
   qr_images: string;
 
-  status: SessionStatus.OPEN;
+  status: SessionStatus.OPEN | SessionStatus.LOCKED;
 }

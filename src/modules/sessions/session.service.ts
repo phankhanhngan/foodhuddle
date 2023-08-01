@@ -18,13 +18,14 @@ import {
   SessionPaymentDTO,
   CreateSession,
   UpdateSessionStatus,
+  EditSession,
 } from './dtos';
 import { UserPaymentAction } from './enums/user-payment-action.enum';
 import {
   actionToStatusMapper,
   addRemainingUserRequestPayment,
 } from './helpers';
-import { SessionStatus } from '../../constant/constantData';
+import { SessionStatus } from 'src/entities/session.entity';
 
 @Injectable()
 export class SessionService {
@@ -389,15 +390,16 @@ export class SessionService {
     }
   }
 
-  async createNewSessionToday(dto: CreateSession) {
+  async createNewSessionToday(newSession: CreateSession, user: User) {
     try {
-      const newSession = this.sessionRepository.create(
-        plainToClass(Session, dto, { enableCircularCheck: true }),
-      );
+      const session = plainToClass(Session, newSession);
+      session.host = user;
+      session.status = SessionStatus.OPEN;
+      this.em.persist(session);
 
-      await this.em.persistAndFlush(newSession);
+      await this.em.flush();
 
-      return newSession;
+      return session;
     } catch (error) {
       this.logger.error('HAS AN ERROR AT createNewSessionToday()');
       throw error;
@@ -668,6 +670,51 @@ export class SessionService {
         SessionService.name,
       );
       throw err;
+    }
+  }
+  async editSessionInfo(id: number, editSessionInfo: EditSession, user: User) {
+    try {
+      const sessionById = await this.sessionRepository.findOne({
+        id: id,
+      });
+
+      if (!sessionById) {
+        return {
+          status: 400,
+          message: 'The session does not exist !',
+        };
+      }
+
+      if (user.id !== sessionById.host.id) {
+        return {
+          status: 400,
+          message: 'Only host can edit session information !',
+        };
+      }
+
+      const sessionEdit = plainToClass(Session, editSessionInfo);
+
+      if (sessionEdit.shop_link !== sessionById.shop_link) {
+        return {
+          status: 400,
+          message: 'You can not change the shop link !',
+        };
+      }
+
+      sessionEdit.host = user;
+
+      this.em.persist(sessionEdit);
+
+      await this.em.flush();
+
+      return {
+        status: 200,
+        message: 'Edit session information sucessfully !',
+        data: sessionEdit,
+      };
+    } catch (error) {
+      this.logger.error('HAS AN ERROR AT editSessionInfo()');
+      throw error;
     }
   }
 }
