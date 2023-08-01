@@ -417,18 +417,25 @@ export class SessionController {
     }
   }
 
-  @Put(':id/user-payment/:userPaymentId/change-status')
+  @Put(':id/user-payment/change-status')
   @UseGuards(RolesGuard)
   @UseGuards(SessionStatusGuard([SessionStatus.PENDING_PAYMENTS]))
   async changeUserPaymentStatus(
     @Res() res: Response,
+    @Req() req,
     @Param('id', ParseIntPipe) id: number,
-    @Param('userPaymentId', ParseIntPipe) userPaymentId: number,
     @Body('action', new ParseEnumPipe(UserPaymentAction))
     action: UserPaymentAction,
+    @Body('userId', ParseIntPipe)
+    userId: number,
   ) {
     try {
-      await this.sessionService.changeUserPaymentStatus(userPaymentId, action);
+      const { session } = req;
+      await this.sessionService.changeUserPaymentStatus(
+        userId,
+        session,
+        action,
+      );
       res.status(200).json({
         status: 'success',
         message: `${action} user request payment successfully`,
