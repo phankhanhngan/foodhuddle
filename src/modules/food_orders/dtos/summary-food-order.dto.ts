@@ -21,6 +21,9 @@ export class SummaryFoodOrderDTO {
   foodName: string;
 
   @Expose()
+  foodImage: string | null;
+
+  @Expose()
   originPrice: number;
 
   @Expose()
