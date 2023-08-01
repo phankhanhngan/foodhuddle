@@ -4,6 +4,9 @@ import { UserPaymentStatus } from 'src/entities';
 @Exclude()
 export class UserPaymentDTO {
   @Expose()
+  id?: number;
+
+  @Expose()
   @Transform(
     ({ obj, key }) => {
       if (obj[key]) {
