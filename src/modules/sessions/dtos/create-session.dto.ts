@@ -25,4 +25,7 @@ export class CreateSession {
 
 export enum SessionStatusA {
   OPEN = 'OPEN',
+  LOCKED = 'LOCKED',
+  PENDING_PAYMENTS = 'PENDING PAYMENTS',
+  FINISHED = 'FINISHED',
 }

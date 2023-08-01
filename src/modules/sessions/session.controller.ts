@@ -37,13 +37,13 @@ import { SessionPayment, SessionStatus, UserPayment } from 'src/entities';
 import MaxFileSize from '../../helpers/validate-images-size';
 import AcceptImageType from 'src/helpers/validate-images-type';
 import { ImageResize } from 'src/helpers/resize-images';
+import { AWSService } from '../aws/aws.service';
 import {
   SessionStatusGuard,
   JwtAuthGuard,
   RolesGuard,
 } from 'src/common/guards';
 import { UserPaymentAction } from './enums/user-payment-action.enum';
-import { AWSService } from '../aws/aws.service';
 
 @UseGuards(JwtAuthGuard)
 @Controller('session')
