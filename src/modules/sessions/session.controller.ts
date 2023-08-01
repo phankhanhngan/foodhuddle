@@ -118,13 +118,12 @@ export class SessionController {
   @Get('/history/hosted')
   @UseGuards(JwtAuthGuard)
   async getAllSessionHostedHistoryByUserId(
-    @Query() query: { status: string },
+    @Query() query: { status: Array<string> },
     @Res() res: Response,
   ) {
     try {
       const userId = Object(res.req.user).id;
-      const statusFilter =
-        query.status === undefined ? [] : query.status.split(',');
+      const statusFilter = query.status === undefined ? [] : query.status;
       const allSessionHostedHistoryByUserId =
         await this.sessionService.getAllSessionHostedHistoryByUserId(
           userId,
