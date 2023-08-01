@@ -1,4 +1,4 @@
-import { Enum, Property } from '@mikro-orm/core';
+import { Enum } from '@mikro-orm/core';
 
 export class UpdateSessionStatus {
   @Enum(() => SessionStatus)

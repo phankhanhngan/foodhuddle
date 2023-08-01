@@ -19,10 +19,10 @@ export class CreateSession {
   @Property({ nullable: true, type: 'text' })
   qr_images: string;
 
-  @Enum(() => SessionStatus)
-  status!: SessionStatus;
+  @Enum(() => SessionStatusA)
+  status!: SessionStatusA;
 }
 
-export enum SessionStatus {
+export enum SessionStatusA {
   OPEN = 'OPEN',
 }

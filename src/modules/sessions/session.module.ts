@@ -3,14 +3,25 @@ import { SessionController } from './session.controller';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { Session } from 'src/entities/session.entity';
 import { SessionService } from './session.service';
-import { AwsService } from '../aws/aws.service';
 import { WinstonModule } from 'nest-winston';
-import { FoodOrder } from 'src/entities';
 import { ImageResize } from 'src/helpers/resize-images';
+import { AWSModule } from '../aws/aws.module';
+import { FoodOrder, SessionPayment, User, UserPayment } from 'src/entities';
+import { EntityRepository } from '@mikro-orm/mysql';
 
 @Module({
-  imports: [MikroOrmModule.forFeature([Session, FoodOrder]), WinstonModule],
+  imports: [
+    AWSModule,
+    WinstonModule,
+    MikroOrmModule.forFeature([
+      Session,
+      SessionPayment,
+      UserPayment,
+      FoodOrder,
+      User,
+    ]),
+  ],
   controllers: [SessionController],
-  providers: [SessionService, AwsService, ImageResize],
+  providers: [SessionService, EntityRepository, ImageResize],
 })
 export class SessionModule {}

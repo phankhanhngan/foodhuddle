@@ -1,5 +1,12 @@
+import { BadRequestException, Injectable } from '@nestjs/common';
 import axios from 'axios';
+import {
+  FoodDTO,
+  OptionDTO,
+  OptionListDTO,
+} from 'src/modules/food_orders/dtos';
 
+@Injectable()
 export class MenuShopUtil {
   async getMenuFood(shopLink: string) {
     try {
@@ -42,7 +49,8 @@ export class MenuShopUtil {
         };
       }
 
-      const shopId = checkConnection.delivery_id;
+      const shopId = (await axios.get(urlGetShopId, config)).data?.reply
+        .delivery_id;
 
       const urlGetShopMenu = `https://gappapi.deliverynow.vn/api/dish/get_delivery_dishes?id_type=2&request_id=${shopId}`;
 
@@ -54,35 +62,37 @@ export class MenuShopUtil {
             const isFetchData = fbd.is_active && fbd.is_available;
 
             if (isFetchData) {
-              const optionsFood = fbd.options
+              const optionsFood: OptionListDTO[] = fbd.options
                 ? fbd.options.map((op) => {
-                    const optionItems = op.option_items.items
-                      ? op.option_items.items.map((opi) => {
-                          const optionItem = {
-                            name: opi.name,
-                            price: opi.price.value,
-                          };
+                    const optionItems: OptionDTO[] = Array.from<OptionDTO>(
+                      op.option_items.items
+                        ? op.option_items.items.map((opi) => {
+                            const optionItem = {
+                              name: opi.name,
+                              price: opi.price.value,
+                            };
 
-                          return optionItem;
-                        })
-                      : [];
+                            return optionItem;
+                          })
+                        : [],
+                    );
 
-                    const option = {
+                    const option: OptionListDTO = {
                       id: op.id,
                       mandatory: op.mandatory,
-                      name: op.name,
-                      option_items: optionItems,
+                      category: op.name,
+                      detail: optionItems,
                     };
                     return option;
                   })
                 : [];
 
-              const menuFood = {
+              const menuFood: FoodDTO = {
                 id: fbd.id,
-                name: fbd.name,
+                foodName: fbd.name,
                 description: fbd.description,
                 price: fbd.price.value,
-                discount_price: fbd.discount_price
+                discountPrice: fbd.discount_price
                   ? fbd.discount_price.value
                   : 0,
                 photo: fbd.photos[0].value,
@@ -96,15 +106,11 @@ export class MenuShopUtil {
           return foodByDish;
         });
 
-        return {
-          status: 200,
-          data: menuFoodFormated,
-        };
+        return menuFoodFormated
+          .flat(Infinity)
+          .filter((food: FoodDTO | undefined) => food);
       } else {
-        return {
-          status: 400,
-          message: `Invalid shop link !`,
-        };
+        throw new BadRequestException('Invalid shop link');
       }
     } catch (error) {
       throw error;

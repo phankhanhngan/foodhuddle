@@ -1,7 +1,9 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  Param,
   Inject,
   ParseArrayPipe,
   ParseIntPipe,
@@ -11,6 +13,8 @@ import {
   Res,
   UseGuards,
   UseInterceptors,
+  ValidationPipe,
+  ParseEnumPipe,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -19,10 +23,16 @@ import {
   RequestFoodTransformInterceptor,
   ResponseFoodTransformInterceptor,
 } from './interceptors';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { FoodOrderService } from './food-order.service';
-import { CreateFoodOrderDTO } from './dtos/create-food-order.dto';
-import { FoodOrder } from 'src/entities';
+import { CreateFoodOrderDTO, UpdateFoodOrderDTO } from './dtos/index';
+import { FoodOrder, SessionStatus } from 'src/entities';
+import { plainToClass } from 'class-transformer';
+import { GroupedBy } from './enums/grouped-by.enum';
+import {
+  SessionStatusGuard,
+  JwtAuthGuard,
+  RolesGuard,
+} from 'src/common/guards';
 
 @UseGuards(JwtAuthGuard)
 @Controller('food-order')
@@ -33,6 +43,7 @@ export class FoodOrderController {
   ) {}
 
   @Put()
+  @UseGuards(SessionStatusGuard([SessionStatus.OPEN]))
   @UseInterceptors(new RequestFoodTransformInterceptor())
   async changeFoodOrders(
     @Req() req,
@@ -42,11 +53,11 @@ export class FoodOrderController {
     foodOrderList: CreateFoodOrderDTO[],
   ) {
     try {
-      const { user } = req;
+      const { user, session } = req;
       await this.foodOrderService.changeFoodOrders(
         foodOrderList,
-        sessionId,
         user,
+        session,
       );
       return res.status(200).json({
         status: 'success',
@@ -77,6 +88,105 @@ export class FoodOrderController {
         err,
         FoodOrderController.name,
       );
+      throw err;
+    }
+  }
+
+  @Get('menu')
+  async getFoodMenu(
+    @Query('sessionId', ParseIntPipe) sessionId: number,
+    @Res() res: Response,
+  ) {
+    try {
+      const foodMenu = await this.foodOrderService.getFoodMenu(sessionId);
+      res.status(200).json({
+        status: 'success',
+        message: 'Get food menu successfully',
+        data: foodMenu,
+      });
+    } catch (err) {
+      this.logger.error('Calling getFoodMenu()', err, FoodOrderController.name);
+      throw err;
+    }
+  }
+
+  @Put(':id')
+  @UseGuards(RolesGuard)
+  @UseGuards(SessionStatusGuard([SessionStatus.OPEN, SessionStatus.LOCKED]))
+  async updateFoodOrder(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('sessionId', ParseIntPipe) sessionId: number,
+    @Body(new ValidationPipe()) foodOrder: UpdateFoodOrderDTO,
+    @Req() req,
+    @Res() res: Response,
+  ) {
+    try {
+      const { session } = req;
+      await this.foodOrderService.updateFoodOrder(
+        id,
+        session,
+        plainToClass(UpdateFoodOrderDTO, foodOrder),
+      );
+
+      res.status(200).json({
+        status: 'success',
+        message: 'Submit food order successfully',
+      });
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
+  }
+
+  @Delete(':id')
+  @UseGuards(RolesGuard)
+  @UseGuards(SessionStatusGuard([SessionStatus.OPEN, SessionStatus.LOCKED]))
+  async deleteFoodOrder(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('sessionId', ParseIntPipe) sessionId: number,
+    @Res() res: Response,
+    @Req() req,
+  ) {
+    try {
+      const { session } = req;
+      await this.foodOrderService.deleteFoodOrder(id, session);
+
+      res.status(200).json({
+        status: 'success',
+        message: 'Delete food order successfully',
+      });
+    } catch (err) {
+      this.logger.error(
+        'Calling deleteFoodOrder()',
+        err,
+        FoodOrderController.name,
+      );
+      throw err;
+    }
+  }
+
+  @Get('/summary')
+  async getSummaryFoodOrders(
+    @Res() res: Response,
+    @Query('sessionId', ParseIntPipe) sessionId: number,
+    @Query('groupedBy', new ParseEnumPipe(GroupedBy))
+    groupedBy: GroupedBy,
+  ) {
+    try {
+      const response = await this.foodOrderService.getSummaryFoodOrders(
+        sessionId,
+        groupedBy,
+      );
+      res.status(200).json({
+        status: 'success',
+        message: 'Get food order summary successfully',
+        data: {
+          sessionId,
+          foodOrderList: response,
+        },
+      });
+    } catch (err) {
+      console.log(err);
       throw err;
     }
   }
