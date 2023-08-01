@@ -188,7 +188,7 @@
         },
         "status": {
           "name": "status",
-          "type": "enum('OPEN', 'LOCKED', 'PENDINGPAYMENTS', 'FINISHED')",
+          "type": "enum('OPEN', 'LOCKED', 'PENDING PAYMENTS', 'FINISHED')",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
@@ -196,7 +196,7 @@
           "enumItems": [
             "OPEN",
             "LOCKED",
-            "PENDINGPAYMENTS",
+            "PENDING PAYMENTS",
             "FINISHED"
           ],
           "mappedType": "enum"
