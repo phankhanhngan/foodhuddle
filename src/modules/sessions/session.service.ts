@@ -7,6 +7,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { User } from 'src/entities/user.entity';
 import { plainToClass, plainToInstance } from 'class-transformer';
+import { EditSession } from './dtos/edit-session.dto';
 
 @Injectable()
 export class SessionService {
@@ -79,6 +80,52 @@ export class SessionService {
       return session;
     } catch (error) {
       this.logger.error('HAS AN ERROR AT createNewSessionToday()');
+      throw error;
+    }
+  }
+
+  async editSessionInfo(id: number, editSessionInfo: EditSession, user: User) {
+    try {
+      const sessionById = await this.sessionRepository.findOne({
+        id: id,
+      });
+
+      if (!sessionById) {
+        return {
+          status: 400,
+          message: 'The session does not exist !',
+        };
+      }
+
+      if (user.id !== sessionById.host.id) {
+        return {
+          status: 400,
+          message: 'Only host can edit session information !',
+        };
+      }
+
+      const sessionEdit = plainToClass(Session, editSessionInfo);
+
+      if (sessionEdit.shop_link !== sessionById.shop_link) {
+        return {
+          status: 400,
+          message: 'You can not change the shop link !',
+        };
+      }
+
+      sessionEdit.host = user;
+
+      this.em.persist(sessionEdit);
+
+      await this.em.flush();
+
+      return {
+        status: 200,
+        message: 'Edit session information sucessfully !',
+        data: sessionEdit,
+      };
+    } catch (error) {
+      this.logger.error('HAS AN ERROR AT editSessionInfo()');
       throw error;
     }
   }
