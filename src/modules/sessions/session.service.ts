@@ -181,7 +181,15 @@ export class SessionService {
                 },
               });
 
-            if (!checkUserPaymentApproveAll[0]) {
+            const checkUserMakePaymentRequest =
+              await this.userPaymentRepository.find({
+                session: id,
+              });
+
+            const allowFinishSession =
+              !checkUserPaymentApproveAll[0] && checkUserMakePaymentRequest[0];
+
+            if (allowFinishSession) {
               this.sessionRepository.assign(sessionById, dto);
 
               await this.em.persistAndFlush(sessionById);
