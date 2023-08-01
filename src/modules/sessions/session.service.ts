@@ -402,6 +402,23 @@ export class SessionService {
       return session;
     } catch (error) {
       this.logger.error('HAS AN ERROR AT createNewSessionToday()');
+    }
+  }
+  async getAllSessionsHistory(statusFilter: Array<string>) {
+    try {
+      const allSessions = await this.getAllSessions();
+      const result =
+        statusFilter[0] === undefined
+          ? allSessions
+          : allSessions.filter((v) => {
+              if (statusFilter.includes(v.status)) {
+                return v;
+              }
+            });
+
+      return result;
+    } catch (error) {
+      this.logger.error('HAS AN ERRO AT getAllSessionsHistory()');
       throw error;
     }
   }
@@ -714,6 +731,55 @@ export class SessionService {
       };
     } catch (error) {
       this.logger.error('HAS AN ERROR AT editSessionInfo()');
+    }
+  }
+
+  async getAllSessionHostedHistoryByUserId(
+    userId: number,
+    statusFilter: Array<string>,
+  ) {
+    try {
+      const sessionHostedByUserId = await this.getAllSessionHostedByUserId(
+        userId,
+      );
+
+      const result =
+        statusFilter[0] === undefined
+          ? sessionHostedByUserId
+          : sessionHostedByUserId.filter((v) => {
+              if (statusFilter.includes(v.status)) {
+                return v;
+              }
+            });
+
+      return result;
+    } catch (error) {
+      this.logger.error('HAS AN ERRO AT getAllSessionHostedHistoryByUserId()');
+      throw error;
+    }
+  }
+
+  async getAllSessionsJoinedHistoryByUserId(
+    userId: number,
+    statusFilter: Array<string>,
+  ) {
+    try {
+      const sessionJoinedByUserId = await this.getAllSessionsJoinedByUserId(
+        userId,
+      );
+
+      const result =
+        statusFilter[0] === undefined
+          ? sessionJoinedByUserId
+          : sessionJoinedByUserId.filter((v) => {
+              if (statusFilter.includes(v.status)) {
+                return v;
+              }
+            });
+
+      return result;
+    } catch (error) {
+      this.logger.error('HAS AN ERRO AT getAllSessionsJoinedHistoryByUserId()');
       throw error;
     }
   }

@@ -4,6 +4,7 @@ import {
   Param,
   ParseIntPipe,
   ParseFilePipe,
+  Query,
   Res,
   UseGuards,
   Inject,
@@ -260,6 +261,33 @@ export class SessionController {
       return res.status(resultUpdating.status).json(resultUpdating);
     } catch (error) {
       this.logger.error('HAS AN ERROR AT UPDATING SESSION STATUS');
+    }
+  }
+
+  @Get('/history')
+  @UseGuards(JwtAuthGuard)
+  async getAllSessionsHistory(
+    @Query() query: { status: string },
+    @Res() res: Response,
+  ) {
+    try {
+      const statusFilter =
+        query.status === undefined ? [] : query.status.split(',');
+
+      const allSessionHistory = await this.sessionService.getAllSessionsHistory(
+        statusFilter,
+      );
+
+      return res.status(200).json({
+        statusCode: 200,
+        data: allSessionHistory,
+      });
+    } catch (error) {
+      this.logger.error(
+        'Calling getAllSessionsHistory()',
+        error,
+        SessionService.name,
+      );
       throw error;
     }
   }
@@ -424,6 +452,62 @@ export class SessionController {
     } catch (err) {
       this.logger.error('Calling getSession()', err, SessionService.name);
       throw err;
+    }
+  }
+
+  @Get('/history/hosted')
+  @UseGuards(JwtAuthGuard)
+  async getAllSessionHostedHistoryByUserId(
+    @Query() query: { status: Array<string> },
+    @Res() res: Response,
+  ) {
+    try {
+      const userId = Object(res.req.user).id;
+      const statusFilter = query.status === undefined ? [] : query.status;
+      const allSessionHostedHistoryByUserId =
+        await this.sessionService.getAllSessionHostedHistoryByUserId(
+          userId,
+          statusFilter,
+        );
+
+      return res.status(200).json({
+        statusCode: 200,
+        data: allSessionHostedHistoryByUserId,
+      });
+    } catch (error) {
+      this.logger.error(
+        'HAS AN ERROR AT GETTING ALL SESSIONS HOSTED HISTORY BY USER ID',
+      );
+      throw error;
+    }
+  }
+
+  @Get('/history/joined')
+  @UseGuards(JwtAuthGuard)
+  async getAllSessionsJoinedHistoryByUserId(
+    @Query() query: { status: string },
+    @Res() res: Response,
+  ) {
+    try {
+      const userId = Object(res.req.user).id;
+      const statusFilter =
+        query.status === undefined ? [] : query.status.split(',');
+
+      const allSessionsJoinedHistoryByUserId =
+        await this.sessionService.getAllSessionsJoinedHistoryByUserId(
+          userId,
+          statusFilter,
+        );
+
+      return res.status(200).json({
+        statusCode: 200,
+        data: allSessionsJoinedHistoryByUserId,
+      });
+    } catch (error) {
+      this.logger.error(
+        'HAS AN ERROR AT GETTING ALL SESSIONS JOINED HISTORY BY USER ID',
+      );
+      throw error;
     }
   }
 
