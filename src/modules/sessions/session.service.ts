@@ -5,10 +5,12 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { EntityManager, EntityRepository } from '@mikro-orm/core';
+import { EntityManager, EntityRepository, wrap } from '@mikro-orm/core';
 import { Session } from 'src/entities/session.entity';
 import { FoodOrder } from 'src/entities';
+import { SessionStatus } from '../../constant/constantData';
 import { CreateSession } from './dtos/create-session.dto';
+import { UpdateSessionStatus } from './dtos/update-session_status.dto';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 
@@ -230,6 +232,15 @@ export class SessionService {
       return sessionJoinedByUserIdToday;
     } catch (error) {
       this.logger.error('HAS AN ERRO AT getAllSessionsJoinedTodayByUserId()');
+    }
+  }
+  async getSessionById(id: number) {
+    try {
+      const sessionById = this.sessionRepository.findOne({ id: id });
+
+      return sessionById;
+    } catch (error) {
+      this.logger.error('HAS AN ERROR AT getSessionById()');
       throw error;
     }
   }
@@ -260,6 +271,106 @@ export class SessionService {
       return newSession;
     } catch (error) {
       this.logger.error('HAS AN ERROR AT createNewSessionToday()');
+      throw error;
+    }
+  }
+
+  async updateSessionStatus(id: number, dto: UpdateSessionStatus) {
+    try {
+      const sessionById = await this.sessionRepository.findOne({ id: id });
+
+      const statusSessionList = [
+        'OPEN',
+        'LOCKED',
+        'PENDING PAYMENTS',
+        'FINISHED',
+      ];
+
+      if (!statusSessionList.includes(dto.status)) {
+        return {
+          status: 400,
+          message: `The status session is invalid !`,
+        };
+      }
+
+      const updateStatusSuccess = {
+        status: 200,
+        message: '',
+        statusSession: dto.status,
+      };
+
+      switch (dto.status) {
+        case SessionStatus.LOCKED:
+          if (sessionById.status === SessionStatus.OPEN) {
+            this.sessionRepository.assign(sessionById, dto);
+
+            await this.em.persistAndFlush(sessionById);
+
+            updateStatusSuccess.message = 'Locked session successfully!';
+
+            return updateStatusSuccess;
+          }
+
+          break;
+
+        case SessionStatus.PENDING_PAYMENTS:
+          if (sessionById.status === SessionStatus.LOCKED) {
+            this.sessionRepository.assign(sessionById, dto);
+
+            await this.em.persistAndFlush(sessionById);
+
+            updateStatusSuccess.message =
+              'Pending payments session successfully!';
+
+            return updateStatusSuccess;
+          }
+
+          break;
+
+        case SessionStatus.FINISHED:
+          if (sessionById.status === SessionStatus.PENDING_PAYMENTS) {
+            this.sessionRepository.assign(sessionById, dto);
+
+            await this.em.persistAndFlush(sessionById);
+
+            updateStatusSuccess.message = 'Finished session successfully!';
+
+            return updateStatusSuccess;
+          }
+      }
+
+      return {
+        status: 500,
+        message: `Current session status is ${sessionById.status}, you can not change status to ${dto.status}`,
+      };
+    } catch (error) {
+      this.logger.error('HAS AN ERROR AT updateSessionStatus()');
+      throw error;
+    }
+  }
+
+  async deleteSession(id: number) {
+    try {
+      const sessionById = await this.sessionRepository.findOne({ id: id });
+
+      if (
+        sessionById.status === SessionStatus.OPEN ||
+        sessionById.status === SessionStatus.LOCKED
+      ) {
+        await this.em.removeAndFlush(sessionById);
+
+        return {
+          statusCode: 200,
+          message: 'Delete session successfully!',
+        };
+      }
+
+      return {
+        statusCode: 400,
+        message: `Current status is ${sessionById.status}, you can not delete this session`,
+      };
+    } catch (error) {
+      this.logger.error('HAS AN ERROR AT deleteSession()');
       throw error;
     }
   }
