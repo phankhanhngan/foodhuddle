@@ -121,18 +121,12 @@ export class FoodOrderService {
 
       await this.em.persistAndFlush(foodOrderEntity);
     } catch (err) {
-      if (err.code === 'ER_DUP_ENTRY') {
-        throw new BadRequestException(
-          `This joiner already had order of '${foodOrder.foodName}'. Please increase the quantity of current order!`,
-        );
-      } else {
-        this.logger.error(
-          'Calling updateFoodOrder()',
-          err,
-          FoodOrderService.name,
-        );
-        throw err;
-      }
+      this.logger.error(
+        'Calling updateFoodOrder()',
+        err,
+        FoodOrderService.name,
+      );
+      throw err;
     }
   }
 
