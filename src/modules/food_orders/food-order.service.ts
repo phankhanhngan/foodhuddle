@@ -121,18 +121,12 @@ export class FoodOrderService {
 
       await this.em.persistAndFlush(foodOrderEntity);
     } catch (err) {
-      if (err.code === 'ER_DUP_ENTRY') {
-        throw new BadRequestException(
-          `This joiner already had order of '${foodOrder.foodName}'. Please increase the quantity of current order!`,
-        );
-      } else {
-        this.logger.error(
-          'Calling updateFoodOrder()',
-          err,
-          FoodOrderService.name,
-        );
-        throw err;
-      }
+      this.logger.error(
+        'Calling updateFoodOrder()',
+        err,
+        FoodOrderService.name,
+      );
+      throw err;
     }
   }
 
@@ -184,17 +178,26 @@ export class FoodOrderService {
     let formattedFO: Array<any>;
     switch (groupedBy) {
       case GroupedBy.food:
-        const foodName = [...new Set(foodOrders.map((fo) => fo.foodName))];
+        const foodName = [
+          ...new Set(
+            foodOrders.map((fo) =>
+              JSON.stringify({
+                foodName: fo.foodName,
+                foodImage: fo.foodImage,
+              }),
+            ),
+          ),
+        ].map((fo) => JSON.parse(fo));
 
         formattedFO = foodName.reduce((prev, curr) => {
           const foGrouped = foodOrders
-            .filter((fo) => fo.foodName === curr)
+            .filter((fo) => fo.foodName === curr.foodName)
             .map(({ foodName, foodImage, ...restProps }) => restProps);
+
           return [
             ...prev,
             {
-              foodName: curr,
-              foodImage: foodOrders[0].foodImage,
+              ...curr,
               orders: foGrouped,
             },
           ];
