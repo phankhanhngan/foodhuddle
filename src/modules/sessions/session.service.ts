@@ -239,19 +239,19 @@ export class SessionService {
   }
 
   async changeUserPaymentStatus(
-    userPaymentId: number,
+    userId: number,
+    session: Session,
     action: UserPaymentAction,
   ) {
     try {
       const userPayment: Loaded<UserPayment> =
         await this.userPaymentRepository.findOne({
-          id: userPaymentId,
+          user: userId,
+          session,
         });
 
       if (!userPayment) {
-        throw new BadRequestException(
-          `Can not find user payment request with id: ${userPaymentId}`,
-        );
+        throw new BadRequestException(`Can not find user payment request`);
       }
 
       userPayment.status = actionToStatusMapper(action);

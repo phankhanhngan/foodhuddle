@@ -4,13 +4,11 @@ import { UserPaymentStatus } from 'src/entities';
 @Exclude()
 export class UserPaymentDTO {
   @Expose()
-  id?: number;
-
-  @Expose()
   @Transform(
     ({ obj, key }) => {
       if (obj[key]) {
         return {
+          id: obj[key].id,
           googleId: obj[key].googleId,
           email: obj[key].email,
           name: obj[key].name,
