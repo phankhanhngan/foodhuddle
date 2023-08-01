@@ -298,6 +298,15 @@
           "nullable": false,
           "mappedType": "string"
         },
+        "food_image": {
+          "name": "food_image",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "text"
+        },
         "origin_price": {
           "name": "origin_price",
           "type": "int",
