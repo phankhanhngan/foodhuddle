@@ -38,6 +38,6 @@ export class Session extends Base {
 export enum SessionStatus {
   OPEN = 'OPEN',
   LOCKED = 'LOCKED',
-  PENDINGPAYMENTS = 'PENDINGPAYMENTS',
+  PENDING_PAYMENTS = 'PENDING PAYMENTS',
   FINISHED = 'FINISHED',
 }
