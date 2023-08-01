@@ -184,17 +184,26 @@ export class FoodOrderService {
     let formattedFO: Array<any>;
     switch (groupedBy) {
       case GroupedBy.food:
-        const foodName = [...new Set(foodOrders.map((fo) => fo.foodName))];
+        const foodName = [
+          ...new Set(
+            foodOrders.map((fo) =>
+              JSON.stringify({
+                foodName: fo.foodName,
+                foodImage: fo.foodImage,
+              }),
+            ),
+          ),
+        ].map((fo) => JSON.parse(fo));
 
         formattedFO = foodName.reduce((prev, curr) => {
           const foGrouped = foodOrders
-            .filter((fo) => fo.foodName === curr)
+            .filter((fo) => fo.foodName === curr.foodName)
             .map(({ foodName, foodImage, ...restProps }) => restProps);
+
           return [
             ...prev,
             {
-              foodName: curr,
-              foodImage: foodOrders[0].foodImage,
+              ...curr,
               orders: foGrouped,
             },
           ];
