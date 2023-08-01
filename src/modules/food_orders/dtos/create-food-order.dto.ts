@@ -18,6 +18,13 @@ export class CreateFoodOrderDTO {
   foodName: string;
 
   @Expose()
+  @ValidateIf((obj) => obj.foodImage !== null)
+  @IsString({
+    message: 'Food image must be a string or null',
+  })
+  foodImage: string | null;
+
+  @Expose()
   @IsInt({ message: 'Food price must be an integer' })
   originPrice: number;
 

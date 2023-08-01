@@ -17,6 +17,13 @@ export class UpdateFoodOrderDTO {
   foodName: string;
 
   @Expose()
+  @ValidateIf((obj) => obj.foodImage !== null)
+  @IsString({
+    message: 'Food image must be a string or null',
+  })
+  foodImage: string | null;
+
+  @Expose()
   @IsInt({ message: 'Food quantity must be an integer' })
   quantity: number;
 

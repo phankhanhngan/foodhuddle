@@ -189,11 +189,12 @@ export class FoodOrderService {
         formattedFO = foodName.reduce((prev, curr) => {
           const foGrouped = foodOrders
             .filter((fo) => fo.foodName === curr)
-            .map(({ foodName, ...restProps }) => restProps);
+            .map(({ foodName, foodImage, ...restProps }) => restProps);
           return [
             ...prev,
             {
               foodName: curr,
+              foodImage: foodOrders[0].foodImage,
               orders: foGrouped,
             },
           ];

@@ -309,12 +309,12 @@
         },
         "receipt_screenshot": {
           "name": "receipt_screenshot",
-          "type": "varchar(255)",
+          "type": "text",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "mappedType": "string"
+          "mappedType": "text"
         }
       },
       "name": "session_payment",
@@ -411,6 +411,15 @@
           "primary": false,
           "nullable": false,
           "mappedType": "string"
+        },
+        "food_image": {
+          "name": "food_image",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "text"
         },
         "origin_price": {
           "name": "origin_price",
