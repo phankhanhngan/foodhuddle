@@ -4,11 +4,10 @@ import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { MorganModule, MorganInterceptor } from 'nest-morgan';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { WinstonModule } from 'nest-winston';
+import { AuthModule, SessionModule, FoodOrderModule } from './modules/';
 import { MikroOrmConfig, NestWinsternConfig } from './configs';
 import { AppService } from './app.service';
 import { AppController } from './app.controller';
-import { AuthModule } from './modules/auth/auth.module';
-import { SessionModule } from './modules/sessions/session.module';
 
 @Module({
   imports: [
@@ -22,6 +21,7 @@ import { SessionModule } from './modules/sessions/session.module';
     }),
     AuthModule,
     SessionModule,
+    FoodOrderModule,
   ],
 
   controllers: [AppController],

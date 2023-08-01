@@ -1,20 +1,34 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { EntityManager, EntityRepository, wrap } from '@mikro-orm/core';
-import { Session } from 'src/entities/session.entity';
+import { EntityManager, EntityRepository, wrap, Loaded } from '@mikro-orm/core';
 import { SessionStatus } from '../../constant/constantData';
 import { CreateSession } from './dtos/create-session.dto';
 import { UpdateSessionStatus } from './dtos/update-session_status.dto';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { plainToClass } from 'class-transformer';
+import {
+  Session,
+  SessionPayment,
+  User,
+  UserPayment,
+  UserPaymentStatus,
+} from 'src/entities/';
+import { AWSService } from '../aws/aws.service';
+import { UserPaymentDTO, SessionPaymentDTO } from './dtos';
 
 @Injectable()
 export class SessionService {
   constructor(
     @InjectRepository(Session)
     private readonly sessionRepository: EntityRepository<Session>,
-    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    @InjectRepository(UserPayment)
+    private readonly userPaymentRepository: EntityRepository<UserPayment>,
+    @InjectRepository(SessionPayment)
+    private readonly sessionPaymentRepository: EntityRepository<SessionPayment>,
     private readonly em: EntityManager,
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    private readonly awsService: AWSService,
   ) {}
 
   async getAllSessionsToday() {
@@ -48,7 +62,11 @@ export class SessionService {
 
       return listSessionsReturn;
     } catch (error) {
-      this.logger.error('HAS AN ERRO AT getAllSessionsToday()');
+      this.logger.error(
+        'Calling getAllSessionsToday()',
+        error,
+        SessionService.name,
+      );
       throw error;
     }
   }
@@ -131,32 +149,57 @@ export class SessionService {
 
         case SessionStatus.PENDING_PAYMENTS:
           if (sessionById.status === SessionStatus.LOCKED) {
-            this.sessionRepository.assign(sessionById, dto);
+            const checkSessionPaymentBySessionId =
+              await this.sessionPaymentRepository.findOne({ session: id });
 
-            await this.em.persistAndFlush(sessionById);
+            if (checkSessionPaymentBySessionId) {
+              this.sessionRepository.assign(sessionById, dto);
 
-            updateStatusSuccess.message =
-              'Pending payments session successfully!';
+              await this.em.persistAndFlush(sessionById);
 
-            return updateStatusSuccess;
+              updateStatusSuccess.message =
+                'Pending payments session successfully!';
+
+              return updateStatusSuccess;
+            } else {
+              return {
+                status: 400,
+                message: `You have to submit session payment detail before splitting payment`,
+              };
+            }
           }
 
           break;
 
         case SessionStatus.FINISHED:
           if (sessionById.status === SessionStatus.PENDING_PAYMENTS) {
-            this.sessionRepository.assign(sessionById, dto);
+            const checkUserPaymentApproveAll =
+              await this.userPaymentRepository.find({
+                session: id,
+                status: {
+                  $in: [UserPaymentStatus.PENDING, UserPaymentStatus.REJECTED],
+                },
+              });
 
-            await this.em.persistAndFlush(sessionById);
+            if (!checkUserPaymentApproveAll[0]) {
+              this.sessionRepository.assign(sessionById, dto);
 
-            updateStatusSuccess.message = 'Finished session successfully!';
+              await this.em.persistAndFlush(sessionById);
 
-            return updateStatusSuccess;
+              updateStatusSuccess.message = 'Finished session successfully!';
+
+              return updateStatusSuccess;
+            } else {
+              return {
+                status: 400,
+                message: `There are some user payments which are not approved`,
+              };
+            }
           }
       }
 
       return {
-        status: 500,
+        status: 400,
         message: `Current session status is ${sessionById.status}, you can not change status to ${dto.status}`,
       };
     } catch (error) {
@@ -188,6 +231,133 @@ export class SessionService {
     } catch (error) {
       this.logger.error('HAS AN ERROR AT deleteSession()');
       throw error;
+    }
+  }
+
+  async getSession(id: number) {
+    try {
+      const session = await this.sessionRepository.findOne(
+        { id },
+        { populate: ['host'] },
+      );
+
+      if (!session) {
+        throw new BadRequestException(`Can not find session with id: ${id}`);
+      }
+
+      return session;
+    } catch (err) {
+      this.logger.error('Calling getSession()', err, SessionService.name);
+      throw err;
+    }
+  }
+
+  async getSessionPayment(sessionId: number): Promise<SessionPayment> {
+    try {
+      const sessionRef: Session =
+        this.sessionRepository.getReference(sessionId);
+
+      return await this.sessionPaymentRepository.findOne({
+        session: sessionRef,
+      });
+    } catch (err) {
+      this.logger.error(
+        'Calling getSessionPayment()',
+        err,
+        SessionService.name,
+      );
+      throw err;
+    }
+  }
+
+  async submitSessionPayment(
+    session: Session,
+    receiptScreenshot: Array<Express.Multer.File> | Express.Multer.File,
+    sessionPayment: SessionPaymentDTO,
+  ): Promise<void> {
+    try {
+      const existedSessionPayment: Loaded<SessionPayment> =
+        await this.sessionPaymentRepository.findOne({
+          session,
+        });
+
+      if (existedSessionPayment) {
+        await this.awsService.bulkDeleteObject(
+          JSON.parse(existedSessionPayment.receiptScreenshot),
+        );
+        this.em.remove(existedSessionPayment);
+      }
+
+      const filePathArray: string[] = await this.awsService.bulkPutObject(
+        `${session.id}/sessionpayment`,
+        receiptScreenshot,
+      );
+
+      const sessionPaymentEntity = plainToClass(SessionPayment, sessionPayment);
+      sessionPaymentEntity.session = session;
+      sessionPaymentEntity.receiptScreenshot = JSON.stringify(filePathArray);
+
+      await this.em.persistAndFlush(sessionPaymentEntity);
+    } catch (err) {
+      this.logger.error(
+        'Calling submitSessionPayment()',
+        err,
+        SessionService.name,
+      );
+      throw err;
+    }
+  }
+
+  async submitUserPayment(
+    userPayment: UserPaymentDTO,
+    session: Session,
+    evidence: Array<Express.Multer.File> | Express.Multer.File,
+    user: User,
+  ) {
+    try {
+      const existedUserPayment: Loaded<UserPayment> =
+        await this.userPaymentRepository.findOne({
+          session,
+          user,
+        });
+
+      if (existedUserPayment) {
+        await this.awsService.bulkDeleteObject(
+          JSON.parse(existedUserPayment.evidence),
+        );
+        this.em.remove(existedUserPayment);
+      }
+
+      const filePathArray: string[] = await this.awsService.bulkPutObject(
+        `${session.id}/userpayment/${user.id}`,
+        evidence,
+      );
+
+      const userPaymentEntity = plainToClass(UserPayment, userPayment);
+      userPaymentEntity.session = session;
+      userPaymentEntity.user = user;
+      userPaymentEntity.evidence = JSON.stringify(filePathArray);
+
+      await this.em.persistAndFlush(userPaymentEntity);
+    } catch (err) {
+      this.logger.error(
+        'Calling submitUserPayment()',
+        err,
+        SessionService.name,
+      );
+      throw err;
+    }
+  }
+
+  async getUserPayment(session: Session, user: User) {
+    try {
+      return await this.userPaymentRepository.findOne(
+        { session, user },
+        { populate: ['user'] },
+      );
+    } catch (err) {
+      this.logger.error('Calling getUserPayment()', err, SessionService.name);
+      throw err;
     }
   }
 }
