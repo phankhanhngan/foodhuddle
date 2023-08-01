@@ -1,10 +1,12 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityManager, EntityRepository } from '@mikro-orm/core';
-import { Session } from 'src/entities/session.entity';
+import { Session, SessionStatus } from 'src/entities/session.entity';
 import { CreateSession } from './dtos/create-session.dto';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { User } from 'src/entities/user.entity';
+import { plainToClass, plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class SessionService {
@@ -65,13 +67,16 @@ export class SessionService {
     }
   }
 
-  async createNewSessionToday(dto: CreateSession) {
+  async createNewSessionToday(newSession: CreateSession, user: User) {
     try {
-      const newSession = this.sessionRepository.create(dto);
+      const session = plainToClass(Session, newSession);
+      session.host = user;
+      session.status = SessionStatus.OPEN;
+      this.em.persist(session);
 
-      await this.em.persistAndFlush(newSession);
+      await this.em.flush();
 
-      return newSession;
+      return session;
     } catch (error) {
       this.logger.error('HAS AN ERROR AT createNewSessionToday()');
       throw error;

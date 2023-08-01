@@ -1,28 +1,27 @@
-import { Enum, Property } from '@mikro-orm/core';
+import { IsString, IsOptional } from 'class-validator';
+import { SessionStatus } from 'src/entities/session.entity';
 
 export class CreateSession {
-  @Property({ nullable: false })
-  host: number;
-
-  @Property({ nullable: false })
+  @IsString({
+    message: 'Title of session must be a string',
+  })
   title: string;
 
-  @Property({ nullable: true, type: 'text' })
+  @IsOptional()
   description: string;
 
-  @Property({ nullable: false, type: 'text' })
+  @IsString({
+    message: 'Shop link must be a string',
+  })
   shop_link: string;
 
-  @Property({ nullable: false, type: 'text' })
+  @IsString({
+    message: 'Host payment infor must be a string',
+  })
   host_payment_info: string;
 
-  @Property({ nullable: true, type: 'text' })
+  @IsOptional()
   qr_images: string;
 
-  @Enum(() => SessionStatus)
-  status!: SessionStatus;
-}
-
-export enum SessionStatus {
-  OPEN = 'OPEN',
+  status: SessionStatus.OPEN;
 }

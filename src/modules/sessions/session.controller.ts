@@ -11,11 +11,13 @@ import {
   Inject,
   UploadedFiles,
   ParseFilePipe,
+  ValidationPipe,
+  Req,
 } from '@nestjs/common';
 import { SessionService } from './session.service';
 import { Response } from 'express';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { CreateSession, SessionStatus } from './dtos/create-session.dto';
+import { CreateSession } from './dtos/create-session.dto';
 import { AwsService } from '../aws/aws.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -62,7 +64,9 @@ export class SessionController {
         ? sessionByHostId.host_payment_info
         : '';
 
-      const qr_images = sessionByHostId ? sessionByHostId.qr_images : '';
+      const qr_images = sessionByHostId
+        ? JSON.parse(sessionByHostId.qr_images)
+        : {};
 
       return res.status(200).json({
         hostPaymentInfor: hostPaymentInfor,
@@ -78,7 +82,14 @@ export class SessionController {
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FilesInterceptor('qr_images'))
   async createNewSessionToday(
-    @Body() dto: CreateSession,
+    @Body(
+      new ValidationPipe({
+        transform: true,
+        transformOptions: { enableImplicitConversion: true },
+      }),
+    )
+    newSession: CreateSession,
+    @Req() req,
     @UploadedFiles(
       new ParseFilePipe({
         validators: [
@@ -96,34 +107,35 @@ export class SessionController {
     @Res() res: Response,
   ) {
     try {
-      const urlImages: Promise<string>[] = files.map(async (img) => {
-        const resizedImage = await this.imageResize.resizeImage(img.buffer);
+      // const urlImages: Promise<string>[] = files.map(async (img) => {
+      //   const resizedImage = await this.imageResize.resizeImage(img.buffer);
 
-        const imageUrl = await this.awsService.uploadImage(
-          resizedImage,
-          img.originalname,
-        );
+      //   const imageUrl = await this.awsService.uploadImage(
+      //     resizedImage,
+      //     img.originalname,
+      //   );
 
-        return imageUrl;
-      });
+      //   return imageUrl;
+      // });
 
-      const listUrlImages = await Promise.all(urlImages);
+      // const listUrlImages = await Promise.all(urlImages);
 
-      const qrImagesUrl = JSON.stringify(Object.assign({}, listUrlImages));
+      // const qrImagesUrl = JSON.stringify(Object.assign({}, listUrlImages));
 
-      const hostId = Object(res.req.user).id;
-      dto.host = hostId;
-      dto.status = SessionStatus.OPEN;
-      dto.qr_images = qrImagesUrl;
+      const { user } = req;
+      //dto.qr_images = qrImagesUrl;
 
-      const newSession = await this.sessionService.createNewSessionToday(dto);
+      const newSessionCreated = await this.sessionService.createNewSessionToday(
+        newSession,
+        user,
+      );
       if (!newSession) {
         throw new InternalServerErrorException();
       }
       return res.status(200).json({
         statusCode: 200,
         message: 'Create new session successfully !',
-        id: newSession.id,
+        id: newSessionCreated.host.id,
       });
     } catch (error) {
       this.logger.error('HAS AN ERROR WHEN CREATING NEW SESSION TODAY');
