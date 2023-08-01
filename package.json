@@ -38,6 +38,7 @@
     "axios": "^1.4.0",
     "googleapis": "^122.0.0",
     "nest-winston": "^1.9.3",
+    "nestjs-sharp": "^1.1.0",
     "passport": "^0.6.0",
     "passport-google-oauth2": "^0.2.0",
     "passport-jwt": "^4.0.1",

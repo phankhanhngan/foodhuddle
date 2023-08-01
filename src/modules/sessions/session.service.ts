@@ -8,6 +8,7 @@ import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityManager, EntityRepository } from '@mikro-orm/core';
 import { Session } from 'src/entities/session.entity';
 import { FoodOrder } from 'src/entities';
+import { CreateSession } from './dtos/create-session.dto';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 
@@ -191,6 +192,19 @@ export class SessionService {
       return sessionHostedTodayByUserId;
     } catch (error) {
       this.logger.error('HAS AN ERRO AT getAllSessionHostedTodayByUserId()');
+    }
+  }
+
+  async getLatestSessionByHostId(hostId: number) {
+    try {
+      const latestSessionByHostId = this.sessionRepository.findOne(
+        { host: hostId },
+        { orderBy: { id: 'DESC' } },
+      );
+
+      return latestSessionByHostId;
+    } catch (error) {
+      this.logger.error('HAS AN ERROR AT getLatestSessionByHostId()');
       throw error;
     }
   }
@@ -235,6 +249,18 @@ export class SessionService {
     } catch (err) {
       this.logger.error('Calling getSession()', err, SessionService.name);
       throw err;
+    }
+  }
+  async createNewSessionToday(dto: CreateSession) {
+    try {
+      const newSession = this.sessionRepository.create(dto);
+
+      await this.em.persistAndFlush(newSession);
+
+      return newSession;
+    } catch (error) {
+      this.logger.error('HAS AN ERROR AT createNewSessionToday()');
+      throw error;
     }
   }
 }
