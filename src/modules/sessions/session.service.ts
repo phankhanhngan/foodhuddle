@@ -588,18 +588,18 @@ export class SessionService {
     }
   }
 
-  async _getUserIdsWithoutRequestPayment(host: User): Promise<number[]> {
+  async _getUserIdsWithoutRequestPayment(session: Session): Promise<number[]> {
     try {
       const conn = this.em.getConnection();
 
       return (
         await conn.execute(
           `SELECT * FROM 
-          ((SELECT DISTINCT fo.user_id as id FROM food_order fo) 
+          ((SELECT DISTINCT fo.user_id as id FROM food_order fo WHERE fo.session_id = ${session.id}) 
          EXCEPT
-        (SELECT DISTINCT up.user_id as id FROM user_payment up)) 
+        (SELECT DISTINCT up.user_id as id FROM user_payment up WHERE up.session_id = ${session.id})) 
         as id
-        WHERE id != ${host.id}`,
+        WHERE id != ${session.host.id}`,
         )
       ).map((userId) => userId.id);
     } catch (err) {
@@ -645,7 +645,7 @@ export class SessionService {
     try {
       const [userIdsWithoutRequestPayment, existedUserPayment] =
         await Promise.all([
-          this._getUserIdsWithoutRequestPayment(session.host),
+          this._getUserIdsWithoutRequestPayment(session),
           this.userPaymentRepository.find({
             session,
           }),
@@ -684,7 +684,7 @@ export class SessionService {
         { enableCircularCheck: true },
       );
       const userIdsWithoutRequestPayment =
-        await this._getUserIdsWithoutRequestPayment(session.host);
+        await this._getUserIdsWithoutRequestPayment(session);
 
       if (userIdsWithoutRequestPayment.length > 0) {
         const users: Loaded<User>[] = await this.userRepository.find({
