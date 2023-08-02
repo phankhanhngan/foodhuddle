@@ -130,8 +130,8 @@ export class SessionController {
     }
   }
 
-  @Put('/:id')
   @UseGuards(SessionStatusGuard([SessionStatus.OPEN, SessionStatus.LOCKED]))
+  @Put('/:id')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FilesInterceptor('qr_images'))
   async editSessionInfo(
