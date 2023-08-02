@@ -3,10 +3,11 @@ import { SessionController } from './session.controller';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { Session } from 'src/entities/session.entity';
 import { SessionService } from './session.service';
+import { FoodOrder, SessionPayment, User, UserPayment } from 'src/entities';
+import { AWSService } from '../aws/aws.service';
 import { WinstonModule } from 'nest-winston';
 import { ImageResize } from 'src/helpers/resize-images';
 import { AWSModule } from '../aws/aws.module';
-import { FoodOrder, SessionPayment, User, UserPayment } from 'src/entities';
 import { EntityRepository } from '@mikro-orm/mysql';
 
 @Module({
@@ -22,6 +23,6 @@ import { EntityRepository } from '@mikro-orm/mysql';
     ]),
   ],
   controllers: [SessionController],
-  providers: [SessionService, EntityRepository, ImageResize],
+  providers: [SessionService, EntityRepository, AWSService, ImageResize],
 })
 export class SessionModule {}

@@ -4,6 +4,7 @@ import {
   Param,
   ParseIntPipe,
   ParseFilePipe,
+  Query,
   Res,
   UseGuards,
   Inject,
@@ -30,20 +31,20 @@ import {
   UserPaymentDTO,
   CreateSession,
   UpdateSessionStatus,
-  SessionStatusA,
+  EditSession,
 } from './dtos/';
 import { fileFilter } from './helpers/file-filter.helper';
 import { SessionPayment, SessionStatus, UserPayment } from 'src/entities';
 import MaxFileSize from '../../helpers/validate-images-size';
 import AcceptImageType from 'src/helpers/validate-images-type';
 import { ImageResize } from 'src/helpers/resize-images';
+import { AWSService } from '../aws/aws.service';
 import {
   SessionStatusGuard,
   JwtAuthGuard,
   RolesGuard,
 } from 'src/common/guards';
 import { UserPaymentAction } from './enums/user-payment-action.enum';
-import { AWSService } from '../aws/aws.service';
 
 @UseGuards(JwtAuthGuard)
 @Controller('session')
@@ -87,7 +88,9 @@ export class SessionController {
         ? sessionByHostId.host_payment_info
         : '';
 
-      const qr_images = sessionByHostId ? sessionByHostId.qr_images : '';
+      const qr_images = sessionByHostId
+        ? JSON.parse(sessionByHostId.qr_images)
+        : {};
 
       return res.status(200).json({
         hostPaymentInfor: hostPaymentInfor,
@@ -161,7 +164,14 @@ export class SessionController {
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FilesInterceptor('qr_images'))
   async createNewSessionToday(
-    @Body() dto: CreateSession,
+    @Body(
+      new ValidationPipe({
+        transform: true,
+        transformOptions: { enableImplicitConversion: true },
+      }),
+    )
+    newSession: CreateSession,
+    @Req() req,
     @UploadedFiles(
       new ParseFilePipe({
         validators: [
@@ -194,19 +204,20 @@ export class SessionController {
 
       // const qrImagesUrl = JSON.stringify(Object.assign({}, listUrlImages));
 
-      const hostId = Object(res.req.user).id;
-      dto.host = hostId;
-      dto.status = SessionStatusA.OPEN;
-      // dto.qr_images = qrImagesUrl;
+      const { user } = req;
+      //dto.qr_images = qrImagesUrl;
 
-      const newSession = await this.sessionService.createNewSessionToday(dto);
+      const newSessionCreated = await this.sessionService.createNewSessionToday(
+        newSession,
+        user,
+      );
       if (!newSession) {
         throw new InternalServerErrorException();
       }
       return res.status(200).json({
         statusCode: 200,
-        message: 'Create new session successfully!',
-        id: newSession.id,
+        message: 'Create new session successfully !',
+        id: newSessionCreated.host.id,
       });
     } catch (error) {
       this.logger.error('HAS AN ERROR WHEN CREATING NEW SESSION TODAY');
@@ -250,6 +261,33 @@ export class SessionController {
       return res.status(resultUpdating.status).json(resultUpdating);
     } catch (error) {
       this.logger.error('HAS AN ERROR AT UPDATING SESSION STATUS');
+    }
+  }
+
+  @Get('/history')
+  @UseGuards(JwtAuthGuard)
+  async getAllSessionsHistory(
+    @Query() query: { status: string },
+    @Res() res: Response,
+  ) {
+    try {
+      const statusFilter =
+        query.status === undefined ? [] : query.status.split(',');
+
+      const allSessionHistory = await this.sessionService.getAllSessionsHistory(
+        statusFilter,
+      );
+
+      return res.status(200).json({
+        statusCode: 200,
+        data: allSessionHistory,
+      });
+    } catch (error) {
+      this.logger.error(
+        'Calling getAllSessionsHistory()',
+        error,
+        SessionService.name,
+      );
       throw error;
     }
   }
@@ -417,6 +455,62 @@ export class SessionController {
     }
   }
 
+  @Get('/history/hosted')
+  @UseGuards(JwtAuthGuard)
+  async getAllSessionHostedHistoryByUserId(
+    @Query() query: { status: Array<string> },
+    @Res() res: Response,
+  ) {
+    try {
+      const userId = Object(res.req.user).id;
+      const statusFilter = query.status === undefined ? [] : query.status;
+      const allSessionHostedHistoryByUserId =
+        await this.sessionService.getAllSessionHostedHistoryByUserId(
+          userId,
+          statusFilter,
+        );
+
+      return res.status(200).json({
+        statusCode: 200,
+        data: allSessionHostedHistoryByUserId,
+      });
+    } catch (error) {
+      this.logger.error(
+        'HAS AN ERROR AT GETTING ALL SESSIONS HOSTED HISTORY BY USER ID',
+      );
+      throw error;
+    }
+  }
+
+  @Get('/history/joined')
+  @UseGuards(JwtAuthGuard)
+  async getAllSessionsJoinedHistoryByUserId(
+    @Query() query: { status: string },
+    @Res() res: Response,
+  ) {
+    try {
+      const userId = Object(res.req.user).id;
+      const statusFilter =
+        query.status === undefined ? [] : query.status.split(',');
+
+      const allSessionsJoinedHistoryByUserId =
+        await this.sessionService.getAllSessionsJoinedHistoryByUserId(
+          userId,
+          statusFilter,
+        );
+
+      return res.status(200).json({
+        statusCode: 200,
+        data: allSessionsJoinedHistoryByUserId,
+      });
+    } catch (error) {
+      this.logger.error(
+        'HAS AN ERROR AT GETTING ALL SESSIONS JOINED HISTORY BY USER ID',
+      );
+      throw error;
+    }
+  }
+
   @Put(':id/user-payment/change-status')
   @UseGuards(RolesGuard)
   @UseGuards(SessionStatusGuard([SessionStatus.PENDING_PAYMENTS]))
@@ -500,6 +594,69 @@ export class SessionController {
         SessionService.name,
       );
       throw err;
+    }
+  }
+
+  @UseInterceptors(FilesInterceptor('qr_images'))
+  async editSessionInfo(
+    @Body(
+      new ValidationPipe({
+        transform: true,
+        transformOptions: { enableImplicitConversion: true },
+      }),
+    )
+    editSessionInfo: EditSession,
+    @Req() req,
+    @Param('id', ParseIntPipe) id: number,
+    @UploadedFiles(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSize({
+            maxSize: 5,
+          }),
+          new AcceptImageType({
+            fileType: ['image/jpeg', 'image/png'],
+          }),
+        ],
+        fileIsRequired: false,
+      }),
+    )
+    files: Array<Express.Multer.File>,
+    @Res() res: Response,
+  ) {
+    try {
+      // const urlImages: Promise<string>[] = files.map(async (img) => {
+      //   const resizedImage = await this.imageResize.resizeImage(img.buffer);
+
+      //   const imageUrl = await this.awsService.uploadImage(
+      //     resizedImage,
+      //     img.originalname,
+      //   );
+
+      //   return imageUrl;
+      // });
+
+      // const listUrlImages = await Promise.all(urlImages);
+
+      // const qrImagesUrl = JSON.stringify(Object.assign({}, listUrlImages));
+
+      const { user } = req;
+      //dto.qr_images = qrImagesUrl;
+
+      const editSession = await this.sessionService.editSessionInfo(
+        id,
+        editSessionInfo,
+        user,
+      );
+
+      return res.status(editSession.status).json({
+        statusCode: editSession.status,
+        message: editSession.message,
+        data: editSession.data,
+      });
+    } catch (error) {
+      this.logger.error('HAS AN ERROR WHEN EDITING SESSION INFORMATION');
+      throw error;
     }
   }
 }

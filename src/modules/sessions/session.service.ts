@@ -1,7 +1,6 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { EntityManager, EntityRepository } from '@mikro-orm/mysql';
-import { Loaded } from '@mikro-orm/core';
+import { EntityManager, EntityRepository, wrap, Loaded } from '@mikro-orm/core';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { plainToClass, plainToInstance } from 'class-transformer';
@@ -19,13 +18,14 @@ import {
   SessionPaymentDTO,
   CreateSession,
   UpdateSessionStatus,
+  EditSession,
 } from './dtos';
 import { UserPaymentAction } from './enums/user-payment-action.enum';
 import {
   actionToStatusMapper,
   addRemainingUserRequestPayment,
 } from './helpers';
-import { SessionStatus } from '../../constant/constantData';
+import { SessionStatus } from 'src/entities/session.entity';
 
 @Injectable()
 export class SessionService {
@@ -265,39 +265,6 @@ export class SessionService {
     }
   }
 
-  async getSession(id: number) {
-    try {
-      const session = await this.sessionRepository.findOne(
-        { id },
-        { populate: ['host'] },
-      );
-
-      if (!session) {
-        throw new BadRequestException(`Can not find session with id: ${id}`);
-      }
-
-      return session;
-    } catch (err) {
-      this.logger.error('Calling getSession()', err, SessionService.name);
-      throw err;
-    }
-  }
-
-  async createNewSessionToday(dto: CreateSession) {
-    try {
-      const newSession = this.sessionRepository.create(
-        plainToClass(Session, dto, { enableCircularCheck: true }),
-      );
-
-      await this.em.persistAndFlush(newSession);
-
-      return newSession;
-    } catch (error) {
-      this.logger.error('HAS AN ERROR AT createNewSessionToday()');
-      throw error;
-    }
-  }
-
   async updateSessionStatus(id: number, dto: UpdateSessionStatus) {
     try {
       const sessionById = await this.sessionRepository.findOne({ id: id });
@@ -338,36 +305,120 @@ export class SessionService {
 
         case SessionStatus.PENDING_PAYMENTS:
           if (sessionById.status === SessionStatus.LOCKED) {
-            this.sessionRepository.assign(sessionById, dto);
+            const checkSessionPaymentBySessionId =
+              await this.sessionPaymentRepository.findOne({ session: id });
 
-            await this.em.persistAndFlush(sessionById);
+            if (checkSessionPaymentBySessionId) {
+              this.sessionRepository.assign(sessionById, dto);
 
-            updateStatusSuccess.message =
-              'Pending payments session successfully!';
+              await this.em.persistAndFlush(sessionById);
 
-            return updateStatusSuccess;
+              updateStatusSuccess.message =
+                'Pending payments session successfully!';
+
+              return updateStatusSuccess;
+            } else {
+              return {
+                status: 400,
+                message: `You have to submit session payment detail before splitting payment`,
+              };
+            }
           }
 
           break;
 
         case SessionStatus.FINISHED:
           if (sessionById.status === SessionStatus.PENDING_PAYMENTS) {
-            this.sessionRepository.assign(sessionById, dto);
+            const checkUserPaymentApproveAll =
+              await this.userPaymentRepository.find({
+                session: id,
+                status: {
+                  $in: [UserPaymentStatus.PENDING, UserPaymentStatus.REJECTED],
+                },
+              });
 
-            await this.em.persistAndFlush(sessionById);
+            const checkUserMakePaymentRequest =
+              await this.userPaymentRepository.find({
+                session: id,
+              });
 
-            updateStatusSuccess.message = 'Finished session successfully!';
+            const allowFinishSession =
+              !checkUserPaymentApproveAll[0] && checkUserMakePaymentRequest[0];
 
-            return updateStatusSuccess;
+            if (allowFinishSession) {
+              this.sessionRepository.assign(sessionById, dto);
+
+              await this.em.persistAndFlush(sessionById);
+
+              updateStatusSuccess.message = 'Finished session successfully!';
+
+              return updateStatusSuccess;
+            } else {
+              return {
+                status: 400,
+                message: `There are some user payments which are not approved`,
+              };
+            }
           }
       }
 
       return {
-        status: 500,
+        status: 400,
         message: `Current session status is ${sessionById.status}, you can not change status to ${dto.status}`,
       };
     } catch (error) {
       this.logger.error('HAS AN ERROR AT updateSessionStatus()');
+      throw error;
+    }
+  }
+
+  async getSession(id: number) {
+    try {
+      const session = await this.sessionRepository.findOne(
+        { id },
+        { populate: ['host'] },
+      );
+
+      if (!session) {
+        throw new BadRequestException(`Can not find session with id: ${id}`);
+      }
+
+      return session;
+    } catch (err) {
+      this.logger.error('Calling getSession()', err, SessionService.name);
+      throw err;
+    }
+  }
+
+  async createNewSessionToday(newSession: CreateSession, user: User) {
+    try {
+      const session = plainToClass(Session, newSession);
+      session.host = user;
+      session.status = SessionStatus.OPEN;
+      this.em.persist(session);
+
+      await this.em.flush();
+
+      return session;
+    } catch (error) {
+      this.logger.error('HAS AN ERROR AT createNewSessionToday()');
+    }
+  }
+  async getAllSessionsHistory(statusFilter: Array<string>) {
+    try {
+      const allSessions = await this.getAllSessions();
+      const result =
+        statusFilter[0] === undefined
+          ? allSessions
+          : allSessions.filter((v) => {
+              if (statusFilter.includes(v.status)) {
+                return v;
+              }
+            });
+
+      return result;
+    } catch (error) {
+      this.logger.error('HAS AN ERRO AT getAllSessionsHistory()');
       throw error;
     }
   }
@@ -636,6 +687,100 @@ export class SessionService {
         SessionService.name,
       );
       throw err;
+    }
+  }
+  async editSessionInfo(id: number, editSessionInfo: EditSession, user: User) {
+    try {
+      const sessionById = await this.sessionRepository.findOne({
+        id: id,
+      });
+
+      if (!sessionById) {
+        return {
+          status: 400,
+          message: 'The session does not exist !',
+        };
+      }
+
+      if (user.id !== sessionById.host.id) {
+        return {
+          status: 400,
+          message: 'Only host can edit session information !',
+        };
+      }
+
+      const sessionEdit = plainToClass(Session, editSessionInfo);
+
+      if (sessionEdit.shop_link !== sessionById.shop_link) {
+        return {
+          status: 400,
+          message: 'You can not change the shop link !',
+        };
+      }
+
+      sessionEdit.host = user;
+
+      this.em.persist(sessionEdit);
+
+      await this.em.flush();
+
+      return {
+        status: 200,
+        message: 'Edit session information sucessfully !',
+        data: sessionEdit,
+      };
+    } catch (error) {
+      this.logger.error('HAS AN ERROR AT editSessionInfo()');
+    }
+  }
+
+  async getAllSessionHostedHistoryByUserId(
+    userId: number,
+    statusFilter: Array<string>,
+  ) {
+    try {
+      const sessionHostedByUserId = await this.getAllSessionHostedByUserId(
+        userId,
+      );
+
+      const result =
+        statusFilter[0] === undefined
+          ? sessionHostedByUserId
+          : sessionHostedByUserId.filter((v) => {
+              if (statusFilter.includes(v.status)) {
+                return v;
+              }
+            });
+
+      return result;
+    } catch (error) {
+      this.logger.error('HAS AN ERRO AT getAllSessionHostedHistoryByUserId()');
+      throw error;
+    }
+  }
+
+  async getAllSessionsJoinedHistoryByUserId(
+    userId: number,
+    statusFilter: Array<string>,
+  ) {
+    try {
+      const sessionJoinedByUserId = await this.getAllSessionsJoinedByUserId(
+        userId,
+      );
+
+      const result =
+        statusFilter[0] === undefined
+          ? sessionJoinedByUserId
+          : sessionJoinedByUserId.filter((v) => {
+              if (statusFilter.includes(v.status)) {
+                return v;
+              }
+            });
+
+      return result;
+    } catch (error) {
+      this.logger.error('HAS AN ERRO AT getAllSessionsJoinedHistoryByUserId()');
+      throw error;
     }
   }
 }
