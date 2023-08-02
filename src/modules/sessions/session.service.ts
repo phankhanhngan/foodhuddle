@@ -708,9 +708,10 @@ export class SessionService {
   }
   async editSessionInfo(id: number, editSessionInfo: EditSession, user: User) {
     try {
-      const sessionById = await this.sessionRepository.findOne({
-        id: id,
-      });
+      const sessionById = await this.sessionRepository.findOne(
+        { id: id },
+        { populate: ['host'] },
+      );
 
       if (!sessionById) {
         return {
@@ -737,14 +738,14 @@ export class SessionService {
 
       sessionEdit.host = user;
 
-      this.em.persist(sessionEdit);
+      const newSessionInfor = this.em.assign(sessionById, sessionEdit);
 
       await this.em.flush();
 
       return {
         status: 200,
         message: 'Edit session information sucessfully !',
-        data: sessionEdit,
+        data: newSessionInfor,
       };
     } catch (error) {
       this.logger.error('HAS AN ERROR AT editSessionInfo()');
