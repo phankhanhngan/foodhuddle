@@ -9,6 +9,7 @@ import { WinstonModule } from 'nest-winston';
 import { ImageResize } from 'src/helpers/resize-images';
 import { AWSModule } from '../aws/aws.module';
 import { EntityRepository } from '@mikro-orm/mysql';
+import { ShopImage } from 'src/utils/shop-image.util';
 
 @Module({
   imports: [
@@ -23,6 +24,12 @@ import { EntityRepository } from '@mikro-orm/mysql';
     ]),
   ],
   controllers: [SessionController],
-  providers: [SessionService, EntityRepository, AWSService, ImageResize],
+  providers: [
+    SessionService,
+    EntityRepository,
+    AWSService,
+    ImageResize,
+    ShopImage,
+  ],
 })
 export class SessionModule {}

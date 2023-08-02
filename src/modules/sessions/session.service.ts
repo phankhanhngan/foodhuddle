@@ -5,7 +5,6 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { plainToClass, plainToInstance } from 'class-transformer';
 import {
-  FoodOrder,
   Session,
   FoodOrder,
   SessionPayment,
@@ -27,6 +26,7 @@ import {
   addRemainingUserRequestPayment,
 } from './helpers';
 import { SessionStatus } from 'src/entities/session.entity';
+import { ShopImage } from 'src/utils/shop-image.util';
 
 @Injectable()
 export class SessionService {
@@ -42,10 +42,9 @@ export class SessionService {
     private readonly userPaymentRepository: EntityRepository<UserPayment>,
     @InjectRepository(User)
     private readonly userRepository: EntityRepository<User>,
-    @InjectRepository(FoodOrder)
-    private readonly foodOrderRepository: EntityRepository<FoodOrder>,
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     private readonly awsService: AWSService,
+    private readonly getShopImage: ShopImage,
   ) {}
 
   async getNumberOfJoiner(sessionId: number) {
@@ -78,7 +77,7 @@ export class SessionService {
   async getAllSessions() {
     try {
       const allSessions = await this.sessionRepository.findAll({
-        fields: ['id', 'title', 'host', 'status', 'created_at'],
+        fields: ['id', 'title', 'host', 'shop_image', 'status', 'created_at'],
       });
 
       const listSessionsReturn = allSessions.map(async (v) => {
@@ -375,16 +374,47 @@ export class SessionService {
     }
   }
 
-  async createNewSessionToday(newSession: CreateSession, user: User) {
+  async createNewSessionToday(
+    newSession: CreateSession,
+    user: User,
+    files: Array<Express.Multer.File> | Express.Multer.File,
+  ) {
     try {
+      const urlImages: string[] = await this.awsService.bulkPutObject(
+        `session`,
+        files,
+      );
+
+      const qrImagesUrl = JSON.stringify(urlImages);
+
       const session = plainToClass(Session, newSession);
       session.host = user;
       session.status = SessionStatus.OPEN;
-      this.em.persist(session);
+      session.qr_images = qrImagesUrl;
 
-      await this.em.flush();
+      const getShopImage = await this.getShopImage.getShopImage(
+        session.shop_link,
+      );
 
-      return session;
+      if (getShopImage.status === 200) {
+        session.shop_image = getShopImage.photo.value;
+
+        this.em.persist(session);
+
+        await this.em.flush();
+
+        return {
+          status: 200,
+          message: 'Create new session successfully !',
+          id: session.id,
+        };
+      } else {
+        return {
+          status: getShopImage.status,
+          message: getShopImage.message,
+          id: null,
+        };
+      }
     } catch (error) {
       this.logger.error('HAS AN ERROR AT createNewSessionToday()');
     }
@@ -706,11 +736,17 @@ export class SessionService {
       throw err;
     }
   }
-  async editSessionInfo(id: number, editSessionInfo: EditSession, user: User) {
+  async editSessionInfo(
+    id: number,
+    editSessionInfo: EditSession,
+    user: User,
+    files: Array<Express.Multer.File> | Express.Multer.File,
+  ) {
     try {
-      const sessionById = await this.sessionRepository.findOne({
-        id: id,
-      });
+      const sessionById = await this.sessionRepository.findOne(
+        { id: id },
+        { populate: ['host'] },
+      );
 
       if (!sessionById) {
         return {
@@ -735,16 +771,30 @@ export class SessionService {
         };
       }
 
-      sessionEdit.host = user;
+      const urlImages: string[] = await this.awsService.bulkPutObject(
+        `session`,
+        files,
+      );
 
-      this.em.persist(sessionEdit);
+      const qrImagesUrl = JSON.stringify(urlImages);
+
+      if (sessionById.qr_images !== qrImagesUrl) {
+        await this.awsService.bulkDeleteObject(
+          JSON.parse(sessionById.qr_images),
+        );
+      }
+
+      sessionEdit.host = user;
+      sessionById.qr_images = qrImagesUrl;
+
+      const newSessionInfor = this.em.assign(sessionById, sessionEdit);
 
       await this.em.flush();
 
       return {
         status: 200,
         message: 'Edit session information sucessfully !',
-        data: sessionEdit,
+        data: newSessionInfor,
       };
     } catch (error) {
       this.logger.error('HAS AN ERROR AT editSessionInfo()');
