@@ -174,19 +174,7 @@ export class SessionService {
       return {
         status: 200,
         message: 'Edit session information sucessfully !',
-        data: {
-          id: newSessionInfor.id,
-          created_at: newSessionInfor.created_at,
-          updated_at: newSessionInfor.updated_at,
-          host: newSessionInfor.host,
-          title: newSessionInfor.title,
-          description: newSessionInfor.description,
-          shopLink: newSessionInfor.shop_link,
-          hostPaymentInfo: newSessionInfor.host_payment_info,
-          qrImages: newSessionInfor.qr_images,
-          shopImage: newSessionInfor.shop_image,
-          status: newSessionInfor.status,
-        },
+        data: newSessionInfor,
       };
     } catch (error) {
       this.logger.error('HAS AN ERROR AT editSessionInfo()');
