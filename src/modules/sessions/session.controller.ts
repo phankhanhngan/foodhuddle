@@ -18,7 +18,7 @@ import { SessionService } from './session.service';
 import { Response } from 'express';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { CreateSession } from './dtos/create-session.dto';
-import { AwsService } from '../aws/aws.service';
+import { AWSService } from '../aws/aws.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
@@ -31,7 +31,7 @@ export class SessionController {
   constructor(
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     private readonly sessionService: SessionService,
-    private readonly awsService: AwsService,
+    private readonly awsService: AWSService,
     private readonly imageResize: ImageResize,
   ) {}
 
@@ -107,20 +107,20 @@ export class SessionController {
     @Res() res: Response,
   ) {
     try {
-      // const urlImages: Promise<string>[] = files.map(async (img) => {
-      //   const resizedImage = await this.imageResize.resizeImage(img.buffer);
+      const urlImages: Promise<string>[] = files.map(async (img) => {
+        const resizedImage = await this.imageResize.resizeImage(img.buffer);
 
-      //   const imageUrl = await this.awsService.uploadImage(
-      //     resizedImage,
-      //     img.originalname,
-      //   );
+        const imageUrl = await this.awsService.uploadImage(
+          resizedImage,
+          img.originalname,
+        );
 
-      //   return imageUrl;
-      // });
+        return imageUrl;
+      });
 
-      // const listUrlImages = await Promise.all(urlImages);
+      const listUrlImages = await Promise.all(urlImages);
 
-      // const qrImagesUrl = JSON.stringify(Object.assign({}, listUrlImages));
+      const qrImagesUrl = JSON.stringify(Object.assign({}, listUrlImages));
 
       const { user } = req;
       //dto.qr_images = qrImagesUrl;
