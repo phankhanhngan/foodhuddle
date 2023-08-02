@@ -47,7 +47,7 @@ export class SessionService {
     private readonly getShopImage: ShopImage,
   ) {}
 
-  async getNumberOfJoiner(sessionId: number) {
+  async _getNumberOfJoiner(sessionId: number) {
     const sessionsBySessionId = await this.foodOrderRepository.find(
       {
         session: sessionId,
@@ -74,14 +74,14 @@ export class SessionService {
     return listJoinerPerSession.length;
   }
 
-  async getAllSessions() {
+  async _getAllSessions() {
     try {
       const allSessions = await this.sessionRepository.findAll({
         fields: ['id', 'title', 'host', 'shop_image', 'status', 'created_at'],
       });
 
       const listSessionsReturn = allSessions.map(async (v) => {
-        const numberOfJoiner = await this.getNumberOfJoiner(v.id);
+        const numberOfJoiner = await this._getNumberOfJoiner(v.id);
         return {
           id: v.id,
           title: v.title,
@@ -100,7 +100,7 @@ export class SessionService {
     }
   }
 
-  async getAllSessionHostedByUserId(userId: number) {
+  async _getAllSessionHostedByUserId(userId: number) {
     try {
       const sessionHostedByUserId = await this.sessionRepository.find({
         host: userId,
@@ -108,7 +108,7 @@ export class SessionService {
 
       const sessionHostedByUserIdReturn = sessionHostedByUserId.map(
         async (v) => {
-          const numberOfJoiner = await this.getNumberOfJoiner(v.id);
+          const numberOfJoiner = await this._getNumberOfJoiner(v.id);
           return {
             id: v.id,
             title: v.title,
@@ -127,7 +127,7 @@ export class SessionService {
     }
   }
 
-  async getAllSessionsJoinedByUserId(userId: number) {
+  async _getAllSessionsJoinedByUserId(userId: number) {
     try {
       const sessionJoinedByUserId = await this.foodOrderRepository.find(
         {
@@ -139,7 +139,7 @@ export class SessionService {
 
       const sessionJoinedByUserIdTodayFormated = sessionJoinedByUserId.map(
         async (v) => {
-          const numberOfJoiner = await this.getNumberOfJoiner(v.session.id);
+          const numberOfJoiner = await this._getNumberOfJoiner(v.session.id);
           const session = {
             id: v.session.id,
             title: v.session.title,
@@ -176,7 +176,7 @@ export class SessionService {
       const currentMonth = today.getMonth() + 1;
       const currentYear = today.getFullYear();
 
-      const allSessions = await this.getAllSessions();
+      const allSessions = await this._getAllSessions();
 
       const listSessionsToday = allSessions.filter(
         (v) =>
@@ -210,7 +210,7 @@ export class SessionService {
   }
   async getAllSessionHostedTodayByUserId(userId: number) {
     try {
-      const sessionHostedByUserId = await this.getAllSessionHostedByUserId(
+      const sessionHostedByUserId = await this._getAllSessionHostedByUserId(
         userId,
       );
 
@@ -239,7 +239,7 @@ export class SessionService {
       const currentMonth = today.getMonth() + 1;
       const currentYear = today.getFullYear();
 
-      const sessionJoinedByUserId = await this.getAllSessionsJoinedByUserId(
+      const sessionJoinedByUserId = await this._getAllSessionsJoinedByUserId(
         userId,
       );
 
