@@ -315,7 +315,7 @@ export class SessionService {
                 },
               });
 
-            const numberOfJoinersOfSession = await this.getNumberOfJoiner(id);
+            const numberOfJoinersOfSession = await this._getNumberOfJoiner(id);
 
             const numberOfJoinersRequestPayment =
               await this.userPaymentRepository.count({
