@@ -34,7 +34,7 @@ export class SessionService {
     private readonly foodOrderRepository: EntityRepository<FoodOrder>,
   ) {}
 
-  async getNumberOfJoiner(sessionId: number) {
+  async _getNumberOfJoiner(sessionId: number) {
     const sessionsBySessionId = await this.foodOrderRepository.find(
       {
         session: sessionId,
@@ -68,7 +68,7 @@ export class SessionService {
       });
 
       const listSessionsReturn = allSessions.map(async (v) => {
-        const numberOfJoiner = await this.getNumberOfJoiner(v.id);
+        const numberOfJoiner = await this._getNumberOfJoiner(v.id);
         return {
           id: v.id,
           title: v.title,
@@ -94,7 +94,7 @@ export class SessionService {
 
       const sessionHostedByUserIdReturn = sessionHostedByUserId.map(
         async (v) => {
-          const numberOfJoiner = await this.getNumberOfJoiner(v.id);
+          const numberOfJoiner = await this._getNumberOfJoiner(v.id);
           return {
             id: v.id,
             title: v.title,
@@ -125,7 +125,7 @@ export class SessionService {
 
       const sessionJoinedByUserIdTodayFormated = sessionJoinedByUserId.map(
         async (v) => {
-          const numberOfJoiner = await this.getNumberOfJoiner(v.session.id);
+          const numberOfJoiner = await this._getNumberOfJoiner(v.session.id);
           const session = {
             id: v.session.id,
             title: v.session.title,
