@@ -89,8 +89,8 @@ export class SessionService {
             title: v.title,
             host: v.host.email,
             status: v.status,
-            number_of_joiners: numberOfJoiner,
-            created_at: v.created_at,
+            numberOfJoiners: numberOfJoiner,
+            createdAt: v.created_at,
           };
         },
       );
@@ -120,8 +120,8 @@ export class SessionService {
             title: v.session.title,
             host: v.session.host.email,
             status: v.session.status,
-            number_of_joiners: numberOfJoiner,
-            created_at: v.session.created_at,
+            numberOfJoiners: numberOfJoiner,
+            createdAt: v.session.created_at,
           };
           return session;
         },
@@ -155,9 +155,9 @@ export class SessionService {
 
       const listSessionsToday = allSessions.filter(
         (v) =>
-          v.created_at.getDate() === currentDate &&
-          v.created_at.getMonth() + 1 === currentMonth &&
-          v.created_at.getFullYear() === currentYear,
+          v.createdAt.getDate() === currentDate &&
+          v.createdAt.getMonth() + 1 === currentMonth &&
+          v.createdAt.getFullYear() === currentYear,
       );
 
       return listSessionsToday;
@@ -184,9 +184,9 @@ export class SessionService {
 
       const sessionHostedTodayByUserId = sessionHostedByUserId.filter(
         (v) =>
-          v.created_at.getDate() === currentDate &&
-          v.created_at.getMonth() + 1 === currentMonth &&
-          v.created_at.getFullYear() === currentYear,
+          v.createdAt.getDate() === currentDate &&
+          v.createdAt.getMonth() + 1 === currentMonth &&
+          v.createdAt.getFullYear() === currentYear,
       );
 
       return sessionHostedTodayByUserId;
@@ -209,9 +209,9 @@ export class SessionService {
 
       const sessionJoinedByUserIdToday = sessionJoinedByUserId.filter(
         (v) =>
-          v.created_at.getDate() === currentDate &&
-          v.created_at.getMonth() + 1 === currentMonth &&
-          v.created_at.getFullYear() === currentYear,
+          v.createdAt.getDate() === currentDate &&
+          v.createdAt.getMonth() + 1 === currentMonth &&
+          v.createdAt.getFullYear() === currentYear,
       );
 
       return sessionJoinedByUserIdToday;
