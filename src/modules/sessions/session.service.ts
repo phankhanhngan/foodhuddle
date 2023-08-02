@@ -159,7 +159,7 @@ export class SessionService {
         files,
       );
 
-      const qrImagesUrl = JSON.stringify(Object.assign({}, urlImages));
+      const qrImagesUrl = JSON.stringify(urlImages);
 
       if (sessionById.qr_images !== qrImagesUrl) {
         await this.awsService.bulkDeleteObject(
