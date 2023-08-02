@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import axios from 'axios';
 import {
   FoodDTO,
@@ -39,63 +39,74 @@ export class MenuShopUtil {
 
       const urlGetShopId = `https://gappapi.deliverynow.vn/api/delivery/get_from_url?url=${getShopUrl}`;
 
-      const shopId = (await axios.get(urlGetShopId, config)).data?.reply
-        .delivery_id;
+      const checkConnection = (await axios.get(urlGetShopId, config)).data
+        .reply;
 
-      const urlGetShopMenu = `https://gappapi.deliverynow.vn/api/dish/get_delivery_dishes?id_type=2&request_id=${shopId}`;
+      if (checkConnection) {
+        const shopId = (await axios.get(urlGetShopId, config)).data?.reply
+          .delivery_id;
 
-      const reponseData = (await axios.get(urlGetShopMenu, config)).data;
+        const urlGetShopMenu = `https://gappapi.deliverynow.vn/api/dish/get_delivery_dishes?id_type=2&request_id=${shopId}`;
 
-      const menuFoodFormated = reponseData.reply.menu_infos.map((v) => {
-        const foodByDish = v.dishes.map((fbd) => {
-          const isFetchData = fbd.is_active && fbd.is_available;
+        const reponseData = (await axios.get(urlGetShopMenu, config)).data;
 
-          if (isFetchData) {
-            const optionsFood: OptionListDTO[] = fbd.options
-              ? fbd.options.map((op) => {
-                  const optionItems: OptionDTO[] = Array.from<OptionDTO>(
-                    op.option_items.items
-                      ? op.option_items.items.map((opi) => {
-                          const optionItem = {
-                            name: opi.name,
-                            price: opi.price.value,
-                          };
+        if (reponseData.reply) {
+          const menuFoodFormated = reponseData.reply.menu_infos.map((v) => {
+            const foodByDish = v.dishes.map((fbd) => {
+              const isFetchData = fbd.is_active && fbd.is_available;
 
-                          return optionItem;
-                        })
-                      : [],
-                  );
+              if (isFetchData) {
+                const optionsFood: OptionListDTO[] = fbd.options
+                  ? fbd.options.map((op) => {
+                      const optionItems: OptionDTO[] = Array.from<OptionDTO>(
+                        op.option_items.items
+                          ? op.option_items.items.map((opi) => {
+                              const optionItem = {
+                                name: opi.name,
+                                price: opi.price.value,
+                              };
 
-                  const option: OptionListDTO = {
-                    id: op.id,
-                    mandatory: op.mandatory,
-                    category: op.name,
-                    detail: optionItems,
-                  };
-                  return option;
-                })
-              : [];
+                              return optionItem;
+                            })
+                          : [],
+                      );
 
-            const menuFood: FoodDTO = {
-              id: fbd.id,
-              foodName: fbd.name,
-              description: fbd.description,
-              price: fbd.price.value,
-              discountPrice: fbd.discount_price ? fbd.discount_price.value : 0,
-              photo: fbd.photos[0].value,
-              options: optionsFood,
-            };
+                      const option: OptionListDTO = {
+                        id: op.id,
+                        mandatory: op.mandatory,
+                        category: op.name,
+                        detail: optionItems,
+                      };
+                      return option;
+                    })
+                  : [];
 
-            return menuFood;
-          }
-        });
+                const menuFood: FoodDTO = {
+                  id: fbd.id,
+                  foodName: fbd.name,
+                  description: fbd.description,
+                  price: fbd.price.value,
+                  discountPrice: fbd.discount_price
+                    ? fbd.discount_price.value
+                    : 0,
+                  photo: fbd.photos[0].value,
+                  options: optionsFood,
+                };
 
-        return foodByDish;
-      });
+                return menuFood;
+              }
+            });
 
-      return menuFoodFormated
-        .flat(Infinity)
-        .filter((food: FoodDTO | undefined) => food);
+            return foodByDish;
+          });
+
+          return menuFoodFormated
+            .flat(Infinity)
+            .filter((food: FoodDTO | undefined) => food);
+        }
+      }
+
+      throw new BadRequestException('Invalid shop link');
     } catch (error) {
       throw error;
     }
