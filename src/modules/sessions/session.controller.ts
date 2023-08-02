@@ -225,6 +225,71 @@ export class SessionController {
     }
   }
 
+  @Put('/:id')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FilesInterceptor('qr_images'))
+  async editSessionInfo(
+    @Body(
+      new ValidationPipe({
+        transform: true,
+        transformOptions: { enableImplicitConversion: true },
+      }),
+    )
+    editSessionInfo: EditSession,
+    @Req() req,
+    @Param('id', ParseIntPipe) id: number,
+    @UploadedFiles(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSize({
+            maxSize: 5,
+          }),
+          new AcceptImageType({
+            fileType: ['image/jpeg', 'image/png'],
+          }),
+        ],
+        fileIsRequired: false,
+      }),
+    )
+    files: Array<Express.Multer.File>,
+    @Res() res: Response,
+  ) {
+    try {
+      // const urlImages: Promise<string>[] = files.map(async (img) => {
+      //   const resizedImage = await this.imageResize.resizeImage(img.buffer);
+
+      //   const imageUrl = await this.awsService.uploadImage(
+      //     resizedImage,
+      //     img.originalname,
+      //   );
+
+      //   return imageUrl;
+      // });
+
+      // const listUrlImages = await Promise.all(urlImages);
+
+      // const qrImagesUrl = JSON.stringify(Object.assign({}, listUrlImages));
+
+      const { user } = req;
+      //dto.qr_images = qrImagesUrl;
+
+      const editSession = await this.sessionService.editSessionInfo(
+        id,
+        editSessionInfo,
+        user,
+      );
+
+      return res.status(editSession.status).json({
+        statusCode: editSession.status,
+        message: editSession.message,
+        data: editSession.data,
+      });
+    } catch (error) {
+      this.logger.error('HAS AN ERROR WHEN EDITING SESSION INFORMATION');
+      throw error;
+    }
+  }
+
   @Put('/:id/update-status')
   @UseGuards(JwtAuthGuard)
   async updateSessionStatus(
@@ -600,69 +665,6 @@ export class SessionController {
         SessionService.name,
       );
       throw err;
-    }
-  }
-
-  @UseInterceptors(FilesInterceptor('qr_images'))
-  async editSessionInfo(
-    @Body(
-      new ValidationPipe({
-        transform: true,
-        transformOptions: { enableImplicitConversion: true },
-      }),
-    )
-    editSessionInfo: EditSession,
-    @Req() req,
-    @Param('id', ParseIntPipe) id: number,
-    @UploadedFiles(
-      new ParseFilePipe({
-        validators: [
-          new MaxFileSize({
-            maxSize: 5,
-          }),
-          new AcceptImageType({
-            fileType: ['image/jpeg', 'image/png'],
-          }),
-        ],
-        fileIsRequired: false,
-      }),
-    )
-    files: Array<Express.Multer.File>,
-    @Res() res: Response,
-  ) {
-    try {
-      // const urlImages: Promise<string>[] = files.map(async (img) => {
-      //   const resizedImage = await this.imageResize.resizeImage(img.buffer);
-
-      //   const imageUrl = await this.awsService.uploadImage(
-      //     resizedImage,
-      //     img.originalname,
-      //   );
-
-      //   return imageUrl;
-      // });
-
-      // const listUrlImages = await Promise.all(urlImages);
-
-      // const qrImagesUrl = JSON.stringify(Object.assign({}, listUrlImages));
-
-      const { user } = req;
-      //dto.qr_images = qrImagesUrl;
-
-      const editSession = await this.sessionService.editSessionInfo(
-        id,
-        editSessionInfo,
-        user,
-      );
-
-      return res.status(editSession.status).json({
-        statusCode: editSession.status,
-        message: editSession.message,
-        data: editSession.data,
-      });
-    } catch (error) {
-      this.logger.error('HAS AN ERROR WHEN EDITING SESSION INFORMATION');
-      throw error;
     }
   }
 }
