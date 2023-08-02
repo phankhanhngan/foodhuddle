@@ -264,7 +264,12 @@ export class SessionController {
 
   @Get(':id/payment-checklist')
   @UseGuards(RolesGuard)
-  @UseGuards(SessionStatusGuard([SessionStatus.PENDING_PAYMENTS]))
+  @UseGuards(
+    SessionStatusGuard([
+      SessionStatus.PENDING_PAYMENTS,
+      SessionStatus.FINISHED,
+    ]),
+  )
   async getPaymentChecklist(
     @Req() req,
     @Res() res: Response,

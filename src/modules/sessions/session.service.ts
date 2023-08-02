@@ -5,6 +5,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { plainToClass, plainToInstance } from 'class-transformer';
 import {
+  FoodOrder,
   Session,
   SessionPayment,
   User,
@@ -30,6 +31,8 @@ export class SessionService {
     private readonly userPaymentRepository: EntityRepository<UserPayment>,
     @InjectRepository(User)
     private readonly userRepository: EntityRepository<User>,
+    @InjectRepository(FoodOrder)
+    private readonly foodOrderRepository: EntityRepository<FoodOrder>,
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     private readonly awsService: AWSService,
   ) {}
@@ -155,6 +158,18 @@ export class SessionService {
     user: User,
   ) {
     try {
+      const conn = this.em.getConnection();
+
+      const joinedUserIds: Array<number> = (
+        await conn.execute(
+          `SELECT DISTINCT user_id AS id FROM food_order fo WHERE fo.session_id  = ${session.id}`,
+        )
+      ).map((res) => res.id);
+
+      if (!joinedUserIds.includes(user.id)) {
+        throw new BadRequestException(`You didn't have orders in this session`);
+      }
+
       const existedUserPayment: Loaded<UserPayment> =
         await this.userPaymentRepository.findOne({
           session,
@@ -217,15 +232,18 @@ export class SessionService {
     }
   }
 
-  async _getUserIdsWithoutRequestPayment(): Promise<number[]> {
+  async _getUserIdsWithoutRequestPayment(host: User): Promise<number[]> {
     try {
       const conn = this.em.getConnection();
 
       return (
         await conn.execute(
-          `(SELECT DISTINCT fo.user_id as id FROM food_order fo) 
+          `SELECT * FROM 
+          ((SELECT DISTINCT fo.user_id as id FROM food_order fo) 
          EXCEPT
-        (SELECT DISTINCT up.user_id as id FROM user_payment up)`,
+        (SELECT DISTINCT up.user_id as id FROM user_payment up)) 
+        as id
+        WHERE id != ${host.id}`,
         )
       ).map((userId) => userId.id);
     } catch (err) {
@@ -271,7 +289,7 @@ export class SessionService {
     try {
       const [userIdsWithoutRequestPayment, existedUserPayment] =
         await Promise.all([
-          this._getUserIdsWithoutRequestPayment(),
+          this._getUserIdsWithoutRequestPayment(session.host),
           this.userPaymentRepository.find({
             session,
           }),
@@ -310,7 +328,7 @@ export class SessionService {
         { enableCircularCheck: true },
       );
       const userIdsWithoutRequestPayment =
-        await this._getUserIdsWithoutRequestPayment();
+        await this._getUserIdsWithoutRequestPayment(session.host);
 
       if (userIdsWithoutRequestPayment.length > 0) {
         const users: Loaded<User>[] = await this.userRepository.find({
