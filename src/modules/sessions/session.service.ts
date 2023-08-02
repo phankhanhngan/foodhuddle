@@ -315,15 +315,17 @@ export class SessionService {
                 },
               });
 
-            const checkUserMakePaymentRequest =
-              await this.userPaymentRepository.find({
+            const numberOfJoinersOfSession = await this.getNumberOfJoiner(id);
+
+            const numberOfJoinersRequestPayment =
+              await this.userPaymentRepository.count({
                 session: id,
               });
 
-            const allowFinishSession =
-              !checkUserPaymentApproveAll[0] && checkUserMakePaymentRequest[0];
-
-            if (allowFinishSession) {
+            if (
+              numberOfJoinersRequestPayment === numberOfJoinersOfSession &&
+              !checkUserPaymentApproveAll[0]
+            ) {
               this.sessionRepository.assign(sessionById, dto);
 
               await this.em.persistAndFlush(sessionById);
