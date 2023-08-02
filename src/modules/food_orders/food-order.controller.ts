@@ -3,7 +3,6 @@ import {
   Controller,
   Get,
   Inject,
-  InternalServerErrorException,
   ParseArrayPipe,
   ParseIntPipe,
   Put,
@@ -22,7 +21,7 @@ import {
 } from './interceptors';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { FoodOrderService } from './food-order.service';
-import { FoodOrderDTO } from './dtos/food-order.dto';
+import { CreateFoodOrderDTO } from './dtos/create-food-order.dto';
 import { FoodOrder } from 'src/entities';
 
 @UseGuards(JwtAuthGuard)
@@ -39,8 +38,8 @@ export class FoodOrderController {
     @Req() req,
     @Res() res: Response,
     @Body('sessionId', ParseIntPipe) sessionId: number,
-    @Body('foodOrderList', new ParseArrayPipe({ items: FoodOrderDTO }))
-    foodOrderList: FoodOrderDTO[],
+    @Body('foodOrderList', new ParseArrayPipe({ items: CreateFoodOrderDTO }))
+    foodOrderList: CreateFoodOrderDTO[],
   ) {
     try {
       const { user } = req;

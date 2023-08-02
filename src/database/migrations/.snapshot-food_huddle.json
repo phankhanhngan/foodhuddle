@@ -79,17 +79,7 @@
           "keyName": "user_google_id_unique",
           "primary": false,
           "unique": true
-        },
-        {
-          "columnNames": [
-            "email"
-          ],
-          "composite": false,
-          "keyName": "user_email_index",
-          "primary": false,
-          "unique": false
-        },
-        {
+        },{
           "columnNames": [
             "email"
           ],
@@ -318,12 +308,12 @@
         },
         "options": {
           "name": "options",
-          "type": "varchar(255)",
+          "type": "text",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": true,
-          "mappedType": "string"
+          "mappedType": "text"
         },
         "quantity": {
           "name": "quantity",
@@ -372,17 +362,6 @@
           "keyName": "food_order_user_id_index",
           "primary": false,
           "unique": false
-        },
-        {
-          "keyName": "food_order_session_id_user_id_food_name_unique",
-          "columnNames": [
-            "session_id",
-            "user_id",
-            "food_name"
-          ],
-          "composite": true,
-          "primary": false,
-          "unique": true
         },
         {
           "keyName": "PRIMARY",

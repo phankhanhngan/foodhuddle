@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { Observable, map } from 'rxjs';
 import { plainToInstance } from 'class-transformer';
-import { FoodOrderDTO } from '../dtos/food-order.dto';
+import { CreateFoodOrderDTO } from '../dtos/create-food-order.dto';
 import { FoodOrder } from 'src/entities';
 
 @Injectable()
@@ -17,7 +17,7 @@ export class ResponseFoodTransformInterceptor implements NestInterceptor {
         const { sessionId } = context.switchToHttp().getRequest().query;
         const formattedFoodOrderList = foodOrderList.map((foodOrder) => {
           foodOrder.options = JSON.parse(foodOrder?.options);
-          return plainToInstance(FoodOrderDTO, foodOrder, {
+          return plainToInstance(CreateFoodOrderDTO, foodOrder, {
             enableCircularCheck: true,
           });
         });

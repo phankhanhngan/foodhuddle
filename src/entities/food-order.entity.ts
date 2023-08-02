@@ -1,9 +1,8 @@
-import { Entity, ManyToOne, Property, Unique } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/core';
 import { Base, Session, User } from './index';
 import { Transform } from 'class-transformer';
 
 @Entity()
-@Unique({ properties: ['session', 'user', 'foodName'] })
 export class FoodOrder extends Base {
   @ManyToOne({ entity: () => Session })
   session!: Session;
@@ -17,7 +16,7 @@ export class FoodOrder extends Base {
   @Property({ nullable: false })
   originPrice!: number;
 
-  @Property({ nullable: true })
+  @Property({ nullable: true, type: 'text' })
   @Transform(
     ({ value, key, obj }) => {
       obj[key] = JSON.stringify(value);

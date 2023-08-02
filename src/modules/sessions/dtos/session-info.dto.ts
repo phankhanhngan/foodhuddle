@@ -12,8 +12,13 @@ export class SessionInfoDTO {
   created_at: Date;
 
   @Expose()
-  @Transform(({ obj }) => obj.host.name)
-  host: string;
+  @Transform(({ obj, key }) => ({
+    googleId: obj[key].googleId,
+    email: obj[key].email,
+    name: obj[key].name,
+    photo: obj[key].photo,
+  }))
+  host: object;
 
   @Transform(({ obj }) =>
     new Date(obj.created_at).toLocaleDateString('en-GB', {
@@ -43,6 +48,11 @@ export class SessionInfoDTO {
   hostPaymentInfo: string;
 
   @Expose()
-  @Transform(({ obj }) => JSON.parse(obj.qr_images))
+  @Transform(({ obj }) => {
+    if (obj.qr_images) {
+      return JSON.parse(obj.qr_images);
+    }
+    return null;
+  })
   qrImages: string;
 }
