@@ -63,9 +63,15 @@ export class SessionService {
       return user;
     });
 
+    const currentHostId = (
+      await this.sessionRepository.findOne({
+        id: sessionId,
+      })
+    ).host.id;
+
     const check = [];
     const listJoinerPerSession = listUserJoinBySession.filter((v) => {
-      if (!check.includes(v.id)) {
+      if (currentHostId !== v.id && !check.includes(v.id)) {
         check.push(v.id);
         return v;
       }
@@ -114,6 +120,7 @@ export class SessionService {
             title: v.title,
             host: v.host.email,
             status: v.status,
+            shopImage: v.shop_image,
             numberOfJoiners: numberOfJoiner,
             createdAt: v.created_at,
           };
@@ -145,6 +152,7 @@ export class SessionService {
             title: v.session.title,
             host: v.session.host.email,
             status: v.session.status,
+            shopImage: v.session.shop_image,
             numberOfJoiners: numberOfJoiner,
             createdAt: v.session.created_at,
           };
