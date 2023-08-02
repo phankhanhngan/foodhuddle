@@ -88,7 +88,7 @@ export class SessionService {
       const session = plainToClass(Session, newSession);
       session.host = user;
       session.status = SessionStatus.OPEN;
-      session.qr_images = qrImagesUrl;
+      session.qr_images = JSON.parse(qrImagesUrl);
 
       const getShopImage = await this.getShopImage.getShopImage(
         session.shop_link,
@@ -168,7 +168,7 @@ export class SessionService {
       }
 
       sessionEdit.host = user;
-      sessionById.qr_images = qrImagesUrl;
+      sessionById.qr_images = JSON.parse(qrImagesUrl);
 
       const newSessionInfor = this.em.assign(sessionById, sessionEdit);
 
