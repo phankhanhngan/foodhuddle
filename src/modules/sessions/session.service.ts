@@ -5,7 +5,6 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { plainToClass, plainToInstance } from 'class-transformer';
 import {
-  FoodOrder,
   Session,
   FoodOrder,
   SessionPayment,
