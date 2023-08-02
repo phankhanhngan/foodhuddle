@@ -171,7 +171,7 @@ export class SessionController {
     }
   }
 
-  @Put('/:id')
+  @Put('/:id/update-status')
   @UseGuards(JwtAuthGuard)
   async updateSessionStatus(
     @Body() dto: UpdateSessionStatus,
