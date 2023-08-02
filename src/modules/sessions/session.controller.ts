@@ -236,32 +236,17 @@ export class SessionController {
         fileIsRequired: false,
       }),
     )
-    files: Array<Express.Multer.File>,
+    files: Array<Express.Multer.File> | Express.Multer.File,
     @Res() res: Response,
   ) {
     try {
-      // const urlImages: Promise<string>[] = files.map(async (img) => {
-      //   const resizedImage = await this.imageResize.resizeImage(img.buffer);
-
-      //   const imageUrl = await this.awsService.uploadImage(
-      //     resizedImage,
-      //     img.originalname,
-      //   );
-
-      //   return imageUrl;
-      // });
-
-      // const listUrlImages = await Promise.all(urlImages);
-
-      // const qrImagesUrl = JSON.stringify(Object.assign({}, listUrlImages));
-
       const { user } = req;
-      //dto.qr_images = qrImagesUrl;
 
       const editSession = await this.sessionService.editSessionInfo(
         id,
         editSessionInfo,
         user,
+        files,
       );
 
       return res.status(editSession.status).json({

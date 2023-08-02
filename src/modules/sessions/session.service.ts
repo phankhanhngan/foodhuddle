@@ -27,7 +27,6 @@ import {
 } from './helpers';
 import { SessionStatus } from 'src/entities/session.entity';
 import { ShopImage } from 'src/utils/shop-image.util';
-import { AWSService } from '../aws/aws.service';
 
 @Injectable()
 export class SessionService {
@@ -46,7 +45,6 @@ export class SessionService {
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     private readonly awsService: AWSService,
     private readonly getShopImage: ShopImage,
-    private readonly awsService: AWSService,
   ) {}
 
   async getNumberOfJoiner(sessionId: number) {
@@ -737,7 +735,12 @@ export class SessionService {
       throw err;
     }
   }
-  async editSessionInfo(id: number, editSessionInfo: EditSession, user: User) {
+  async editSessionInfo(
+    id: number,
+    editSessionInfo: EditSession,
+    user: User,
+    files: Array<Express.Multer.File> | Express.Multer.File,
+  ) {
     try {
       const sessionById = await this.sessionRepository.findOne(
         { id: id },
@@ -767,7 +770,21 @@ export class SessionService {
         };
       }
 
+      const urlImages: string[] = await this.awsService.bulkPutObject(
+        `session`,
+        files,
+      );
+
+      const qrImagesUrl = JSON.stringify(Object.assign({}, urlImages));
+
+      if (sessionById.qr_images !== qrImagesUrl) {
+        await this.awsService.bulkDeleteObject(
+          JSON.parse(sessionById.qr_images),
+        );
+      }
+
       sessionEdit.host = user;
+      sessionById.qr_images = qrImagesUrl;
 
       const newSessionInfor = this.em.assign(sessionById, sessionEdit);
 
