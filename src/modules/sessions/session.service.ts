@@ -47,7 +47,7 @@ export class SessionService {
     private readonly getShopImage: ShopImage,
   ) {}
 
-  async getNumberOfJoiner(sessionId: number) {
+  async _getNumberOfJoiner(sessionId: number) {
     const sessionsBySessionId = await this.foodOrderRepository.find(
       {
         session: sessionId,
@@ -74,21 +74,22 @@ export class SessionService {
     return listJoinerPerSession.length;
   }
 
-  async getAllSessions() {
+  async _getAllSessions() {
     try {
       const allSessions = await this.sessionRepository.findAll({
         fields: ['id', 'title', 'host', 'shop_image', 'status', 'created_at'],
       });
 
       const listSessionsReturn = allSessions.map(async (v) => {
-        const numberOfJoiner = await this.getNumberOfJoiner(v.id);
+        const numberOfJoiner = await this._getNumberOfJoiner(v.id);
         return {
           id: v.id,
           title: v.title,
           host: v.host.email,
           status: v.status,
-          number_of_joiners: numberOfJoiner,
-          created_at: v.created_at,
+          shopImage: v.shop_image,
+          createdAt: v.created_at,
+          numberOfJoiners: numberOfJoiner,
         };
       });
 
@@ -99,7 +100,7 @@ export class SessionService {
     }
   }
 
-  async getAllSessionHostedByUserId(userId: number) {
+  async _getAllSessionHostedByUserId(userId: number) {
     try {
       const sessionHostedByUserId = await this.sessionRepository.find({
         host: userId,
@@ -107,14 +108,14 @@ export class SessionService {
 
       const sessionHostedByUserIdReturn = sessionHostedByUserId.map(
         async (v) => {
-          const numberOfJoiner = await this.getNumberOfJoiner(v.id);
+          const numberOfJoiner = await this._getNumberOfJoiner(v.id);
           return {
             id: v.id,
             title: v.title,
             host: v.host.email,
             status: v.status,
-            number_of_joiners: numberOfJoiner,
-            created_at: v.created_at,
+            numberOfJoiners: numberOfJoiner,
+            createdAt: v.created_at,
           };
         },
       );
@@ -126,7 +127,7 @@ export class SessionService {
     }
   }
 
-  async getAllSessionsJoinedByUserId(userId: number) {
+  async _getAllSessionsJoinedByUserId(userId: number) {
     try {
       const sessionJoinedByUserId = await this.foodOrderRepository.find(
         {
@@ -138,14 +139,14 @@ export class SessionService {
 
       const sessionJoinedByUserIdTodayFormated = sessionJoinedByUserId.map(
         async (v) => {
-          const numberOfJoiner = await this.getNumberOfJoiner(v.session.id);
+          const numberOfJoiner = await this._getNumberOfJoiner(v.session.id);
           const session = {
             id: v.session.id,
             title: v.session.title,
             host: v.session.host.email,
             status: v.session.status,
-            number_of_joiners: numberOfJoiner,
-            created_at: v.session.created_at,
+            numberOfJoiners: numberOfJoiner,
+            createdAt: v.session.created_at,
           };
           return session;
         },
@@ -175,13 +176,13 @@ export class SessionService {
       const currentMonth = today.getMonth() + 1;
       const currentYear = today.getFullYear();
 
-      const allSessions = await this.getAllSessions();
+      const allSessions = await this._getAllSessions();
 
       const listSessionsToday = allSessions.filter(
         (v) =>
-          v.created_at.getDate() === currentDate &&
-          v.created_at.getMonth() + 1 === currentMonth &&
-          v.created_at.getFullYear() === currentYear,
+          v.createdAt.getDate() === currentDate &&
+          v.createdAt.getMonth() + 1 === currentMonth &&
+          v.createdAt.getFullYear() === currentYear,
       );
 
       return listSessionsToday;
@@ -209,7 +210,7 @@ export class SessionService {
   }
   async getAllSessionHostedTodayByUserId(userId: number) {
     try {
-      const sessionHostedByUserId = await this.getAllSessionHostedByUserId(
+      const sessionHostedByUserId = await this._getAllSessionHostedByUserId(
         userId,
       );
 
@@ -220,9 +221,9 @@ export class SessionService {
 
       const sessionHostedTodayByUserId = sessionHostedByUserId.filter(
         (v) =>
-          v.created_at.getDate() === currentDate &&
-          v.created_at.getMonth() + 1 === currentMonth &&
-          v.created_at.getFullYear() === currentYear,
+          v.createdAt.getDate() === currentDate &&
+          v.createdAt.getMonth() + 1 === currentMonth &&
+          v.createdAt.getFullYear() === currentYear,
       );
 
       return sessionHostedTodayByUserId;
@@ -238,15 +239,15 @@ export class SessionService {
       const currentMonth = today.getMonth() + 1;
       const currentYear = today.getFullYear();
 
-      const sessionJoinedByUserId = await this.getAllSessionsJoinedByUserId(
+      const sessionJoinedByUserId = await this._getAllSessionsJoinedByUserId(
         userId,
       );
 
       const sessionJoinedByUserIdToday = sessionJoinedByUserId.filter(
         (v) =>
-          v.created_at.getDate() === currentDate &&
-          v.created_at.getMonth() + 1 === currentMonth &&
-          v.created_at.getFullYear() === currentYear,
+          v.createdAt.getDate() === currentDate &&
+          v.createdAt.getMonth() + 1 === currentMonth &&
+          v.createdAt.getFullYear() === currentYear,
       );
 
       return sessionJoinedByUserIdToday;
@@ -337,7 +338,7 @@ export class SessionService {
                 },
               });
 
-            const numberOfJoinersOfSession = await this.getNumberOfJoiner(id);
+            const numberOfJoinersOfSession = await this._getNumberOfJoiner(id);
 
             const numberOfJoinersRequestPayment =
               await this.userPaymentRepository.count({
@@ -421,7 +422,7 @@ export class SessionService {
   }
   async getAllSessionsHistory(statusFilter: Array<string>) {
     try {
-      const allSessions = await this.getAllSessions();
+      const allSessions = await this._getAllSessions();
       const result =
         statusFilter[0] === undefined
           ? allSessions
@@ -771,6 +772,8 @@ export class SessionService {
         };
       }
 
+      await this.awsService.bulkDeleteObject(JSON.parse(sessionById.qr_images));
+
       const urlImages: string[] = await this.awsService.bulkPutObject(
         `session`,
         files,
@@ -778,14 +781,8 @@ export class SessionService {
 
       const qrImagesUrl = JSON.stringify(urlImages);
 
-      if (sessionById.qr_images !== qrImagesUrl) {
-        await this.awsService.bulkDeleteObject(
-          JSON.parse(sessionById.qr_images),
-        );
-      }
-
       sessionEdit.host = user;
-      sessionById.qr_images = qrImagesUrl;
+      sessionById.qr_images = JSON.parse(qrImagesUrl);
 
       const newSessionInfor = this.em.assign(sessionById, sessionEdit);
 
@@ -806,7 +803,7 @@ export class SessionService {
     statusFilter: Array<string>,
   ) {
     try {
-      const sessionHostedByUserId = await this.getAllSessionHostedByUserId(
+      const sessionHostedByUserId = await this._getAllSessionHostedByUserId(
         userId,
       );
 
@@ -831,7 +828,7 @@ export class SessionService {
     statusFilter: Array<string>,
   ) {
     try {
-      const sessionJoinedByUserId = await this.getAllSessionsJoinedByUserId(
+      const sessionJoinedByUserId = await this._getAllSessionsJoinedByUserId(
         userId,
       );
 
