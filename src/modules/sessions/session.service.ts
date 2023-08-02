@@ -7,6 +7,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { User } from 'src/entities/user.entity';
 import { plainToClass, plainToInstance } from 'class-transformer';
+import { ShopImage } from 'src/utils/shop-image.util';
 
 @Injectable()
 export class SessionService {
@@ -15,6 +16,7 @@ export class SessionService {
     private readonly sessionRepository: EntityRepository<Session>,
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     private readonly em: EntityManager,
+    private readonly getShopImage: ShopImage,
   ) {}
 
   async getAllSessionsToday() {
@@ -72,11 +74,29 @@ export class SessionService {
       const session = plainToClass(Session, newSession);
       session.host = user;
       session.status = SessionStatus.OPEN;
-      this.em.persist(session);
+      const getShopImage = await this.getShopImage.getShopImage(
+        session.shop_link,
+      );
 
-      await this.em.flush();
+      if (getShopImage.status === 200) {
+        session.shop_image = getShopImage.photo.value;
 
-      return session;
+        this.em.persist(session);
+
+        await this.em.flush();
+
+        return {
+          status: 200,
+          message: 'Create new session successfully !',
+          id: session.id,
+        };
+      } else {
+        return {
+          status: getShopImage.status,
+          message: getShopImage.message,
+          id: null,
+        };
+      }
     } catch (error) {
       this.logger.error('HAS AN ERROR AT createNewSessionToday()');
       throw error;
