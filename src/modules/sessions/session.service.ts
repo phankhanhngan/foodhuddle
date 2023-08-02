@@ -42,8 +42,6 @@ export class SessionService {
     private readonly userPaymentRepository: EntityRepository<UserPayment>,
     @InjectRepository(User)
     private readonly userRepository: EntityRepository<User>,
-    @InjectRepository(FoodOrder)
-    private readonly foodOrderRepository: EntityRepository<FoodOrder>,
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     private readonly awsService: AWSService,
   ) {}
