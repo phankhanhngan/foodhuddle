@@ -45,8 +45,9 @@ export class SessionService {
           title: v.title,
           host: v.host.email,
           status: v.status,
-          created_at: v.created_at,
-          number_of_joiners: 0,
+          shopImage: v.shop_image,
+          createdAt: v.created_at,
+          numberOfJoiners: 0,
         };
       });
 
