@@ -127,7 +127,7 @@ export class SessionService {
             title: v.session.title,
             host: v.session.host.email,
             status: v.session.status,
-            shopImage: v.shop_image,
+            shopImage: v.session.shop_image,
             numberOfJoiners: numberOfJoiner,
             createdAt: v.session.created_at,
           };
