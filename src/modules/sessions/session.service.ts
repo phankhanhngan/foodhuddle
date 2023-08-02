@@ -82,7 +82,7 @@ export class SessionService {
         files,
       );
 
-      const qrImagesUrl = JSON.stringify(Object.assign({}, urlImages));
+      const qrImagesUrl = urlImages.toString();
 
       const session = plainToClass(Session, newSession);
       session.host = user;
