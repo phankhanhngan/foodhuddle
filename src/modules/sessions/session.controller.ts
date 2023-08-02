@@ -67,11 +67,11 @@ export class SessionController {
 
       const qr_images = sessionByHostId
         ? JSON.parse(sessionByHostId.qr_images)
-        : {};
+        : [];
 
       return res.status(200).json({
         hostPaymentInfor: hostPaymentInfor,
-        qr_images: qr_images,
+        qrImages: qr_images,
       });
     } catch (error) {
       this.logger.error('HAS AN ERROR AT GETTING HOST PAYMENT INFORMATION');
