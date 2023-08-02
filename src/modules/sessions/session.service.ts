@@ -196,6 +196,18 @@ export class SessionService {
     }
   }
 
+  async getLatestSessionByHostId(hostId: number) {
+    try {
+      const latestSessionByHostId = this.sessionRepository.findOne(
+        { host: hostId },
+        { orderBy: { id: 'DESC' } },
+      );
+
+      return latestSessionByHostId;
+    } catch (error) {
+      this.logger.error('HAS AN ERROR AT getLatestSessionByHostId()');
+    }
+  }
   async getAllSessionHostedTodayByUserId(userId: number) {
     try {
       const sessionHostedByUserId = await this.getAllSessionHostedByUserId(
@@ -217,20 +229,6 @@ export class SessionService {
       return sessionHostedTodayByUserId;
     } catch (error) {
       this.logger.error('HAS AN ERRO AT getAllSessionHostedTodayByUserId()');
-    }
-  }
-
-  async getLatestSessionByHostId(hostId: number) {
-    try {
-      const latestSessionByHostId = this.sessionRepository.findOne(
-        { host: hostId },
-        { orderBy: { id: 'DESC' } },
-      );
-
-      return latestSessionByHostId;
-    } catch (error) {
-      this.logger.error('HAS AN ERROR AT getLatestSessionByHostId()');
-      throw error;
     }
   }
 
@@ -340,15 +338,17 @@ export class SessionService {
                 },
               });
 
-            const checkUserMakePaymentRequest =
-              await this.userPaymentRepository.find({
+            const numberOfJoinersOfSession = await this.getNumberOfJoiner(id);
+
+            const numberOfJoinersRequestPayment =
+              await this.userPaymentRepository.count({
                 session: id,
               });
 
-            const allowFinishSession =
-              !checkUserPaymentApproveAll[0] && checkUserMakePaymentRequest[0];
-
-            if (allowFinishSession) {
+            if (
+              numberOfJoinersRequestPayment === numberOfJoinersOfSession &&
+              !checkUserPaymentApproveAll[0]
+            ) {
               this.sessionRepository.assign(sessionById, dto);
 
               await this.em.persistAndFlush(sessionById);
@@ -372,24 +372,6 @@ export class SessionService {
     } catch (error) {
       this.logger.error('HAS AN ERROR AT updateSessionStatus()');
       throw error;
-    }
-  }
-
-  async getSession(id: number) {
-    try {
-      const session = await this.sessionRepository.findOne(
-        { id },
-        { populate: ['host'] },
-      );
-
-      if (!session) {
-        throw new BadRequestException(`Can not find session with id: ${id}`);
-      }
-
-      return session;
-    } catch (err) {
-      this.logger.error('Calling getSession()', err, SessionService.name);
-      throw err;
     }
   }
 
@@ -448,7 +430,24 @@ export class SessionService {
       };
     } catch (error) {
       this.logger.error('HAS AN ERROR AT deleteSession()');
-      throw error;
+    }
+  }
+
+  async getSession(id: number) {
+    try {
+      const session = await this.sessionRepository.findOne(
+        { id },
+        { populate: ['host'] },
+      );
+
+      if (!session) {
+        throw new BadRequestException(`Can not find session with id: ${id}`);
+      }
+
+      return session;
+    } catch (err) {
+      this.logger.error('Calling getSession()', err, SessionService.name);
+      throw err;
     }
   }
 
