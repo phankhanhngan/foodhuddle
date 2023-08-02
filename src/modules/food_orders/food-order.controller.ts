@@ -15,6 +15,7 @@ import {
   UseInterceptors,
   ValidationPipe,
   ParseEnumPipe,
+  BadRequestException,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -43,7 +44,7 @@ export class FoodOrderController {
   ) {}
 
   @Put()
-  @UseGuards(SessionStatusGuard([SessionStatus.OPEN]))
+  @UseGuards(SessionStatusGuard([SessionStatus.OPEN, SessionStatus.LOCKED]))
   @UseInterceptors(new RequestFoodTransformInterceptor())
   async changeFoodOrders(
     @Req() req,
@@ -54,6 +55,16 @@ export class FoodOrderController {
   ) {
     try {
       const { user, session } = req;
+
+      if (
+        session.status === SessionStatus.LOCKED &&
+        user.id !== session.host.id
+      ) {
+        throw new BadRequestException(
+          `Can not perform this action because Session is in status '${session.status}'`,
+        );
+      }
+
       await this.foodOrderService.changeFoodOrders(
         foodOrderList,
         user,
