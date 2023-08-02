@@ -42,76 +42,71 @@ export class MenuShopUtil {
       const checkConnection = (await axios.get(urlGetShopId, config)).data
         .reply;
 
-      if (!checkConnection) {
-        return {
-          status: 400,
-          message: `Invalid shop link !`,
-        };
-      }
+      if (checkConnection) {
+        const shopId = (await axios.get(urlGetShopId, config)).data?.reply
+          .delivery_id;
 
-      const shopId = (await axios.get(urlGetShopId, config)).data?.reply
-        .delivery_id;
+        const urlGetShopMenu = `https://gappapi.deliverynow.vn/api/dish/get_delivery_dishes?id_type=2&request_id=${shopId}`;
 
-      const urlGetShopMenu = `https://gappapi.deliverynow.vn/api/dish/get_delivery_dishes?id_type=2&request_id=${shopId}`;
+        const reponseData = (await axios.get(urlGetShopMenu, config)).data;
 
-      const reponseData = (await axios.get(urlGetShopMenu, config)).data;
+        if (reponseData.reply) {
+          const menuFoodFormated = reponseData.reply.menu_infos.map((v) => {
+            const foodByDish = v.dishes.map((fbd) => {
+              const isFetchData = fbd.is_active && fbd.is_available;
 
-      if (reponseData.reply) {
-        const menuFoodFormated = reponseData.reply.menu_infos.map((v) => {
-          const foodByDish = v.dishes.map((fbd) => {
-            const isFetchData = fbd.is_active && fbd.is_available;
+              if (isFetchData) {
+                const optionsFood: OptionListDTO[] = fbd.options
+                  ? fbd.options.map((op) => {
+                      const optionItems: OptionDTO[] = Array.from<OptionDTO>(
+                        op.option_items.items
+                          ? op.option_items.items.map((opi) => {
+                              const optionItem = {
+                                name: opi.name,
+                                price: opi.price.value,
+                              };
 
-            if (isFetchData) {
-              const optionsFood: OptionListDTO[] = fbd.options
-                ? fbd.options.map((op) => {
-                    const optionItems: OptionDTO[] = Array.from<OptionDTO>(
-                      op.option_items.items
-                        ? op.option_items.items.map((opi) => {
-                            const optionItem = {
-                              name: opi.name,
-                              price: opi.price.value,
-                            };
+                              return optionItem;
+                            })
+                          : [],
+                      );
 
-                            return optionItem;
-                          })
-                        : [],
-                    );
+                      const option: OptionListDTO = {
+                        id: op.id,
+                        mandatory: op.mandatory,
+                        category: op.name,
+                        detail: optionItems,
+                      };
+                      return option;
+                    })
+                  : [];
 
-                    const option: OptionListDTO = {
-                      id: op.id,
-                      mandatory: op.mandatory,
-                      category: op.name,
-                      detail: optionItems,
-                    };
-                    return option;
-                  })
-                : [];
+                const menuFood: FoodDTO = {
+                  id: fbd.id,
+                  foodName: fbd.name,
+                  description: fbd.description,
+                  price: fbd.price.value,
+                  discountPrice: fbd.discount_price
+                    ? fbd.discount_price.value
+                    : 0,
+                  photo: fbd.photos[0].value,
+                  options: optionsFood,
+                };
 
-              const menuFood: FoodDTO = {
-                id: fbd.id,
-                foodName: fbd.name,
-                description: fbd.description,
-                price: fbd.price.value,
-                discountPrice: fbd.discount_price
-                  ? fbd.discount_price.value
-                  : 0,
-                photo: fbd.photos[0].value,
-                options: optionsFood,
-              };
+                return menuFood;
+              }
+            });
 
-              return menuFood;
-            }
+            return foodByDish;
           });
 
-          return foodByDish;
-        });
-
-        return menuFoodFormated
-          .flat(Infinity)
-          .filter((food: FoodDTO | undefined) => food);
-      } else {
-        throw new BadRequestException('Invalid shop link');
+          return menuFoodFormated
+            .flat(Infinity)
+            .filter((food: FoodDTO | undefined) => food);
+        }
       }
+
+      throw new BadRequestException('Invalid shop link');
     } catch (error) {
       throw error;
     }
