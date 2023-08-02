@@ -27,7 +27,7 @@ export class SessionService {
       const currentYear = today.getFullYear();
 
       const allSessions = this.sessionRepository.findAll({
-        fields: ['id', 'title', 'host', 'status', 'created_at'],
+        fields: ['id', 'title', 'host', 'shop_image', 'status', 'created_at'],
       });
 
       const listSessionsToday = (await allSessions).filter(
