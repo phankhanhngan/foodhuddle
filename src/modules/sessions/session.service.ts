@@ -8,6 +8,7 @@ import { Logger } from 'winston';
 import { User } from 'src/entities/user.entity';
 import { plainToClass, plainToInstance } from 'class-transformer';
 import { ShopImage } from 'src/utils/shop-image.util';
+import { AWSService } from '../aws/aws.service';
 
 @Injectable()
 export class SessionService {
@@ -17,6 +18,7 @@ export class SessionService {
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     private readonly em: EntityManager,
     private readonly getShopImage: ShopImage,
+    private readonly awsService: AWSService,
   ) {}
 
   async getAllSessionsToday() {
@@ -69,11 +71,23 @@ export class SessionService {
     }
   }
 
-  async createNewSessionToday(newSession: CreateSession, user: User) {
+  async createNewSessionToday(
+    newSession: CreateSession,
+    user: User,
+    files: Array<Express.Multer.File> | Express.Multer.File,
+  ) {
     try {
+      const urlImages: string[] = await this.awsService.bulkPutObject(
+        `session`,
+        files,
+      );
+
+      const qrImagesUrl = JSON.stringify(Object.assign({}, urlImages));
+
       const session = plainToClass(Session, newSession);
       session.host = user;
       session.status = SessionStatus.OPEN;
+      session.qr_images = qrImagesUrl;
       const getShopImage = await this.getShopImage.getShopImage(
         session.shop_link,
       );
