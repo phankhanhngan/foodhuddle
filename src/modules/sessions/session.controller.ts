@@ -250,10 +250,14 @@ export class SessionController {
         files,
       );
 
+      const sessionReturn = plainToInstance(SessionInfoDTO, editSession.data, {
+        enableCircularCheck: true,
+      });
+
       return res.status(editSession.status).json({
         statusCode: editSession.status,
         message: editSession.message,
-        data: editSession.data,
+        data: sessionReturn,
       });
     } catch (error) {
       this.logger.error('HAS AN ERROR WHEN EDITING SESSION INFORMATION');
