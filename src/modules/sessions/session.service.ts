@@ -776,7 +776,7 @@ export class SessionService {
       const qrImagesUrl = JSON.stringify(urlImages);
 
       sessionEdit.host = user;
-      sessionById.qr_images = JSON.parse(qrImagesUrl);
+      sessionById.qr_images = qrImagesUrl;
 
       const newSessionInfor = this.em.assign(sessionById, sessionEdit);
 
