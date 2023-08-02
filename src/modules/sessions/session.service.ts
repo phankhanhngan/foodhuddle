@@ -89,7 +89,7 @@ export class SessionService {
           status: v.status,
           shopImage: v.shop_image,
           createdAt: v.created_at,
-          numberOfJoiners: 0,
+          numberOfJoiners: numberOfJoiner,
         };
       });
 
@@ -422,7 +422,7 @@ export class SessionService {
   }
   async getAllSessionsHistory(statusFilter: Array<string>) {
     try {
-      const allSessions = await this.getAllSessions();
+      const allSessions = await this._getAllSessions();
       const result =
         statusFilter[0] === undefined
           ? allSessions
@@ -807,7 +807,7 @@ export class SessionService {
     statusFilter: Array<string>,
   ) {
     try {
-      const sessionHostedByUserId = await this.getAllSessionHostedByUserId(
+      const sessionHostedByUserId = await this._getAllSessionHostedByUserId(
         userId,
       );
 
@@ -832,7 +832,7 @@ export class SessionService {
     statusFilter: Array<string>,
   ) {
     try {
-      const sessionJoinedByUserId = await this.getAllSessionsJoinedByUserId(
+      const sessionJoinedByUserId = await this._getAllSessionsJoinedByUserId(
         userId,
       );
 
