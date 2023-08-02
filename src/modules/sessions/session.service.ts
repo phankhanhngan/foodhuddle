@@ -82,12 +82,13 @@ export class SessionService {
         files,
       );
 
-      const qrImagesUrl = urlImages.toString();
+      const qrImagesUrl = JSON.stringify(urlImages);
 
       const session = plainToClass(Session, newSession);
       session.host = user;
       session.status = SessionStatus.OPEN;
       session.qr_images = qrImagesUrl;
+
       const getShopImage = await this.getShopImage.getShopImage(
         session.shop_link,
       );

@@ -64,7 +64,7 @@ export class SessionController {
         : '';
 
       const qr_images = sessionByHostId
-        ? sessionByHostId.qr_images.split(',')
+        ? JSON.parse(sessionByHostId.qr_images)
         : [];
 
       return res.status(200).json({
