@@ -155,18 +155,14 @@ export class SessionService {
         };
       }
 
+      await this.awsService.bulkDeleteObject(JSON.parse(sessionById.qr_images));
+
       const urlImages: string[] = await this.awsService.bulkPutObject(
         `session`,
         files,
       );
 
       const qrImagesUrl = JSON.stringify(urlImages);
-
-      if (sessionById.qr_images !== qrImagesUrl) {
-        await this.awsService.bulkDeleteObject(
-          JSON.parse(sessionById.qr_images),
-        );
-      }
 
       sessionEdit.host = user;
       sessionById.qr_images = JSON.parse(qrImagesUrl);
