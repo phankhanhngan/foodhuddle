@@ -52,7 +52,7 @@ export class SessionService {
   async getAllSessions() {
     try {
       const allSessions = await this.sessionRepository.findAll({
-        fields: ['id', 'title', 'host', 'status', 'created_at'],
+        fields: ['id', 'title', 'host', 'shop_image', 'status', 'created_at'],
       });
 
       const listSessionsReturn = allSessions.map(async (v) => {
@@ -62,8 +62,9 @@ export class SessionService {
           title: v.title,
           host: v.host.email,
           status: v.status,
-          number_of_joiners: numberOfJoiner,
-          created_at: v.created_at,
+          shopImage: v.shop_image,
+          createdAt: v.created_at,
+          numberOfJoiners: 0,
         };
       });
 
