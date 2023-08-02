@@ -138,7 +138,7 @@ export class SessionController {
       return res.status(200).json({
         statusCode: 200,
         message: 'Create new session successfully !',
-        id: newSessionCreated.host.id,
+        id: newSessionCreated.id,
       });
     } catch (error) {
       this.logger.error('HAS AN ERROR WHEN CREATING NEW SESSION TODAY');
