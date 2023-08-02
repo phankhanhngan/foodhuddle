@@ -31,6 +31,9 @@ export class Session extends Base {
   @Property({ nullable: true, type: 'text' })
   qr_images: string;
 
+  @Property({ nullable: true, type: 'text' })
+  shop_image: string;
+
   @Enum(() => SessionStatus)
   status!: SessionStatus;
 }
