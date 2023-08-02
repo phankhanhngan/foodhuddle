@@ -214,9 +214,12 @@ export class SessionController {
       if (!newSession) {
         throw new InternalServerErrorException();
       }
-      return res.status(200).json({
-        statusCode: 200,
-        message: 'Create new session successfully !',
+
+      console.log(newSessionCreated);
+
+      return res.status(newSessionCreated.status).json({
+        statusCode: newSessionCreated.status,
+        message: newSessionCreated.message,
         id: newSessionCreated.id,
       });
     } catch (error) {
