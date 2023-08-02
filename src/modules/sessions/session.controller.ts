@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Param,
+  InternalServerErrorException,
   ParseIntPipe,
   ParseFilePipe,
   Query,
@@ -9,15 +10,14 @@ import {
   UseGuards,
   Inject,
   Body,
+  UploadedFiles,
   ValidationPipe,
   UseInterceptors,
-  UploadedFiles,
   Put,
   Post,
   Req,
   Delete,
   ParseEnumPipe,
-  InternalServerErrorException,
 } from '@nestjs/common';
 import { SessionService } from './session.service';
 import { Response } from 'express';
@@ -261,6 +261,7 @@ export class SessionController {
       return res.status(resultUpdating.status).json(resultUpdating);
     } catch (error) {
       this.logger.error('HAS AN ERROR AT UPDATING SESSION STATUS');
+      throw error;
     }
   }
 
