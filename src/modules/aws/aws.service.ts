@@ -32,13 +32,13 @@ export class AWSService {
 
   getObjectUrl(folderPath: string, fileName: string): string {
     return `${this.configService.get<string>(
-      'AWS_OBJECT_URL',
+      'AWS_BUCKET_URL',
     )}/${folderPath}/${fileName}`;
   }
 
   extractObjectNameFromUrl(objectUrl: string): string {
     return objectUrl.split(
-      `${this.configService.get<string>('AWS_OBJECT_URL')}/`,
+      `${this.configService.get<string>('AWS_BUCKET_URL')}/`,
     )[1];
   }
 

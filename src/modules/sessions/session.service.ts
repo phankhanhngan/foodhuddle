@@ -130,7 +130,7 @@ export class SessionService {
 
   async editSessionInfo(
     id: number,
-    editSessionInfo: EditSession,
+    editSessionTransform: EditSession,
     user: User,
     files: Array<Express.Multer.File> | Express.Multer.File,
   ) {
@@ -154,7 +154,7 @@ export class SessionService {
         };
       }
 
-      const sessionEdit = plainToClass(Session, editSessionInfo);
+      const sessionEdit = plainToClass(Session, editSessionTransform);
 
       if (sessionEdit.shop_link !== sessionById.shop_link) {
         return {
@@ -177,7 +177,7 @@ export class SessionService {
       const qrImagesUrl = JSON.stringify(urlImages);
 
       sessionEdit.host = user;
-      sessionById.qr_images = qrImagesUrl;
+      sessionEdit.qr_images = qrImagesUrl;
 
       const newSessionInfor = this.em.assign(sessionById, sessionEdit);
 

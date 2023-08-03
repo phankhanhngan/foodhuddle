@@ -1,5 +1,5 @@
 import { IsString, IsOptional } from 'class-validator';
-import { Exclude, Expose, Type } from 'class-transformer';
+import { Exclude, Expose } from 'class-transformer';
 
 @Exclude()
 export class CreateSession {

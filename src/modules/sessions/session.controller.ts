@@ -123,10 +123,10 @@ export class SessionController {
     try {
       const { user } = req;
 
-      const newSessionInfo = plainToClass(CreateSession, newSession);
+      const newSessionTransform = plainToClass(CreateSession, newSession);
 
       const newSessionCreated = await this.sessionService.createNewSessionToday(
-        newSessionInfo,
+        newSessionTransform,
         user,
         files,
       );
@@ -180,11 +180,11 @@ export class SessionController {
     try {
       const { user } = req;
 
-      console.log(editSessionInfo);
+      const editSessionTransform = plainToClass(EditSession, editSessionInfo);
 
       const editSession = await this.sessionService.editSessionInfo(
         id,
-        editSessionInfo,
+        editSessionTransform,
         user,
         files,
       );
