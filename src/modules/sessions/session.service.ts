@@ -257,7 +257,6 @@ export class SessionService {
         return {
           status: 400,
           message: `Only host can change session's status to ${dto.status}`,
-          statusSession: null,
         };
       }
 
