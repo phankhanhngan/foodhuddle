@@ -223,7 +223,8 @@ export class SessionController {
         user,
         files,
       );
-      if (!newSession) {
+
+      if (!newSessionCreated) {
         throw new InternalServerErrorException();
       }
 
