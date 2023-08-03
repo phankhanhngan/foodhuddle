@@ -243,9 +243,23 @@ export class SessionService {
     }
   }
 
-  async updateSessionStatus(id: number, dto: UpdateSessionStatus) {
+  async updateSessionStatus(
+    id: number,
+    dto: UpdateSessionStatus,
+    hostId: number,
+  ) {
     try {
       const sessionById = await this.sessionRepository.findOne({ id: id });
+
+      const hostIdSession = sessionById.host.id;
+
+      if (hostId !== hostIdSession) {
+        return {
+          status: 400,
+          message: `Only host can change session's status to ${dto.status}`,
+          statusSession: null,
+        };
+      }
 
       const updateStatusSuccess = {
         status: 200,

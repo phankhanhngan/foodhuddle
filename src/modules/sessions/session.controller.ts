@@ -171,7 +171,6 @@ export class SessionController {
     }
   }
 
-  @UseGuards(SessionStatusGuard([SessionStatus.OPEN]))
   @Put('/:id/update-status')
   @UseGuards(JwtAuthGuard)
   async updateSessionStatus(
@@ -182,27 +181,10 @@ export class SessionController {
     try {
       const hostId = Object(res.req.user).id;
 
-      const sessionById = await this.sessionService.getSessionById(id);
-
-      if (!sessionById) {
-        return res.status(400).json({
-          status: 400,
-          message: 'Session does not exist!',
-        });
-      }
-
-      const hostIdSession = sessionById.host.id;
-
-      if (hostId !== hostIdSession) {
-        return res.status(400).json({
-          status: 400,
-          message: `Only host can change session's status to ${dto.status}`,
-        });
-      }
-
       const resultUpdating = await this.sessionService.updateSessionStatus(
         id,
         dto,
+        hostId,
       );
 
       return res.status(resultUpdating.status).json(resultUpdating);
