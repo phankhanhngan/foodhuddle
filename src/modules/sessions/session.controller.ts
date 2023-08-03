@@ -171,13 +171,7 @@ export class SessionController {
     }
   }
 
-  @UseGuards(
-    SessionStatusGuard([
-      SessionStatus.LOCKED,
-      SessionStatus.PENDING_PAYMENTS,
-      SessionStatus.FINISHED,
-    ]),
-  )
+  @UseGuards(SessionStatusGuard([SessionStatus.OPEN]))
   @Put('/:id/update-status')
   @UseGuards(JwtAuthGuard)
   async updateSessionStatus(
