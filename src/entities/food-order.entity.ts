@@ -4,7 +4,11 @@ import { Transform } from 'class-transformer';
 
 @Entity()
 export class FoodOrder extends Base {
-  @ManyToOne({ entity: () => Session })
+  @ManyToOne({
+    entity: () => Session,
+    onDelete: 'cascade',
+    onUpdateIntegrity: 'cascade',
+  })
   session!: Session;
 
   @ManyToOne({ entity: () => User })
