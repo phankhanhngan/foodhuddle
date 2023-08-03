@@ -44,8 +44,6 @@ export class SessionService {
     private readonly userRepository: EntityRepository<User>,
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     private readonly awsService: AWSService,
-    @InjectRepository(UserPayment)
-    @InjectRepository(SessionPayment)
     private readonly getShopImage: ShopImage,
   ) {}
 
