@@ -118,7 +118,11 @@ export class SessionController {
       );
 
       if (!newSessionCreated) {
-        throw new InternalServerErrorException();
+        return res.status(400).json({
+          statusCode: 400,
+          message: 'Has an error when creating new session !',
+          id: null,
+        });
       }
 
       return res.status(newSessionCreated.status).json({
