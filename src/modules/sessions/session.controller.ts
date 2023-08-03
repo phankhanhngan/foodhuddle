@@ -75,6 +75,34 @@ export class SessionController {
     }
   }
 
+  @Get('/history')
+  @UseGuards(JwtAuthGuard)
+  async getAllSessionsHistory(
+    @Query() query: { status: string },
+    @Res() res: Response,
+  ) {
+    try {
+      const statusFilter =
+        query.status === undefined ? [] : query.status.split(',');
+
+      const allSessionHistory = await this.sessionService.getAllSessionsHistory(
+        statusFilter,
+      );
+
+      return res.status(200).json({
+        statusCode: 200,
+        data: allSessionHistory,
+      });
+    } catch (error) {
+      this.logger.error(
+        'Calling getAllSessionsHistory()',
+        error,
+        SessionService.name,
+      );
+      throw error;
+    }
+  }
+
   @Get('/host-payment-infor')
   async getHostPaymentInfor(@Res() res: Response) {
     try {
@@ -284,34 +312,6 @@ export class SessionController {
       return res.status(resultUpdating.status).json(resultUpdating);
     } catch (error) {
       this.logger.error('HAS AN ERROR AT UPDATING SESSION STATUS');
-      throw error;
-    }
-  }
-
-  @Get('/history')
-  @UseGuards(JwtAuthGuard)
-  async getAllSessionsHistory(
-    @Query() query: { status: string },
-    @Res() res: Response,
-  ) {
-    try {
-      const statusFilter =
-        query.status === undefined ? [] : query.status.split(',');
-
-      const allSessionHistory = await this.sessionService.getAllSessionsHistory(
-        statusFilter,
-      );
-
-      return res.status(200).json({
-        statusCode: 200,
-        data: allSessionHistory,
-      });
-    } catch (error) {
-      this.logger.error(
-        'Calling getAllSessionsHistory()',
-        error,
-        SessionService.name,
-      );
       throw error;
     }
   }
