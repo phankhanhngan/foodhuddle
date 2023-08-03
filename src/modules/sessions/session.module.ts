@@ -30,6 +30,10 @@ import { ShopImage } from 'src/utils/shop-image.util';
     AWSService,
     ImageResize,
     ShopImage,
+    AWSService,
+    ImageResize,
+    ShopImage,
+    EntityRepository,
   ],
 })
 export class SessionModule {}

@@ -1,4 +1,6 @@
 import {
+  Body,
+  Post,
   Controller,
   Get,
   Param,
@@ -9,12 +11,10 @@ import {
   Res,
   UseGuards,
   Inject,
-  Body,
   UploadedFiles,
   ValidationPipe,
   UseInterceptors,
   Put,
-  Post,
   Req,
   Delete,
   ParseEnumPipe,
@@ -103,6 +103,7 @@ export class SessionController {
     }
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get('/host-payment-infor')
   async getHostPaymentInfor(@Res() res: Response) {
     try {
@@ -218,8 +219,10 @@ export class SessionController {
     try {
       const { user } = req;
 
+      const newSessionTransform = plainToClass(CreateSession, newSession);
+
       const newSessionCreated = await this.sessionService.createNewSessionToday(
-        newSession,
+        newSessionTransform,
         user,
         files,
       );
@@ -246,7 +249,9 @@ export class SessionController {
     @Body(
       new ValidationPipe({
         transform: true,
-        transformOptions: { enableImplicitConversion: true },
+        transformOptions: {
+          enableImplicitConversion: true,
+        },
       }),
     )
     editSessionInfo: EditSession,
@@ -271,9 +276,11 @@ export class SessionController {
     try {
       const { user } = req;
 
+      const editSessionTransform = plainToClass(EditSession, editSessionInfo);
+
       const editSession = await this.sessionService.editSessionInfo(
         id,
-        editSessionInfo,
+        editSessionTransform,
         user,
         files,
       );

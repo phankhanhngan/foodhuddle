@@ -389,7 +389,7 @@ export class SessionService {
   }
 
   async createNewSessionToday(
-    newSession: CreateSession,
+    newSessionInfo: CreateSession,
     user: User,
     files: Array<Express.Multer.File> | Express.Multer.File,
   ) {
@@ -401,7 +401,7 @@ export class SessionService {
 
       const qrImagesUrl = JSON.stringify(urlImages);
 
-      const session = plainToClass(Session, newSession);
+      const session = plainToClass(Session, newSessionInfo);
       session.host = user;
       session.status = SessionStatus.OPEN;
       session.qr_images = qrImagesUrl;
@@ -477,6 +477,71 @@ export class SessionService {
     }
   }
 
+  async editSessionInfo(
+    id: number,
+    editSessionTransform: EditSession,
+    user: User,
+    files: Array<Express.Multer.File> | Express.Multer.File,
+  ) {
+    try {
+      const sessionById = await this.sessionRepository.findOne(
+        { id: id },
+        { populate: ['host'] },
+      );
+
+      if (!sessionById) {
+        return {
+          status: 400,
+          message: 'The session does not exist !',
+        };
+      }
+
+      if (user.id !== sessionById.host.id) {
+        return {
+          status: 400,
+          message: 'Only host can edit session information !',
+        };
+      }
+
+      const sessionEdit = plainToClass(Session, editSessionTransform);
+
+      if (sessionEdit.shop_link !== sessionById.shop_link) {
+        return {
+          status: 400,
+          message: 'You can not change the shop link !',
+        };
+      }
+
+      if (sessionById.qr_images[0] !== undefined) {
+        await this.awsService.bulkDeleteObject(
+          JSON.parse(sessionById.qr_images),
+        );
+      }
+
+      const urlImages: string[] = await this.awsService.bulkPutObject(
+        `session`,
+        files,
+      );
+
+      const qrImagesUrl = JSON.stringify(urlImages);
+
+      sessionEdit.host = user;
+      sessionEdit.qr_images = qrImagesUrl;
+
+      const newSessionInfor = this.em.assign(sessionById, sessionEdit);
+
+      await this.em.flush();
+
+      return {
+        status: 200,
+        message: 'Edit session information sucessfully !',
+        data: newSessionInfor,
+      };
+    } catch (error) {
+      this.logger.error('HAS AN ERROR AT editSessionInfo()');
+      throw error;
+    }
+  }
   async getSession(id: number) {
     try {
       const session = await this.sessionRepository.findOne(
@@ -748,66 +813,6 @@ export class SessionService {
         SessionService.name,
       );
       throw err;
-    }
-  }
-  async editSessionInfo(
-    id: number,
-    editSessionInfo: EditSession,
-    user: User,
-    files: Array<Express.Multer.File> | Express.Multer.File,
-  ) {
-    try {
-      const sessionById = await this.sessionRepository.findOne(
-        { id: id },
-        { populate: ['host'] },
-      );
-
-      if (!sessionById) {
-        return {
-          status: 400,
-          message: 'The session does not exist !',
-        };
-      }
-
-      if (user.id !== sessionById.host.id) {
-        return {
-          status: 400,
-          message: 'Only host can edit session information !',
-        };
-      }
-
-      const sessionEdit = plainToClass(Session, editSessionInfo);
-
-      if (sessionEdit.shop_link !== sessionById.shop_link) {
-        return {
-          status: 400,
-          message: 'You can not change the shop link !',
-        };
-      }
-
-      await this.awsService.bulkDeleteObject(JSON.parse(sessionById.qr_images));
-
-      const urlImages: string[] = await this.awsService.bulkPutObject(
-        `session`,
-        files,
-      );
-
-      const qrImagesUrl = JSON.stringify(urlImages);
-
-      sessionEdit.host = user;
-      sessionById.qr_images = qrImagesUrl;
-
-      const newSessionInfor = this.em.assign(sessionById, sessionEdit);
-
-      await this.em.flush();
-
-      return {
-        status: 200,
-        message: 'Edit session information sucessfully !',
-        data: newSessionInfor,
-      };
-    } catch (error) {
-      this.logger.error('HAS AN ERROR AT editSessionInfo()');
     }
   }
 
