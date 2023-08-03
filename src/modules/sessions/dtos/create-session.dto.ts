@@ -1,31 +1,31 @@
-import { Enum, Property } from '@mikro-orm/core';
+import { IsString, IsOptional } from 'class-validator';
+import { Exclude, Expose, Type } from 'class-transformer';
 
+@Exclude()
 export class CreateSession {
-  @Property({ nullable: false })
-  host: number;
-
-  @Property({ nullable: false })
+  @Expose()
+  @IsString({
+    message: 'Title of session must be a string',
+  })
   title: string;
 
-  @Property({ nullable: true, type: 'text' })
+  @Expose()
+  @IsOptional()
   description: string;
 
-  @Property({ nullable: false, type: 'text' })
+  @Expose()
+  @IsString({
+    message: 'Shop link must be a string',
+  })
   shop_link: string;
 
-  @Property({ nullable: false, type: 'text' })
+  @Expose()
+  @IsString({
+    message: 'Host payment infor must be a string',
+  })
   host_payment_info: string;
 
-  @Property({ nullable: true, type: 'text' })
+  @Expose()
+  @IsOptional()
   qr_images: string;
-
-  @Enum(() => SessionStatus)
-  status!: SessionStatus;
-}
-
-export enum SessionStatus {
-  OPEN = 'OPEN',
-  LOCKED = 'LOCKED',
-  PENDING_PAYMENTS = 'PENDING PAYMENTS',
-  FINISHED = 'FINISHED',
 }

@@ -81,11 +81,13 @@ export class SessionController {
         ? sessionByHostId.host_payment_info
         : '';
 
-      const qr_images = sessionByHostId ? sessionByHostId.qr_images : '';
+      const qr_images = sessionByHostId
+        ? JSON.parse(sessionByHostId.qr_images)
+        : [];
 
       return res.status(200).json({
         hostPaymentInfor: hostPaymentInfor,
-        qr_images: qr_images,
+        qrImages: qr_images,
       });
     } catch (error) {
       this.logger.error('HAS AN ERROR AT GETTING HOST PAYMENT INFORMATION');
@@ -97,7 +99,14 @@ export class SessionController {
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FilesInterceptor('qr_images'))
   async createNewSessionToday(
-    @Body() dto: CreateSession,
+    @Body(
+      new ValidationPipe({
+        transform: true,
+        transformOptions: { enableImplicitConversion: true },
+      }),
+    )
+    newSession: CreateSession,
+    @Req() req,
     @UploadedFiles(
       new ParseFilePipe({
         validators: [
@@ -111,38 +120,27 @@ export class SessionController {
         fileIsRequired: false,
       }),
     )
-    files: Array<Express.Multer.File>,
+    files: Array<Express.Multer.File> | Express.Multer.File,
     @Res() res: Response,
   ) {
     try {
-      // const urlImages: Promise<string>[] = files.map(async (img) => {
-      //   const resizedImage = await this.imageResize.resizeImage(img.buffer);
+      const { user } = req;
 
-      //   const imageUrl = await this.awsService.uploadImage(
-      //     resizedImage,
-      //     img.originalname,
-      //   );
+      const newSessionInfo = plainToClass(CreateSession, newSession);
 
-      //   return imageUrl;
-      // });
-
-      // const listUrlImages = await Promise.all(urlImages);
-
-      // const qrImagesUrl = JSON.stringify(Object.assign({}, listUrlImages));
-
-      const hostId = Object(res.req.user).id;
-      dto.host = hostId;
-      dto.status = SessionStatus.OPEN;
-      //dto.qr_images = qrImagesUrl;
-
-      const newSession = await this.sessionService.createNewSessionToday(dto);
+      const newSessionCreated = await this.sessionService.createNewSessionToday(
+        newSessionInfo,
+        user,
+        files,
+      );
       if (!newSession) {
         throw new InternalServerErrorException();
       }
-      return res.status(200).json({
-        statusCode: 200,
-        message: 'Create new session successfully!',
-        id: newSession.id,
+
+      return res.status(newSessionCreated.status).json({
+        statusCode: newSessionCreated.status,
+        message: newSessionCreated.message,
+        id: newSessionCreated.id,
       });
     } catch (error) {
       this.logger.error('HAS AN ERROR WHEN CREATING NEW SESSION TODAY');

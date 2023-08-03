@@ -10,6 +10,7 @@ import { AWSModule } from '../aws/aws.module';
 import { SessionPayment, UserPayment } from 'src/entities';
 import { EntityRepository } from '@mikro-orm/mysql';
 import { FoodOrder } from 'src/entities';
+import { ShopImage } from 'src/utils/shop-image.util';
 
 @Module({
   imports: [
@@ -22,6 +23,12 @@ import { FoodOrder } from 'src/entities';
     WinstonModule,
   ],
   controllers: [SessionController],
-  providers: [SessionService, EntityRepository, AWSService, ImageResize],
+  providers: [
+    SessionService,
+    EntityRepository,
+    AWSService,
+    ImageResize,
+    ShopImage,
+  ],
 })
 export class SessionModule {}

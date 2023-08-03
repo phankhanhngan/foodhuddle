@@ -6,7 +6,7 @@ import { CreateSession } from './dtos/create-session.dto';
 import { UpdateSessionStatus } from './dtos/update-session_status.dto';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { plainToClass } from 'class-transformer';
+import { plainToClass, plainToInstance } from 'class-transformer';
 import {
   Session,
   SessionPayment,
@@ -17,6 +17,7 @@ import {
 import { AWSService } from '../aws/aws.service';
 import { UserPaymentDTO, SessionPaymentDTO } from './dtos';
 import { FoodOrder } from 'src/entities';
+import { ShopImage } from 'src/utils/shop-image.util';
 
 @Injectable()
 export class SessionService {
@@ -32,6 +33,7 @@ export class SessionService {
     private readonly awsService: AWSService,
     @InjectRepository(FoodOrder)
     private readonly foodOrderRepository: EntityRepository<FoodOrder>,
+    private readonly getShopImage: ShopImage,
   ) {}
 
   async _getNumberOfJoiner(sessionId: number) {
@@ -230,13 +232,47 @@ export class SessionService {
     }
   }
 
-  async createNewSessionToday(dto: CreateSession) {
+  async createNewSessionToday(
+    newSessionInfo: CreateSession,
+    user: User,
+    files: Array<Express.Multer.File> | Express.Multer.File,
+  ) {
     try {
-      const newSession = this.sessionRepository.create(dto);
+      const urlImages: string[] = await this.awsService.bulkPutObject(
+        `session`,
+        files,
+      );
 
-      await this.em.persistAndFlush(newSession);
+      const qrImagesUrl = JSON.stringify(urlImages);
 
-      return newSession;
+      const session = plainToClass(Session, newSessionInfo);
+      session.host = user;
+      session.status = SessionStatus.OPEN;
+      session.qr_images = qrImagesUrl;
+
+      const getShopImage = await this.getShopImage.getShopImage(
+        session.shop_link,
+      );
+
+      if (getShopImage.status === 200) {
+        session.shop_image = getShopImage.photo.value;
+
+        this.em.persist(session);
+
+        await this.em.flush();
+
+        return {
+          status: 200,
+          message: 'Create new session successfully !',
+          id: session.id,
+        };
+      } else {
+        return {
+          status: getShopImage.status,
+          message: getShopImage.message,
+          id: null,
+        };
+      }
     } catch (error) {
       this.logger.error('HAS AN ERROR AT createNewSessionToday()');
       throw error;
