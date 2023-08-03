@@ -234,7 +234,11 @@ export class SessionController {
       });
     } catch (error) {
       this.logger.error('HAS AN ERROR WHEN CREATING NEW SESSION TODAY');
-      throw error;
+      this.logger.error(
+        'Calling getAllSessionsHistory()',
+        error,
+        SessionService.name,
+      );
     }
   }
 

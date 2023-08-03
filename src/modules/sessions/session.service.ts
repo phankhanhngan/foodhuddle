@@ -864,7 +864,6 @@ export class SessionService {
       return result;
     } catch (error) {
       this.logger.error('HAS AN ERRO AT getAllSessionsJoinedHistoryByUserId()');
-      throw error;
     }
   }
 }
