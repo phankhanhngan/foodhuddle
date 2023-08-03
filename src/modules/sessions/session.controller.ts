@@ -7,14 +7,27 @@ import {
   Query,
   Res,
   UseGuards,
+  Body,
+  Post,
+  InternalServerErrorException,
+  UseInterceptors,
+  UploadedFiles,
+  ParseFilePipe,
+  ValidationPipe,
+  Req,
 } from '@nestjs/common';
 import { SessionService } from './session.service';
 import { Response } from 'express';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { CreateSession } from './dtos/create-session.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { plainToInstance } from 'class-transformer';
 import { SessionInfoDTO } from './dtos/session-info.dto';
+import MaxFileSize from '../../helpers/validate-images-size';
+import AcceptImageType from 'src/helpers/validate-images-type';
+import { plainToClass } from 'class-transformer';
 
 @UseGuards(JwtAuthGuard)
 @Controller('session')
@@ -110,6 +123,31 @@ export class SessionController {
         error,
         SessionService.name,
       );
+    }
+  }
+  @UseGuards(JwtAuthGuard)
+  @Get('/host-payment-infor')
+  async getHostPaymentInfor(@Res() res: Response) {
+    try {
+      const hostId = Object(res.req.user).id;
+
+      const sessionByHostId =
+        await this.sessionService.getLatestSessionByHostId(hostId);
+
+      const hostPaymentInfor = sessionByHostId
+        ? sessionByHostId.host_payment_info
+        : '';
+
+      const qr_images = sessionByHostId
+        ? JSON.parse(sessionByHostId.qr_images)
+        : [];
+
+      return res.status(200).json({
+        hostPaymentInfor: hostPaymentInfor,
+        qrImages: qr_images,
+      });
+    } catch (error) {
+      this.logger.error('HAS AN ERROR AT GETTING HOST PAYMENT INFORMATION');
       throw error;
     }
   }
@@ -183,6 +221,58 @@ export class SessionController {
     } catch (err) {
       this.logger.error('Calling getSession()', err, SessionService.name);
       throw err;
+    }
+  }
+  @Post()
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FilesInterceptor('qr_images'))
+  async createNewSessionToday(
+    @Body(
+      new ValidationPipe({
+        transform: true,
+        transformOptions: { enableImplicitConversion: true },
+      }),
+    )
+    newSession: CreateSession,
+    @Req() req,
+    @UploadedFiles(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSize({
+            maxSize: 5,
+          }),
+          new AcceptImageType({
+            fileType: ['image/jpeg', 'image/png'],
+          }),
+        ],
+        fileIsRequired: false,
+      }),
+    )
+    files: Array<Express.Multer.File> | Express.Multer.File,
+    @Res() res: Response,
+  ) {
+    try {
+      const { user } = req;
+
+      const newSessionInfo = plainToClass(CreateSession, newSession);
+
+      const newSessionCreated = await this.sessionService.createNewSessionToday(
+        newSessionInfo,
+        user,
+        files,
+      );
+      if (!newSession) {
+        throw new InternalServerErrorException();
+      }
+
+      return res.status(newSessionCreated.status).json({
+        statusCode: newSessionCreated.status,
+        message: newSessionCreated.message,
+        id: newSessionCreated.id,
+      });
+    } catch (error) {
+      this.logger.error('HAS AN ERROR WHEN CREATING NEW SESSION TODAY');
+      throw error;
     }
   }
 }

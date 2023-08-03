@@ -6,10 +6,15 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityManager, EntityRepository } from '@mikro-orm/core';
-import { Session } from 'src/entities/session.entity';
 import { FoodOrder } from 'src/entities';
+import { Session, SessionStatus } from 'src/entities/session.entity';
+import { CreateSession } from './dtos/create-session.dto';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { User } from 'src/entities/user.entity';
+import { plainToClass, plainToInstance } from 'class-transformer';
+import { ShopImage } from 'src/utils/shop-image.util';
+import { AWSService } from '../aws/aws.service';
 
 @Injectable()
 export class SessionService {
@@ -20,6 +25,8 @@ export class SessionService {
     private readonly foodOrderRepository: EntityRepository<FoodOrder>,
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     private readonly em: EntityManager,
+    private readonly getShopImage: ShopImage,
+    private readonly awsService: AWSService,
   ) {}
 
   async _getNumberOfJoiner(sessionId: number) {
@@ -38,9 +45,15 @@ export class SessionService {
       return user;
     });
 
+    const currentHostId = (
+      await this.sessionRepository.findOne({
+        id: sessionId,
+      })
+    ).host.id;
+
     const check = [];
     const listJoinerPerSession = listUserJoinBySession.filter((v) => {
-      if (!check.includes(v.id)) {
+      if (currentHostId !== v.id && !check.includes(v.id)) {
         check.push(v.id);
         return v;
       }
@@ -89,6 +102,7 @@ export class SessionService {
             title: v.title,
             host: v.host.email,
             status: v.status,
+            shopImage: v.shop_image,
             numberOfJoiners: numberOfJoiner,
             createdAt: v.created_at,
           };
@@ -120,6 +134,7 @@ export class SessionService {
             title: v.session.title,
             host: v.session.host.email,
             status: v.session.status,
+            shopImage: v.session.shop_image,
             numberOfJoiners: numberOfJoiner,
             createdAt: v.session.created_at,
           };
@@ -192,6 +207,18 @@ export class SessionService {
       return sessionHostedTodayByUserId;
     } catch (error) {
       this.logger.error('HAS AN ERRO AT getAllSessionHostedTodayByUserId()');
+    }
+  }
+  async getLatestSessionByHostId(hostId: number) {
+    try {
+      const latestSessionByHostId = this.sessionRepository.findOne(
+        { host: hostId },
+        { orderBy: { id: 'DESC' } },
+      );
+
+      return latestSessionByHostId;
+    } catch (error) {
+      this.logger.error('HAS AN ERROR AT getLatestSessionByHostId()');
       throw error;
     }
   }
@@ -304,6 +331,51 @@ export class SessionService {
       return result;
     } catch (error) {
       this.logger.error('HAS AN ERRO AT getAllSessionsJoinedHistoryByUserId()');
+    }
+  }
+  async createNewSessionToday(
+    newSessionInfo: CreateSession,
+    user: User,
+    files: Array<Express.Multer.File> | Express.Multer.File,
+  ) {
+    try {
+      const urlImages: string[] = await this.awsService.bulkPutObject(
+        `session`,
+        files,
+      );
+
+      const qrImagesUrl = JSON.stringify(urlImages);
+
+      const session = plainToClass(Session, newSessionInfo);
+      session.host = user;
+      session.status = SessionStatus.OPEN;
+      session.qr_images = qrImagesUrl;
+
+      const getShopImage = await this.getShopImage.getShopImage(
+        session.shop_link,
+      );
+
+      if (getShopImage.status === 200) {
+        session.shop_image = getShopImage.photo.value;
+
+        this.em.persist(session);
+
+        await this.em.flush();
+
+        return {
+          status: 200,
+          message: 'Create new session successfully !',
+          id: session.id,
+        };
+      } else {
+        return {
+          status: getShopImage.status,
+          message: getShopImage.message,
+          id: null,
+        };
+      }
+    } catch (error) {
+      this.logger.error('HAS AN ERROR AT createNewSessionToday()');
       throw error;
     }
   }
