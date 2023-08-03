@@ -7,6 +7,10 @@ import { CreateSession } from './dtos/create-session.dto';
 import { UpdateSessionStatus } from './dtos/update-session_status.dto';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { User } from 'src/entities/user.entity';
+import { plainToClass, plainToInstance } from 'class-transformer';
+import { ShopImage } from 'src/utils/shop-image.util';
+import { AWSService } from '../aws/aws.service';
 
 @Injectable()
 export class SessionService {
@@ -15,6 +19,8 @@ export class SessionService {
     private readonly sessionRepository: EntityRepository<Session>,
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     private readonly em: EntityManager,
+    private readonly getShopImage: ShopImage,
+    private readonly awsService: AWSService,
   ) {}
 
   async getAllSessionsToday() {
@@ -25,7 +31,7 @@ export class SessionService {
       const currentYear = today.getFullYear();
 
       const allSessions = this.sessionRepository.findAll({
-        fields: ['id', 'title', 'host', 'status', 'created_at'],
+        fields: ['id', 'title', 'host', 'shop_image', 'status', 'created_at'],
       });
 
       const listSessionsToday = (await allSessions).filter(
@@ -41,8 +47,9 @@ export class SessionService {
           title: v.title,
           host: v.host.email,
           status: v.status,
-          created_at: v.created_at,
-          number_of_joiners: 0,
+          shopImage: v.shop_image,
+          createdAt: v.created_at,
+          numberOfJoiners: 0,
         };
       });
 
@@ -78,13 +85,47 @@ export class SessionService {
     }
   }
 
-  async createNewSessionToday(dto: CreateSession) {
+  async createNewSessionToday(
+    newSessionInfo: CreateSession,
+    user: User,
+    files: Array<Express.Multer.File> | Express.Multer.File,
+  ) {
     try {
-      const newSession = this.sessionRepository.create(dto);
+      const urlImages: string[] = await this.awsService.bulkPutObject(
+        `session`,
+        files,
+      );
 
-      await this.em.persistAndFlush(newSession);
+      const qrImagesUrl = JSON.stringify(urlImages);
 
-      return newSession;
+      const session = plainToClass(Session, newSessionInfo);
+      session.host = user;
+      session.status = SessionStatus.OPEN;
+      session.qr_images = qrImagesUrl;
+
+      const getShopImage = await this.getShopImage.getShopImage(
+        session.shop_link,
+      );
+
+      if (getShopImage.status === 200) {
+        session.shop_image = getShopImage.photo.value;
+
+        this.em.persist(session);
+
+        await this.em.flush();
+
+        return {
+          status: 200,
+          message: 'Create new session successfully !',
+          id: session.id,
+        };
+      } else {
+        return {
+          status: getShopImage.status,
+          message: getShopImage.message,
+          id: null,
+        };
+      }
     } catch (error) {
       this.logger.error('HAS AN ERROR AT createNewSessionToday()');
       throw error;
