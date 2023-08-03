@@ -10,7 +10,7 @@ import { MenuShopUtil } from 'src/utils/menu-food.util';
 import { Loaded, wrap } from '@mikro-orm/core';
 import { GroupedBy } from './enums/grouped-by.enum';
 import { SummaryFoodOrderDTO } from './dtos/summary-food-order.dto';
-import { groupFoodOrderQuery } from './queries/group-food-orders.query';
+import { getGroupFoodOrderQuery } from './helpers/food-order.helper';
 
 @Injectable()
 export class FoodOrderService {
@@ -193,7 +193,7 @@ export class FoodOrderService {
 
       const conn = this.em.getConnection();
 
-      return await conn.execute(groupFoodOrderQuery(sessionId, groupedBy));
+      return await conn.execute(getGroupFoodOrderQuery(sessionId, groupedBy));
     } catch (err) {
       this.logger.error(
         'Calling getSummaryFoodOrders()',

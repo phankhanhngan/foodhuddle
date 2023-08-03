@@ -6,7 +6,11 @@ import { User } from './user.entity';
 @Entity()
 @Unique({ properties: ['session', 'user'] })
 export class UserPayment extends Base {
-  @ManyToOne({ entity: () => Session })
+  @ManyToOne({
+    entity: () => Session,
+    onDelete: 'cascade',
+    onUpdateIntegrity: 'cascade',
+  })
   session!: Session;
 
   @ManyToOne({ entity: () => User })

@@ -358,6 +358,7 @@
             "id"
           ],
           "referencedTableName": "session",
+          "deleteRule": "cascade",
           "updateRule": "cascade"
         }
       }
@@ -517,6 +518,7 @@
             "id"
           ],
           "referencedTableName": "session",
+          "deleteRule": "cascade",
           "updateRule": "cascade"
         },
         "food_order_user_id_foreign": {
@@ -667,6 +669,7 @@
             "id"
           ],
           "referencedTableName": "session",
+          "deleteRule": "cascade",
           "updateRule": "cascade"
         },
         "user_payment_user_id_foreign": {

@@ -4,7 +4,10 @@ import { Session } from './session.entity';
 
 @Entity()
 export class SessionPayment extends Base {
-  @OneToOne(() => Session)
+  @OneToOne(() => Session, {
+    onDelete: 'cascade',
+    onUpdateIntegrity: 'cascade',
+  })
   session!: Session;
 
   @Property({ nullable: true })
