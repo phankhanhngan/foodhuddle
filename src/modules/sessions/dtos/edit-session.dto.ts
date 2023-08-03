@@ -1,5 +1,4 @@
 import { IsString, IsOptional } from 'class-validator';
-import { SessionStatus } from 'src/entities/session.entity';
 
 export class EditSession {
   @IsString({
@@ -22,6 +21,4 @@ export class EditSession {
 
   @IsOptional()
   qr_images: string;
-
-  status: SessionStatus.OPEN | SessionStatus.LOCKED;
 }

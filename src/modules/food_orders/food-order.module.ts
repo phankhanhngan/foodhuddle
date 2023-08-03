@@ -7,6 +7,7 @@ import { MenuShopUtil } from 'src/utils/menu-food.util';
 import { AuthModule } from '../auth/auth.module';
 import { SessionService } from '../sessions/session.service';
 import { AWSModule } from '../aws/aws.module';
+import { ShopImage } from 'src/utils/shop-image.util';
 
 @Module({
   imports: [
@@ -15,6 +16,6 @@ import { AWSModule } from '../aws/aws.module';
     AWSModule,
   ],
   controllers: [FoodOrderController],
-  providers: [FoodOrderService, SessionService, MenuShopUtil],
+  providers: [FoodOrderService, SessionService, MenuShopUtil, ShopImage],
 })
 export class FoodOrderModule {}

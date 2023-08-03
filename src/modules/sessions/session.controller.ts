@@ -151,7 +151,9 @@ export class SessionController {
     @Body(
       new ValidationPipe({
         transform: true,
-        transformOptions: { enableImplicitConversion: true },
+        transformOptions: {
+          enableImplicitConversion: true,
+        },
       }),
     )
     editSessionInfo: EditSession,
@@ -175,6 +177,8 @@ export class SessionController {
   ) {
     try {
       const { user } = req;
+
+      console.log(editSessionInfo);
 
       const editSession = await this.sessionService.editSessionInfo(
         id,

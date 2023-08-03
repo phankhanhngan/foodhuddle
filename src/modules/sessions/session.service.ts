@@ -163,7 +163,11 @@ export class SessionService {
         };
       }
 
-      await this.awsService.bulkDeleteObject(JSON.parse(sessionById.qr_images));
+      if (sessionById.qr_images[0] !== undefined) {
+        await this.awsService.bulkDeleteObject(
+          JSON.parse(sessionById.qr_images),
+        );
+      }
 
       const urlImages: string[] = await this.awsService.bulkPutObject(
         `session`,
