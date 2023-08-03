@@ -73,7 +73,7 @@ export class SessionService {
   }
 
   async createNewSessionToday(
-    newSession: CreateSession,
+    newSessionInfo: CreateSession,
     user: User,
     files: Array<Express.Multer.File> | Express.Multer.File,
   ) {
@@ -85,7 +85,7 @@ export class SessionService {
 
       const qrImagesUrl = JSON.stringify(urlImages);
 
-      const session = plainToClass(Session, newSession);
+      const session = plainToClass(Session, newSessionInfo);
       session.host = user;
       session.status = SessionStatus.OPEN;
       session.qr_images = qrImagesUrl;

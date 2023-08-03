@@ -25,6 +25,7 @@ import { Logger } from 'winston';
 import MaxFileSize from '../../helpers/validate-images-size';
 import AcceptImageType from 'src/helpers/validate-images-type';
 import { ImageResize } from 'src/helpers/resize-images';
+import { plainToClass } from 'class-transformer';
 
 @Controller('session')
 export class SessionController {
@@ -108,8 +109,10 @@ export class SessionController {
     try {
       const { user } = req;
 
+      const newSessionInfo = plainToClass(CreateSession, newSession);
+
       const newSessionCreated = await this.sessionService.createNewSessionToday(
-        newSession,
+        newSessionInfo,
         user,
         files,
       );
