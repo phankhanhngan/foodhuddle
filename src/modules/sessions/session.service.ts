@@ -251,6 +251,12 @@ export class SessionService {
     try {
       const sessionById = await this.sessionRepository.findOne({ id: id });
 
+      if (!sessionById) {
+        return {
+          status: 400,
+          message: `Can not find this session !`,
+        };
+      }
       const hostIdSession = sessionById.host.id;
 
       if (hostId !== hostIdSession) {
