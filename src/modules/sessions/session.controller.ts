@@ -123,8 +123,10 @@ export class SessionController {
     try {
       const { user } = req;
 
+      const newSessionInfo = plainToClass(CreateSession, newSession);
+
       const newSessionCreated = await this.sessionService.createNewSessionToday(
-        newSession,
+        newSessionInfo,
         user,
         files,
       );
