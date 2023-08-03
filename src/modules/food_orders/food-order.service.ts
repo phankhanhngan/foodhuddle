@@ -193,7 +193,7 @@ export class FoodOrderService {
 
       const conn = this.em.getConnection();
 
-      return await conn.execute(groupFoodOrderQuery[groupedBy]);
+      return await conn.execute(groupFoodOrderQuery(sessionId, groupedBy));
     } catch (err) {
       this.logger.error(
         'Calling getSummaryFoodOrders()',
