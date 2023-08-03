@@ -1,9 +1,9 @@
 import {
-  Body,
-  Post,
   Controller,
   Get,
   Param,
+  Body,
+  Post,
   InternalServerErrorException,
   ParseIntPipe,
   ParseFilePipe,
@@ -22,7 +22,6 @@ import {
 import { SessionService } from './session.service';
 import { Response } from 'express';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { AWSService } from '../aws/aws.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { plainToClass, plainToInstance } from 'class-transformer';
@@ -38,7 +37,6 @@ import { fileFilter } from './helpers/file-filter.helper';
 import { SessionPayment, SessionStatus, UserPayment } from 'src/entities';
 import MaxFileSize from '../../helpers/validate-images-size';
 import AcceptImageType from 'src/helpers/validate-images-type';
-import { ImageResize } from 'src/helpers/resize-images';
 import {
   SessionStatusGuard,
   JwtAuthGuard,
@@ -52,8 +50,6 @@ export class SessionController {
   constructor(
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     private readonly sessionService: SessionService,
-    private readonly awsService: AWSService,
-    private readonly imageResize: ImageResize,
   ) {}
 
   @Get('/today')
