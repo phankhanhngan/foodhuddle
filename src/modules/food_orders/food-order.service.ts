@@ -4,12 +4,13 @@ import { InjectRepository } from '@mikro-orm/nestjs';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { plainToClass, plainToInstance } from 'class-transformer';
-import { FoodOrder, Session, SessionStatus, User } from 'src/entities';
+import { FoodOrder, Session, User } from 'src/entities';
 import { CreateFoodOrderDTO, FoodDTO, UpdateFoodOrderDTO } from './dtos/index';
 import { MenuShopUtil } from 'src/utils/menu-food.util';
 import { Loaded, wrap } from '@mikro-orm/core';
 import { GroupedBy } from './enums/grouped-by.enum';
 import { SummaryFoodOrderDTO } from './dtos/summary-food-order.dto';
+import { getGroupFoodOrderQuery } from './helpers/food-order.helper';
 
 @Injectable()
 export class FoodOrderService {
@@ -174,42 +175,6 @@ export class FoodOrderService {
     }
   }
 
-  formatFOGroupedBy(foodOrders: SummaryFoodOrderDTO[], groupedBy: GroupedBy) {
-    let formattedFO: Array<any>;
-    switch (groupedBy) {
-      case GroupedBy.food:
-        const foodName = [
-          ...new Set(
-            foodOrders.map((fo) =>
-              JSON.stringify({
-                foodName: fo.foodName,
-                foodImage: fo.foodImage,
-              }),
-            ),
-          ),
-        ].map((fo) => JSON.parse(fo));
-
-        formattedFO = foodName.reduce((prev, curr) => {
-          const foGrouped = foodOrders
-            .filter((fo) => fo.foodName === curr.foodName)
-            .map(({ foodName, foodImage, ...restProps }) => restProps);
-
-          return [
-            ...prev,
-            {
-              ...curr,
-              orders: foGrouped,
-            },
-          ];
-        }, []);
-
-        break;
-      case GroupedBy.user:
-        break;
-    }
-    return formattedFO;
-  }
-
   async getSummaryFoodOrders(sessionId: number, groupedBy: GroupedBy) {
     try {
       const session = await this.sessionRepository.count({ id: sessionId });
@@ -225,7 +190,9 @@ export class FoodOrderService {
         return foodOrders;
       }
 
-      return this.formatFOGroupedBy(foodOrders, groupedBy);
+      const conn = this.em.getConnection();
+
+      return await conn.execute(getGroupFoodOrderQuery(sessionId, groupedBy));
     } catch (err) {
       this.logger.error(
         'Calling getSummaryFoodOrders()',

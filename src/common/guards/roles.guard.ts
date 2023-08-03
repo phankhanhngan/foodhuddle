@@ -15,7 +15,7 @@ export class RolesGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const { body, params, user } = context.switchToHttp().getRequest();
 
-    const sessionId = body.sessionId ? body.sessionId : params.id;
+    const sessionId = body.sessionId ?? params.id;
     const session = await this.sessionService.getSession(sessionId);
 
     if (!session) {
