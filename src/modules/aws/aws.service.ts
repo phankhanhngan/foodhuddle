@@ -70,6 +70,7 @@ export class AWSService {
       if (!Array.isArray(files)) {
         files = [].concat(files);
       }
+
       const commands = files.map((file) => {
         return new PutObjectCommand({
           Bucket: this.configService.get<string>('AWS_BUCKET_NAME'),

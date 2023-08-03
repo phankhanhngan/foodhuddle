@@ -7,10 +7,19 @@ import { AWSService } from '../aws/aws.service';
 import { WinstonModule } from 'nest-winston';
 import { ImageResize } from 'src/helpers/resize-images';
 import { ShopImage } from 'src/utils/shop-image.util';
+import { AWSModule } from '../aws/aws.module';
+import { SessionPayment } from 'src/entities';
+import { EntityRepository } from '@mikro-orm/mysql';
 
 @Module({
-  imports: [MikroOrmModule.forFeature([Session]), WinstonModule],
+  imports: [AWSModule, MikroOrmModule.forFeature([Session, SessionPayment])],
   controllers: [SessionController],
-  providers: [SessionService, AWSService, ImageResize, ShopImage],
+  providers: [
+    SessionService,
+    AWSService,
+    ImageResize,
+    ShopImage,
+    EntityRepository,
+  ],
 })
 export class SessionModule {}

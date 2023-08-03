@@ -10,7 +10,7 @@ import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { IAuthPayload, IUserAuthen } from './interfaces/index';
-import { User } from 'src/entities/user.entity';
+import { User } from 'src/entities';
 
 @Injectable()
 export class AuthService {

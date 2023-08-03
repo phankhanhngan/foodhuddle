@@ -20,14 +20,23 @@ import { SessionService } from './session.service';
 import { Response } from 'express';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { CreateSession } from './dtos/create-session.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import MaxFileSize from '../../helpers/validate-images-size';
 import AcceptImageType from 'src/helpers/validate-images-type';
 import { ImageResize } from 'src/helpers/resize-images';
 import { EditSession } from './dtos/edit-session.dto';
+import { plainToClass, plainToInstance } from 'class-transformer';
+import { SessionInfoDTO, SessionPaymentDTO } from './dtos/';
+import { fileFilter } from './helpers/file-filter.helper';
+import { SessionPayment, SessionStatus } from 'src/entities';
+import {
+  SessionStatusGuard,
+  JwtAuthGuard,
+  RolesGuard,
+} from 'src/common/guards';
 
+@UseGuards(JwtAuthGuard)
 @Controller('session')
 export class SessionController {
   constructor(
@@ -47,7 +56,11 @@ export class SessionController {
         data: allSessionToday,
       });
     } catch (error) {
-      this.logger.error('HAS AN ERROR AT GETTING ALL SESSIONS TODAY');
+      this.logger.error(
+        'Calling getAllSessionsToday()',
+        error,
+        SessionService.name,
+      );
       throw error;
     }
   }
