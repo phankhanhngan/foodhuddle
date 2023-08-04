@@ -195,6 +195,15 @@
           "nullable": true,
           "mappedType": "text"
         },
+        "shop_name": {
+          "name": "shop_name",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "text"
+        },
         "status": {
           "name": "status",
           "type": "enum('OPEN', 'LOCKED', 'PENDING PAYMENTS', 'FINISHED')",
