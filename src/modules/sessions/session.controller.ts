@@ -12,6 +12,8 @@ import {
   UploadedFiles,
   Put,
   Req,
+  Post,
+  ParseFilePipe,
 } from '@nestjs/common';
 import { SessionService } from './session.service';
 import { Response } from 'express';
@@ -19,7 +21,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { plainToClass, plainToInstance } from 'class-transformer';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { SessionInfoDTO, SessionPaymentDTO } from './dtos/';
+import { SessionInfoDTO, SessionPaymentDTO, CreateSession } from './dtos/';
 import { fileFilter } from './helpers/file-filter.helper';
 import { SessionPayment, SessionStatus } from 'src/entities';
 import {
@@ -27,6 +29,8 @@ import {
   JwtAuthGuard,
   RolesGuard,
 } from 'src/common/guards';
+import MaxFileSize from '../../helpers/validate-images-size';
+import AcceptImageType from 'src/helpers/validate-images-type';
 
 @UseGuards(JwtAuthGuard)
 @Controller('session')
@@ -130,6 +134,90 @@ export class SessionController {
         SessionService.name,
       );
       throw err;
+    }
+  }
+  @UseGuards(JwtAuthGuard)
+  @Get('/host-payment-infor')
+  async getHostPaymentInfor(@Res() res: Response) {
+    try {
+      const hostId = Object(res.req.user).id;
+
+      const sessionByHostId =
+        await this.sessionService.getLatestSessionByHostId(hostId);
+
+      const hostPaymentInfor = sessionByHostId
+        ? sessionByHostId.host_payment_info
+        : '';
+
+      const qr_images = sessionByHostId
+        ? JSON.parse(sessionByHostId.qr_images)
+        : [];
+
+      return res.status(200).json({
+        hostPaymentInfor: hostPaymentInfor,
+        qrImages: qr_images,
+      });
+    } catch (error) {
+      this.logger.error('HAS AN ERROR AT GETTING HOST PAYMENT INFORMATION');
+      throw error;
+    }
+  }
+
+  @Post()
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FilesInterceptor('qr_images'))
+  async createNewSessionToday(
+    @Body(
+      new ValidationPipe({
+        transform: true,
+        transformOptions: { enableImplicitConversion: true },
+      }),
+    )
+    newSession: CreateSession,
+    @Req() req,
+    @UploadedFiles(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSize({
+            maxSize: 5,
+          }),
+          new AcceptImageType({
+            fileType: ['image/jpeg', 'image/png'],
+          }),
+        ],
+        fileIsRequired: false,
+      }),
+    )
+    files: Array<Express.Multer.File> | Express.Multer.File,
+    @Res() res: Response,
+  ) {
+    try {
+      const { user } = req;
+
+      const newSessionInfo = plainToClass(CreateSession, newSession);
+
+      const newSessionCreated = await this.sessionService.createNewSessionToday(
+        newSessionInfo,
+        user,
+        files,
+      );
+
+      if (!newSessionCreated) {
+        return res.status(400).json({
+          statusCode: 400,
+          message: 'Has an error when creating new session !',
+          id: null,
+        });
+      }
+
+      return res.status(newSessionCreated.status).json({
+        statusCode: newSessionCreated.status,
+        message: newSessionCreated.message,
+        id: newSessionCreated.id,
+      });
+    } catch (error) {
+      this.logger.error('HAS AN ERROR WHEN CREATING NEW SESSION TODAY');
+      throw error;
     }
   }
 }
