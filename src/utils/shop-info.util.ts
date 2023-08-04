@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { constantData } from 'src/constant/constant-data';
 
-export class ShopImage {
-  async getShopImage(shopLink: string) {
+export class ShopInfo {
+  async getShopInfo(shopLink: string) {
     try {
       const config = {
         headers: constantData.headers,
@@ -33,6 +33,7 @@ export class ShopImage {
         return {
           status: 200,
           photo: reponseDataShopInfo.reply.delivery_detail.photos[9],
+          shopName: reponseDataShopInfo.reply.delivery_detail.name,
         };
       } else {
         return {

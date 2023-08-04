@@ -26,7 +26,7 @@ import {
   addRemainingUserRequestPayment,
 } from './helpers';
 import { SessionStatus } from 'src/entities/session.entity';
-import { ShopImage } from 'src/utils/shop-image.util';
+import { ShopInfo } from 'src/utils/shop-info.util';
 
 @Injectable()
 export class SessionService {
@@ -43,8 +43,8 @@ export class SessionService {
     @InjectRepository(User)
     private readonly userRepository: EntityRepository<User>,
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    private readonly getShopInfo: ShopInfo,
     private readonly awsService: AWSService,
-    private readonly getShopImage: ShopImage,
   ) {}
 
   async _getNumberOfJoiner(sessionId: number) {
@@ -406,13 +406,11 @@ export class SessionService {
       session.status = SessionStatus.OPEN;
       session.qr_images = qrImagesUrl;
 
-      const getShopImage = await this.getShopImage.getShopImage(
-        session.shop_link,
-      );
+      const getShopInfo = await this.getShopInfo.getShopInfo(session.shop_link);
 
-      if (getShopImage.status === 200) {
-        session.shop_image = getShopImage.photo.value;
-
+      if (getShopInfo.status === 200) {
+        session.shop_image = getShopInfo.photo.value;
+        session.shop_name = getShopInfo.shopName;
         this.em.persist(session);
 
         await this.em.flush();
@@ -424,8 +422,8 @@ export class SessionService {
         };
       } else {
         return {
-          status: getShopImage.status,
-          message: getShopImage.message,
+          status: getShopInfo.status,
+          message: getShopInfo.message,
           id: null,
         };
       }
