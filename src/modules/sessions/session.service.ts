@@ -238,12 +238,12 @@ export class SessionService {
 
       return (
         await conn.execute(
-          `SELECT * FROM 
-          ((SELECT DISTINCT fo.user_id as id FROM food_order fo WHERE fo.session_id = ${session.id}) 
-         EXCEPT
-        (SELECT DISTINCT up.user_id as id FROM user_payment up WHERE up.session_id = ${session.id})) 
-        as id
-        WHERE id != ${session.host.id}`,
+          `SELECT fo_uid.id FROM 
+          (SELECT DISTINCT fo.user_id as id FROM food_order fo WHERE fo.session_id = ${session.id}) AS fo_uid
+          LEFT JOIN 
+          (SELECT DISTINCT up.user_id as id FROM user_payment up WHERE up.session_id = ${session.id}) AS up_uid
+          ON fo_uid.id = up_uid.id
+          WHERE up_uid.id IS NULL AND fo_uid.id != ${session.host.id}`,
         )
       ).map((userId) => userId.id);
     } catch (err) {
