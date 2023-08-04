@@ -60,6 +60,33 @@ export class SessionController {
     }
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('/host-payment-infor')
+  async getHostPaymentInfor(@Res() res: Response) {
+    try {
+      const hostId = Object(res.req.user).id;
+
+      const sessionByHostId =
+        await this.sessionService.getLatestSessionByHostId(hostId);
+
+      const hostPaymentInfor = sessionByHostId
+        ? sessionByHostId.host_payment_info
+        : '';
+
+      const qr_images = sessionByHostId
+        ? JSON.parse(sessionByHostId.qr_images)
+        : [];
+
+      return res.status(200).json({
+        hostPaymentInfor: hostPaymentInfor,
+        qrImages: qr_images,
+      });
+    } catch (error) {
+      this.logger.error('HAS AN ERROR AT GETTING HOST PAYMENT INFORMATION');
+      throw error;
+    }
+  }
+
   @Get(':id')
   async getSession(
     @Param('id', ParseIntPipe) id: number,
@@ -134,32 +161,6 @@ export class SessionController {
         SessionService.name,
       );
       throw err;
-    }
-  }
-  @UseGuards(JwtAuthGuard)
-  @Get('/host-payment-infor')
-  async getHostPaymentInfor(@Res() res: Response) {
-    try {
-      const hostId = Object(res.req.user).id;
-
-      const sessionByHostId =
-        await this.sessionService.getLatestSessionByHostId(hostId);
-
-      const hostPaymentInfor = sessionByHostId
-        ? sessionByHostId.host_payment_info
-        : '';
-
-      const qr_images = sessionByHostId
-        ? JSON.parse(sessionByHostId.qr_images)
-        : [];
-
-      return res.status(200).json({
-        hostPaymentInfor: hostPaymentInfor,
-        qrImages: qr_images,
-      });
-    } catch (error) {
-      this.logger.error('HAS AN ERROR AT GETTING HOST PAYMENT INFORMATION');
-      throw error;
     }
   }
 

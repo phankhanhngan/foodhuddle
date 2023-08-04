@@ -11,6 +11,10 @@ export class SessionInfoDTO {
 
   created_at: Date;
 
+  shop_image: string;
+
+  shop_name: string;
+
   @Expose()
   @Transform(({ obj, key }) => ({
     googleId: obj[key].googleId,
@@ -42,6 +46,14 @@ export class SessionInfoDTO {
   @Expose()
   @Transform(({ obj }) => obj.shop_link)
   shopLink: string;
+
+  @Expose()
+  @Transform(({ obj }) => obj.shop_name)
+  shopName: string;
+
+  @Expose()
+  @Transform(({ obj }) => obj.shop_image)
+  shopImage: string;
 
   @Expose()
   @Transform(({ obj }) => obj.host_payment_info)
