@@ -4,7 +4,6 @@ import {
   Param,
   Body,
   Post,
-  InternalServerErrorException,
   ParseIntPipe,
   ParseFilePipe,
   Query,
@@ -35,14 +34,14 @@ import {
 } from './dtos/';
 import { fileFilter } from './helpers/file-filter.helper';
 import { SessionPayment, SessionStatus, UserPayment } from 'src/entities';
-import MaxFileSize from '../../helpers/validate-images-size';
-import AcceptImageType from 'src/helpers/validate-images-type';
 import {
   SessionStatusGuard,
   JwtAuthGuard,
   RolesGuard,
 } from 'src/common/guards';
 import { UserPaymentAction } from './enums/user-payment-action.enum';
+import MaxFileSize from '../../helpers/validate-images-size';
+import AcceptImageType from 'src/helpers/validate-images-type';
 
 @UseGuards(JwtAuthGuard)
 @Controller('session')
@@ -127,22 +126,6 @@ export class SessionController {
     }
   }
 
-  @Get(':id')
-  async getSession(
-    @Param('id', ParseIntPipe) id: number,
-  ): Promise<SessionInfoDTO> {
-    try {
-      const session = await this.sessionService.getSession(id);
-
-      return plainToInstance(SessionInfoDTO, session, {
-        enableCircularCheck: true,
-      });
-    } catch (err) {
-      this.logger.error('Calling getSession()', err, SessionService.name);
-      throw err;
-    }
-  }
-
   @Get('/today/hosted')
   @UseGuards(JwtAuthGuard)
   async getAllSessionHostedTodayByUserId(@Res() res: Response) {
@@ -182,6 +165,22 @@ export class SessionController {
         'HAS AN ERROR AT GETTING ALL SESSIONS JOINED TODAY BY USER ID',
       );
       throw error;
+    }
+  }
+
+  @Get(':id')
+  async getSession(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<SessionInfoDTO> {
+    try {
+      const session = await this.sessionService.getSession(id);
+
+      return plainToInstance(SessionInfoDTO, session, {
+        enableCircularCheck: true,
+      });
+    } catch (err) {
+      this.logger.error('Calling getSession()', err, SessionService.name);
+      throw err;
     }
   }
 

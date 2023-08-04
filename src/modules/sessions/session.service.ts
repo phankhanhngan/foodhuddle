@@ -1,6 +1,6 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { EntityManager, EntityRepository, wrap, Loaded } from '@mikro-orm/core';
+import { EntityManager, EntityRepository, Loaded } from '@mikro-orm/core';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { plainToClass, plainToInstance } from 'class-transformer';
