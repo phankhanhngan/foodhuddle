@@ -3,8 +3,6 @@ import {
   Post,
   Controller,
   Get,
-  Param,
-  InternalServerErrorException,
   Res,
   UseGuards,
   UseInterceptors,
@@ -18,7 +16,6 @@ import { SessionService } from './session.service';
 import { Response } from 'express';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { CreateSession } from './dtos/create-session.dto';
-import { AWSService } from '../aws/aws.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
