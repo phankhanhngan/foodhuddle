@@ -43,6 +43,7 @@ export class MenuShopUtil {
                           ? op.option_items.items.map((opi) => {
                               const optionItem = {
                                 name: opi.name,
+                                maxQuantity: opi.max_quantity,
                                 price: opi.price.value,
                               };
 
@@ -55,6 +56,8 @@ export class MenuShopUtil {
                         id: op.id,
                         mandatory: op.mandatory,
                         category: op.name,
+                        minSelection: op.option_items.min_select,
+                        maxSelection: op.option_items.max_select,
                         detail: optionItems,
                       };
                       return option;
