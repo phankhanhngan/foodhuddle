@@ -51,7 +51,11 @@ export class MenuShopUtil {
                       id: op.id,
                       mandatory: op.mandatory,
                       name: op.name,
-                      option_items: optionItems,
+                      option_items: {
+                        min_select: op.option_items.min_select,
+                        max_select: op.option_items.min_select,
+                        items: optionItems,
+                      },
                     };
                     return option;
                   })
