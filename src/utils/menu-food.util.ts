@@ -40,7 +40,6 @@ export class MenuShopUtil {
                       ? op.option_items.items.map((opi) => {
                           const optionItem = {
                             name: opi.name,
-                            maxQuantity: opi.max_quantity,
                             price: opi.price.value,
                           };
 
