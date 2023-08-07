@@ -45,7 +45,11 @@ export class SessionService {
 
       return listSessionsReturn;
     } catch (error) {
-      this.logger.error('HAS AN ERRO AT getAllSessionsToday()');
+      this.logger.error(
+        'Calling getAllSessionsToday()',
+        error,
+        SessionService.name,
+      );
       throw error;
     }
   }

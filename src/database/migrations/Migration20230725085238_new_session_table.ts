@@ -2,20 +2,19 @@ import { Migration } from '@mikro-orm/migrations';
 
 export class Migration20230725085238_new_session_table extends Migration {
   async up(): Promise<void> {
-    this.addSql(`create table session (
-      id int unsigned not null auto_increment primary key, 
-      created_at datetime not null, 
-      updated_at datetime not null, 
-      title varchar(255) not null, 
-      description text null, 
-      shop_link text not null, 
-      host_payment_info text not null, 
-      qr_images text null, 
-      status enum(
-        'OPEN', 'LOCKED', 'PENDING PAYMENTS', 
-        'FINISHED'
-      ) not null
-    ) default character set utf8mb4 engine = InnoDB;`);
+    this.addSql(`CREATE TABLE session (
+      id INT unsigned NOT NULL auto_increment PRIMARY KEY
+      ,created_at DATETIME NOT NULL
+      ,updated_at DATETIME NOT NULL
+      ,title VARCHAR(255) NOT NULL
+      ,description TEXT NULL
+      ,shop_link TEXT NOT NULL
+      ,host_payment_info TEXT NOT NULL
+      ,qr_images TEXT NULL
+      ,STATUS enum('OPEN', 'LOCKED', 'PENDING PAYMENTS', 'FINISHED') NOT NULL
+      ) DEFAULT CHAR
+    
+    SET utf8mb4 engine = InnoDB;`);
   }
 
   async down(): Promise<void> {
