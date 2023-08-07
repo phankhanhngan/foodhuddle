@@ -395,7 +395,7 @@ export class SessionService {
   ) {
     try {
       const urlImages: string[] = await this.awsService.bulkPutObject(
-        `session`,
+        `QRImages`,
         files,
       );
 
