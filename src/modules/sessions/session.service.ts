@@ -181,20 +181,17 @@ export class SessionService {
     try {
       const today = new Date();
 
-      const listSessionsToday = await this.sessionRepository.find(
-        {
-          created_at: {
-            $gte: `${today.getFullYear()}-${
-              today.getMonth() + 1
-            }-${today.getDate()}`,
-            $lt: `${today.getFullYear()}-${today.getMonth() + 1}-${
-              today.getDate() + 1
-            }`,
-          },
-        },
-        {
-          fields: ['id', 'title', 'host', 'status', 'created_at'],
-        },
+      const currentDate = today.getDate();
+      const currentMonth = today.getMonth() + 1;
+      const currentYear = today.getFullYear();
+
+      const allSessions = await this._getAllSessions();
+
+      const listSessionsToday = allSessions.filter(
+        (v) =>
+          v.createdAt.getDate() === currentDate &&
+          v.createdAt.getMonth() + 1 === currentMonth &&
+          v.createdAt.getFullYear() === currentYear,
       );
 
       return listSessionsToday;
