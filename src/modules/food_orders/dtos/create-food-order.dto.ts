@@ -12,6 +12,12 @@ import { Exclude, Expose, Type } from 'class-transformer';
 @Exclude()
 export class CreateFoodOrderDTO {
   @Expose()
+  @IsInt({
+    message: 'Food ID must be an integer',
+  })
+  foodId: number;
+
+  @Expose()
   @IsString({
     message: 'Food name must be a string',
   })

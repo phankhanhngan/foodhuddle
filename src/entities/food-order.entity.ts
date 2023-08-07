@@ -21,6 +21,9 @@ export class FoodOrder extends Base {
   foodImage?: string;
 
   @Property({ nullable: false })
+  foodId!: number;
+
+  @Property({ nullable: false })
   originPrice!: number;
 
   @Property({ nullable: true, type: 'text' })
