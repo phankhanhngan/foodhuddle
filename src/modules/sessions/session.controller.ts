@@ -1,7 +1,6 @@
 import {
   Controller,
   Get,
-  Param,
   Body,
   Post,
   ParseIntPipe,
@@ -13,16 +12,19 @@ import {
   UploadedFiles,
   ValidationPipe,
   UseInterceptors,
-  Put,
-  Req,
   Delete,
   ParseEnumPipe,
+  Req,
+  Put,
+  Param,
 } from '@nestjs/common';
 import { SessionService } from './session.service';
 import { Response } from 'express';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import MaxFileSize from '../../helpers/validate-images-size';
+import AcceptImageType from 'src/helpers/validate-images-type';
 import { plainToClass, plainToInstance } from 'class-transformer';
 import {
   SessionInfoDTO,
@@ -40,8 +42,6 @@ import {
   RolesGuard,
 } from 'src/common/guards';
 import { UserPaymentAction } from './enums/user-payment-action.enum';
-import MaxFileSize from '../../helpers/validate-images-size';
-import AcceptImageType from 'src/helpers/validate-images-type';
 
 @UseGuards(JwtAuthGuard)
 @Controller('session')
