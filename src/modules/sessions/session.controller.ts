@@ -13,6 +13,7 @@ import {
   ParseIntPipe,
   Req,
   Put,
+  Param,
 } from '@nestjs/common';
 import { SessionService } from './session.service';
 import { Response } from 'express';
