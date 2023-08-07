@@ -246,25 +246,10 @@ export class SessionController {
     try {
       const hostId = Object(res.req.user).id;
 
-      const sessionById = await this.sessionService.getSessionById(id);
-
-      if (sessionById === null) {
-        return res.status(400).json({
-          status: 400,
-          message: 'Session does not exist!',
-        });
-      }
-
-      const hostIdSession = sessionById.host.id;
-
-      if (hostId !== hostIdSession) {
-        return res.status(400).json({
-          status: 400,
-          message: `Only host can delete session!`,
-        });
-      }
-
-      const resultDeleting = await this.sessionService.deleteSession(id);
+      const resultDeleting = await this.sessionService.deleteSession(
+        id,
+        hostId,
+      );
 
       return res.status(resultDeleting.statusCode).json(resultDeleting);
     } catch (error) {
