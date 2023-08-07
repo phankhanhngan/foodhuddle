@@ -21,7 +21,6 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import MaxFileSize from '../../helpers/validate-images-size';
 import AcceptImageType from 'src/helpers/validate-images-type';
-import { ImageResize } from 'src/helpers/resize-images';
 import { plainToClass } from 'class-transformer';
 
 @Controller('session')
@@ -29,7 +28,6 @@ export class SessionController {
   constructor(
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     private readonly sessionService: SessionService,
-    private readonly imageResize: ImageResize,
   ) {}
 
   @Get('/today')
