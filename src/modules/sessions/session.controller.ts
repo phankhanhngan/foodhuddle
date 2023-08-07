@@ -3,8 +3,6 @@ import {
   Post,
   Controller,
   Get,
-  Param,
-  InternalServerErrorException,
   Res,
   UseGuards,
   UseInterceptors,
@@ -20,14 +18,12 @@ import { SessionService } from './session.service';
 import { Response } from 'express';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { CreateSession } from './dtos/create-session.dto';
-import { AWSService } from '../aws/aws.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UpdateSessionStatus } from './dtos/update-session_status.dto';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import MaxFileSize from '../../helpers/validate-images-size';
 import AcceptImageType from 'src/helpers/validate-images-type';
-import { ImageResize } from 'src/helpers/resize-images';
 import { plainToClass } from 'class-transformer';
 
 @Controller('session')
@@ -35,7 +31,6 @@ export class SessionController {
   constructor(
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     private readonly sessionService: SessionService,
-    private readonly imageResize: ImageResize,
   ) {}
 
   @Get('/today')
@@ -118,8 +113,13 @@ export class SessionController {
         user,
         files,
       );
-      if (!newSession) {
-        throw new InternalServerErrorException();
+
+      if (!newSessionCreated) {
+        return res.status(400).json({
+          statusCode: 400,
+          message: 'Has an error when creating new session !',
+          id: null,
+        });
       }
 
       return res.status(newSessionCreated.status).json({

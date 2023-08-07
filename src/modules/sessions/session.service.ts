@@ -9,8 +9,8 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { User } from 'src/entities/user.entity';
 import { plainToClass, plainToInstance } from 'class-transformer';
-import { ShopImage } from 'src/utils/shop-image.util';
 import { AWSService } from '../aws/aws.service';
+import { ShopInfo } from 'src/utils/shop-info.util';
 
 @Injectable()
 export class SessionService {
@@ -19,7 +19,7 @@ export class SessionService {
     private readonly sessionRepository: EntityRepository<Session>,
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     private readonly em: EntityManager,
-    private readonly getShopImage: ShopImage,
+    private readonly getShopInfo: ShopInfo,
     private readonly awsService: AWSService,
   ) {}
 
@@ -92,7 +92,7 @@ export class SessionService {
   ) {
     try {
       const urlImages: string[] = await this.awsService.bulkPutObject(
-        `session`,
+        `QRImages`,
         files,
       );
 
@@ -103,13 +103,11 @@ export class SessionService {
       session.status = SessionStatus.OPEN;
       session.qr_images = qrImagesUrl;
 
-      const getShopImage = await this.getShopImage.getShopImage(
-        session.shop_link,
-      );
+      const getShopInfo = await this.getShopInfo.getShopInfo(session.shop_link);
 
-      if (getShopImage.status === 200) {
-        session.shop_image = getShopImage.photo.value;
-
+      if (getShopInfo.status === 200) {
+        session.shop_image = getShopInfo.photo.value;
+        session.shop_name = getShopInfo.shopName;
         this.em.persist(session);
 
         await this.em.flush();
@@ -121,8 +119,8 @@ export class SessionService {
         };
       } else {
         return {
-          status: getShopImage.status,
-          message: getShopImage.message,
+          status: getShopInfo.status,
+          message: getShopInfo.message,
           id: null,
         };
       }
