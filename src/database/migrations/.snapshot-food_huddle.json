@@ -439,6 +439,15 @@
           "nullable": true,
           "mappedType": "text"
         },
+        "food_id": {
+          "name": "food_id",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "integer"
+        },
         "origin_price": {
           "name": "origin_price",
           "type": "int",
