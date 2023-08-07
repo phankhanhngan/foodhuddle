@@ -5,12 +5,11 @@ import { Session } from 'src/entities/session.entity';
 import { SessionService } from './session.service';
 import { AWSService } from '../aws/aws.service';
 import { WinstonModule } from 'nest-winston';
-import { ImageResize } from 'src/helpers/resize-images';
 import { AWSModule } from '../aws/aws.module';
 import { SessionPayment, UserPayment } from 'src/entities';
 import { EntityRepository } from '@mikro-orm/mysql';
 import { FoodOrder } from 'src/entities';
-import { ShopImage } from 'src/utils/shop-image.util';
+import { ShopInfo } from 'src/utils/shop-info.util';
 
 @Module({
   imports: [
@@ -23,12 +22,6 @@ import { ShopImage } from 'src/utils/shop-image.util';
     WinstonModule,
   ],
   controllers: [SessionController],
-  providers: [
-    SessionService,
-    EntityRepository,
-    AWSService,
-    ImageResize,
-    ShopImage,
-  ],
+  providers: [SessionService, EntityRepository, AWSService, ShopInfo],
 })
 export class SessionModule {}
