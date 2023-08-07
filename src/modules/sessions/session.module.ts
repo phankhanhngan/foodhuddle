@@ -6,7 +6,6 @@ import { SessionService } from './session.service';
 import { FoodOrder, SessionPayment, User, UserPayment } from 'src/entities';
 import { AWSService } from '../aws/aws.service';
 import { WinstonModule } from 'nest-winston';
-import { ImageResize } from 'src/helpers/resize-images';
 import { AWSModule } from '../aws/aws.module';
 import { EntityRepository } from '@mikro-orm/mysql';
 import { ShopInfo } from 'src/utils/shop-info.util';
@@ -24,12 +23,6 @@ import { ShopInfo } from 'src/utils/shop-info.util';
     ]),
   ],
   controllers: [SessionController],
-  providers: [
-    SessionService,
-    EntityRepository,
-    AWSService,
-    ImageResize,
-    ShopInfo,
-  ],
+  providers: [SessionService, EntityRepository, AWSService, ShopInfo],
 })
 export class SessionModule {}
