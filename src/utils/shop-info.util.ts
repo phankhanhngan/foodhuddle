@@ -8,7 +8,9 @@ export class ShopInfo {
         headers: constantData.headers,
       };
 
-      const getShopUrl = shopLink.split('https://shopeefood.vn/')[1];
+      const getShopUrl = shopLink
+        .split('https://shopeefood.vn/')[1]
+        .split('?')[0];
 
       const urlGetShopId = `https://gappapi.deliverynow.vn/api/delivery/get_from_url?url=${getShopUrl}`;
 
