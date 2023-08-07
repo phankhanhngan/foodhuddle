@@ -193,6 +193,8 @@ export class SessionController {
       });
     } catch (error) {
       this.logger.error('HAS AN ERROR WHEN CREATING NEW SESSION TODAY');
+        SessionController.name,
+      );
       throw error;
     }
   }
