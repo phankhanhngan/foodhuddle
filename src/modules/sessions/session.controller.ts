@@ -27,7 +27,6 @@ import { plainToInstance } from 'class-transformer';
 import { SessionInfoDTO } from './dtos/session-info.dto';
 import MaxFileSize from '../../helpers/validate-images-size';
 import AcceptImageType from 'src/helpers/validate-images-type';
-import { ImageResize } from 'src/helpers/resize-images';
 import { plainToClass } from 'class-transformer';
 
 @UseGuards(JwtAuthGuard)
@@ -36,7 +35,6 @@ export class SessionController {
   constructor(
     private readonly sessionService: SessionService,
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    private readonly imageResize: ImageResize,
   ) {}
 
   @Get('/today')
@@ -90,7 +88,9 @@ export class SessionController {
       });
     } catch (error) {
       this.logger.error(
-        'HAS AN ERROR AT GETTING ALL SESSIONS HOSTED TODAY BY USER ID',
+        'Calling getAllSessionHostedTodayByUserId()',
+        error,
+        SessionService.name,
       );
       throw error;
     }
@@ -111,7 +111,9 @@ export class SessionController {
       });
     } catch (error) {
       this.logger.error(
-        'HAS AN ERROR AT GETTING ALL SESSIONS JOINED TODAY BY USER ID',
+        'Calling getAllSessionsJoinedTodayByUserId()',
+        error,
+        SessionService.name,
       );
       throw error;
     }
@@ -139,7 +141,11 @@ export class SessionController {
         qrImages: qr_images,
       });
     } catch (error) {
-      this.logger.error('HAS AN ERROR AT GETTING HOST PAYMENT INFORMATION');
+      this.logger.error(
+        'Calling getHostPaymentInfor()',
+        error,
+        SessionService.name,
+      );
       throw error;
     }
   }
@@ -192,8 +198,10 @@ export class SessionController {
         id: newSessionCreated.id,
       });
     } catch (error) {
-      this.logger.error('HAS AN ERROR WHEN CREATING NEW SESSION TODAY');
-        SessionController.name,
+      this.logger.error(
+        'Calling createNewSessionToday()',
+        error,
+        SessionService.name,
       );
       throw error;
     }

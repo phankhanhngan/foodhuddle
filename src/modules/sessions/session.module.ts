@@ -6,12 +6,11 @@ import { SessionService } from './session.service';
 import { AWSService } from '../aws/aws.service';
 import { WinstonModule } from 'nest-winston';
 import { FoodOrder } from 'src/entities';
-import { ImageResize } from 'src/helpers/resize-images';
 import { ShopImage } from 'src/utils/shop-image.util';
 
 @Module({
   imports: [MikroOrmModule.forFeature([Session, FoodOrder]), WinstonModule],
   controllers: [SessionController],
-  providers: [SessionService, AWSService, ImageResize, ShopImage],
+  providers: [SessionService, AWSService, ShopImage],
 })
 export class SessionModule {}

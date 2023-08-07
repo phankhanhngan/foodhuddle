@@ -30,36 +30,45 @@ export class SessionService {
   ) {}
 
   async _getNumberOfJoiner(sessionId: number) {
-    const sessionsBySessionId = await this.foodOrderRepository.find(
-      {
-        session: sessionId,
-      },
+    try {
+      const sessionsBySessionId = await this.foodOrderRepository.find(
+        {
+          session: sessionId,
+        },
 
-      { populate: ['session'] },
-    );
+        { populate: ['session'] },
+      );
 
-    const listUserJoinBySession = sessionsBySessionId.map((v) => {
-      const user = {
-        id: v.user.id,
-      };
-      return user;
-    });
+      const listUserJoinBySession = sessionsBySessionId.map((v) => {
+        const user = {
+          id: v.user.id,
+        };
+        return user;
+      });
 
-    const currentHostId = (
-      await this.sessionRepository.findOne({
-        id: sessionId,
-      })
-    ).host.id;
+      const currentHostId = (
+        await this.sessionRepository.findOne({
+          id: sessionId,
+        })
+      ).host.id;
 
-    const check = [];
-    const listJoinerPerSession = listUserJoinBySession.filter((v) => {
-      if (currentHostId !== v.id && !check.includes(v.id)) {
-        check.push(v.id);
-        return v;
-      }
-    });
+      const check = [];
+      const listJoinerPerSession = listUserJoinBySession.filter((v) => {
+        if (currentHostId !== v.id && !check.includes(v.id)) {
+          check.push(v.id);
+          return v;
+        }
+      });
 
-    return listJoinerPerSession.length;
+      return listJoinerPerSession.length;
+    } catch (error) {
+      this.logger.error(
+        'Calling _getNumberOfJoiner()',
+        error,
+        SessionService.name,
+      );
+      throw error;
+    }
   }
 
   async _getAllSessions() {
@@ -111,7 +120,11 @@ export class SessionService {
 
       return Promise.all(sessionHostedByUserIdReturn);
     } catch (error) {
-      this.logger.error('HAS AN ERRO AT getAllSessionHostedByUserId()');
+      this.logger.error(
+        'Calling _getAllSessionHostedByUserId()',
+        error,
+        SessionService.name,
+      );
       throw error;
     }
   }
@@ -154,7 +167,11 @@ export class SessionService {
 
       return result;
     } catch (error) {
-      this.logger.error('HAS AN ERRO AT getAllSessionsJoinedByUserId()');
+      this.logger.error(
+        'Calling _getAllSessionsJoinedByUserId()',
+        error,
+        SessionService.name,
+      );
       throw error;
     }
   }
@@ -206,7 +223,12 @@ export class SessionService {
 
       return sessionHostedTodayByUserId;
     } catch (error) {
-      this.logger.error('HAS AN ERRO AT getAllSessionHostedTodayByUserId()');
+      this.logger.error(
+        'Calling getAllSessionHostedTodayByUserId()',
+        error,
+        SessionService.name,
+      );
+      throw error;
     }
   }
   async getLatestSessionByHostId(hostId: number) {
@@ -218,7 +240,11 @@ export class SessionService {
 
       return latestSessionByHostId;
     } catch (error) {
-      this.logger.error('HAS AN ERROR AT getLatestSessionByHostId()');
+      this.logger.error(
+        'Calling getLatestSessionByHostId()',
+        error,
+        SessionService.name,
+      );
       throw error;
     }
   }
@@ -243,7 +269,11 @@ export class SessionService {
 
       return sessionJoinedByUserIdToday;
     } catch (error) {
-      this.logger.error('HAS AN ERRO AT getAllSessionsJoinedTodayByUserId()');
+      this.logger.error(
+        'Calling getAllSessionsJoinedTodayByUserId()',
+        error,
+        SessionService.name,
+      );
       throw error;
     }
   }
@@ -265,6 +295,7 @@ export class SessionService {
       throw err;
     }
   }
+
   async createNewSessionToday(
     newSessionInfo: CreateSession,
     user: User,
@@ -307,7 +338,11 @@ export class SessionService {
         };
       }
     } catch (error) {
-      this.logger.error('HAS AN ERROR AT createNewSessionToday()');
+      this.logger.error(
+        'Calling createNewSessionToday()',
+        error,
+        SessionService.name,
+      );
       throw error;
     }
   }
