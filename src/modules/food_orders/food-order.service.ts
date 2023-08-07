@@ -116,6 +116,7 @@ export class FoodOrderService {
         {
           ...foodOrder,
           options: JSON.stringify(foodOrder.options),
+          updated_at: new Date(),
         },
         { updateByPrimaryKey: false },
       );

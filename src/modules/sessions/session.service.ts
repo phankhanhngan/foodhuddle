@@ -306,6 +306,7 @@ export class SessionService {
 
       existedUserPayment.forEach((up) => {
         up.status = UserPaymentStatus.APPROVED;
+        up.updated_at = new Date();
         this.em.persist;
       });
 
