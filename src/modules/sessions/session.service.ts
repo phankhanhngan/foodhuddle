@@ -450,14 +450,36 @@ export class SessionService {
     }
   }
 
-  async deleteSession(id: number) {
+  async deleteSession(id: number, hostId: number) {
     try {
       const sessionById = await this.sessionRepository.findOne({ id: id });
+
+      if (sessionById === null) {
+        return {
+          status: 400,
+          message: 'Session does not exist!',
+        };
+      }
+
+      const hostIdSession = sessionById.host.id;
+
+      if (hostId !== hostIdSession) {
+        return {
+          status: 400,
+          message: `Only host can delete session!`,
+        };
+      }
 
       if (
         sessionById.status === SessionStatus.OPEN ||
         sessionById.status === SessionStatus.LOCKED
       ) {
+        if (sessionById.qr_images[0] !== undefined) {
+          await this.awsService.bulkDeleteObject(
+            JSON.parse(sessionById.qr_images),
+          );
+        }
+
         await this.em.removeAndFlush(sessionById);
 
         return {
