@@ -23,7 +23,11 @@ export class SessionController {
         data: allSessionToday,
       });
     } catch (error) {
-      this.logger.error('HAS AN ERROR AT GETTING ALL SESSIONS TODAY');
+      this.logger.error(
+        'Calling getAllSessionsToday()',
+        error,
+        SessionController.name,
+      );
       throw error;
     }
   }
