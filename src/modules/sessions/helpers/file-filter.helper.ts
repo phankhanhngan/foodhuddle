@@ -10,7 +10,7 @@ const fileFilter = {
     return cb(null, true);
   },
   limits: {
-    fileSize: 500000,
+    fileSize: 10000000,
   },
 };
 
