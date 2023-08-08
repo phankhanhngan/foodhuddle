@@ -10,7 +10,8 @@ export class MenuShopUtil {
 
       const getShopUrl = shopLink
         .split('https://shopeefood.vn/')[1]
-        .split('?')[0];
+        .split('?')[0]
+        .replace(/\/$/, '');
 
       const urlGetShopId = `https://gappapi.deliverynow.vn/api/delivery/get_from_url?url=${getShopUrl}`;
 
