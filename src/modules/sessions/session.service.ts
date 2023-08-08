@@ -457,7 +457,7 @@ export class SessionService {
 
       if (sessionById === null) {
         return {
-          status: 400,
+          statusCode: 400,
           message: 'Session does not exist!',
         };
       }
@@ -466,7 +466,7 @@ export class SessionService {
 
       if (hostId !== hostIdSession) {
         return {
-          status: 400,
+          statusCode: 400,
           message: `Only host can delete session!`,
         };
       }
