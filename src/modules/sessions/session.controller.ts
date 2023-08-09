@@ -75,7 +75,7 @@ export class SessionController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  @UseInterceptors(FilesInterceptor('qr_images'))
+  @UseInterceptors(FilesInterceptor('qr_images', 5, fileFilter))
   async createNewSessionToday(
     @Body(
       new ValidationPipe({
@@ -85,19 +85,7 @@ export class SessionController {
     )
     newSession: CreateSession,
     @Req() req,
-    @UploadedFiles(
-      new ParseFilePipe({
-        validators: [
-          new MaxFileSize({
-            maxSize: 5,
-          }),
-          new AcceptImageType({
-            fileType: ['image/jpeg', 'image/png'],
-          }),
-        ],
-        fileIsRequired: false,
-      }),
-    )
+    @UploadedFiles()
     files: Array<Express.Multer.File> | Express.Multer.File,
     @Res() res: Response,
   ) {
