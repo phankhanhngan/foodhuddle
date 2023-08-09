@@ -142,7 +142,9 @@ export class SessionController {
       });
     } catch (error) {
       this.logger.error(
-        'HAS AN ERROR AT GETTING ALL SESSIONS HOSTED TODAY BY USER ID',
+        'Calling getAllSessionHostedTodayByUserId()',
+        error,
+        SessionService.name,
       );
       throw error;
     }
@@ -163,7 +165,9 @@ export class SessionController {
       });
     } catch (error) {
       this.logger.error(
-        'HAS AN ERROR AT GETTING ALL SESSIONS JOINED TODAY BY USER ID',
+        'Calling getAllSessionsJoinedTodayByUserId()',
+        error,
+        SessionService.name,
       );
       throw error;
     }

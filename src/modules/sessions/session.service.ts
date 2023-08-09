@@ -48,42 +48,54 @@ export class SessionService {
   ) {}
 
   async _getNumberOfJoiner(sessionId: number) {
-    const sessionsBySessionId = await this.foodOrderRepository.find(
-      {
-        session: sessionId,
-      },
+    try {
+      const sessionsBySessionId = await this.foodOrderRepository.find(
+        {
+          session: sessionId,
+        },
 
-      { populate: ['session'] },
-    );
+        { populate: ['session', 'user'] },
+      );
 
-    const listUserJoinBySession = sessionsBySessionId.map((v) => {
-      const user = {
-        id: v.user.id,
-      };
-      return user;
-    });
+      const listUserJoinBySession = sessionsBySessionId.map((v) => {
+        const user = {
+          id: v.user.id,
+        };
+        return user;
+      });
 
-    const currentHostId = (
-      await this.sessionRepository.findOne({
-        id: sessionId,
-      })
-    ).host.id;
+      const currentHostId = (
+        await this.sessionRepository.findOne({
+          id: sessionId,
+        })
+      ).host.id;
 
-    const check = [];
-    const listJoinerPerSession = listUserJoinBySession.filter((v) => {
-      if (currentHostId !== v.id && !check.includes(v.id)) {
-        check.push(v.id);
-        return v;
-      }
-    });
+      const check = [];
+      const listJoinerPerSession = listUserJoinBySession.filter((v) => {
+        if (currentHostId !== v.id && !check.includes(v.id)) {
+          check.push(v.id);
+          return v;
+        }
+      });
 
-    return listJoinerPerSession.length;
+      return listJoinerPerSession.length;
+    } catch (error) {
+      this.logger.error(
+        'Calling _getNumberOfJoiner()',
+        error,
+        SessionService.name,
+      );
+      throw error;
+    }
   }
 
   async _getAllSessions() {
     try {
       const allSessions = await this.sessionRepository.findAll({
         fields: ['id', 'title', 'host', 'shop_image', 'status', 'created_at'],
+        orderBy: {
+          id: 'DESC',
+        },
       });
 
       const listSessionsReturn = allSessions.map(async (v) => {
@@ -108,9 +120,16 @@ export class SessionService {
 
   async _getAllSessionHostedByUserId(userId: number) {
     try {
-      const sessionHostedByUserId = await this.sessionRepository.find({
-        host: userId,
-      });
+      const sessionHostedByUserId = await this.sessionRepository.find(
+        {
+          host: userId,
+        },
+        {
+          orderBy: {
+            id: 'DESC',
+          },
+        },
+      );
 
       const sessionHostedByUserIdReturn = sessionHostedByUserId.map(
         async (v) => {
@@ -129,7 +148,11 @@ export class SessionService {
 
       return Promise.all(sessionHostedByUserIdReturn);
     } catch (error) {
-      this.logger.error('HAS AN ERRO AT getAllSessionHostedByUserId()');
+      this.logger.error(
+        'Calling _getAllSessionHostedByUserId()',
+        error,
+        SessionService.name,
+      );
       throw error;
     }
   }
@@ -140,8 +163,12 @@ export class SessionService {
         {
           user: userId,
         },
-
-        { populate: ['session'] },
+        {
+          populate: ['session'],
+          orderBy: {
+            id: 'DESC',
+          },
+        },
       );
 
       const sessionJoinedByUserIdTodayFormated = sessionJoinedByUserId.map(
@@ -172,7 +199,11 @@ export class SessionService {
 
       return result;
     } catch (error) {
-      this.logger.error('HAS AN ERRO AT getAllSessionsJoinedByUserId()');
+      this.logger.error(
+        'Calling _getAllSessionsJoinedByUserId()',
+        error,
+        SessionService.name,
+      );
       throw error;
     }
   }
@@ -205,18 +236,6 @@ export class SessionService {
     }
   }
 
-  async getLatestSessionByHostId(hostId: number) {
-    try {
-      const latestSessionByHostId = this.sessionRepository.findOne(
-        { host: hostId },
-        { orderBy: { id: 'DESC' } },
-      );
-
-      return latestSessionByHostId;
-    } catch (error) {
-      this.logger.error('HAS AN ERROR AT getLatestSessionByHostId()');
-    }
-  }
   async getAllSessionHostedTodayByUserId(userId: number) {
     try {
       const sessionHostedByUserId = await this._getAllSessionHostedByUserId(
@@ -237,7 +256,29 @@ export class SessionService {
 
       return sessionHostedTodayByUserId;
     } catch (error) {
-      this.logger.error('HAS AN ERRO AT getAllSessionHostedTodayByUserId()');
+      this.logger.error(
+        'Calling getAllSessionHostedTodayByUserId()',
+        error,
+        SessionService.name,
+      );
+      throw error;
+    }
+  }
+  async getLatestSessionByHostId(hostId: number) {
+    try {
+      const latestSessionByHostId = this.sessionRepository.findOne(
+        { host: hostId },
+        { orderBy: { id: 'DESC' } },
+      );
+
+      return latestSessionByHostId;
+    } catch (error) {
+      this.logger.error(
+        'Calling getLatestSessionByHostId()',
+        error,
+        SessionService.name,
+      );
+      throw error;
     }
   }
 
@@ -271,6 +312,11 @@ export class SessionService {
       return sessionById;
     } catch (error) {
       this.logger.error('HAS AN ERROR AT getSessionById()');
+      this.logger.error(
+        'Calling getAllSessionsJoinedTodayByUserId()',
+        error,
+        SessionService.name,
+      );
       throw error;
     }
   }
