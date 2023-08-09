@@ -78,8 +78,11 @@ export class SessionService {
     files: Array<Express.Multer.File> | Express.Multer.File,
   ) {
     try {
+      const currentDate = new Date();
+      const timestamp = currentDate.getTime();
+
       const urlImages: string[] = await this.awsService.bulkPutObject(
-        `QRImages`,
+        `QRImages/${timestamp}`,
         files,
       );
 
