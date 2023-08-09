@@ -542,8 +542,11 @@ export class SessionService {
         );
       }
 
+      const currentDate = new Date();
+      const timestamp = currentDate.getTime();
+
       const urlImages: string[] = await this.awsService.bulkPutObject(
-        `QRImages`,
+        `QRImages/${timestamp}`,
         files,
       );
 
