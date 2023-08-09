@@ -212,20 +212,36 @@ export class SessionService {
     try {
       const today = new Date();
 
-      const currentDate = today.getDate();
-      const currentMonth = today.getMonth() + 1;
-      const currentYear = today.getFullYear();
-
-      const allSessions = await this._getAllSessions();
-
-      const listSessionsToday = allSessions.filter(
-        (v) =>
-          v.createdAt.getDate() === currentDate &&
-          v.createdAt.getMonth() + 1 === currentMonth &&
-          v.createdAt.getFullYear() === currentYear,
+      const allSessions = await this.sessionRepository.find(
+        {
+          created_at: {
+            $gte: `${today.getFullYear()}-${
+              today.getMonth() + 1
+            }-${today.getDate()}`,
+            $lt: `${today.getFullYear()}-${today.getMonth() + 1}-${
+              today.getDate() + 1
+            }`,
+          },
+        },
+        {
+          fields: ['id', 'title', 'host', 'shop_image', 'status', 'created_at'],
+        },
       );
 
-      return listSessionsToday;
+      const listSessionsReturn = allSessions.map(async (v) => {
+        const numberOfJoiner = await this._getNumberOfJoiner(v.id);
+        return {
+          id: v.id,
+          title: v.title,
+          host: v.host.email,
+          status: v.status,
+          shopImage: v.shop_image,
+          createdAt: v.created_at,
+          numberOfJoiners: numberOfJoiner,
+        };
+      });
+
+      return Promise.all(listSessionsReturn);
     } catch (error) {
       this.logger.error(
         'Calling getAllSessionsToday()',
@@ -238,23 +254,36 @@ export class SessionService {
 
   async getAllSessionHostedTodayByUserId(userId: number) {
     try {
-      const sessionHostedByUserId = await this._getAllSessionHostedByUserId(
-        userId,
-      );
-
       const today = new Date();
-      const currentDate = today.getDate();
-      const currentMonth = today.getMonth() + 1;
-      const currentYear = today.getFullYear();
 
-      const sessionHostedTodayByUserId = sessionHostedByUserId.filter(
-        (v) =>
-          v.createdAt.getDate() === currentDate &&
-          v.createdAt.getMonth() + 1 === currentMonth &&
-          v.createdAt.getFullYear() === currentYear,
+      const sessionHostedTodayByUserId = await this.sessionRepository.find({
+        host: userId,
+        created_at: {
+          $gte: `${today.getFullYear()}-${
+            today.getMonth() + 1
+          }-${today.getDate()}`,
+          $lt: `${today.getFullYear()}-${today.getMonth() + 1}-${
+            today.getDate() + 1
+          }`,
+        },
+      });
+
+      const sessionHostedTodayByUserIdReturn = sessionHostedTodayByUserId.map(
+        async (v) => {
+          const numberOfJoiner = await this._getNumberOfJoiner(v.id);
+          return {
+            id: v.id,
+            title: v.title,
+            host: v.host.email,
+            status: v.status,
+            shopImage: v.shop_image,
+            numberOfJoiners: numberOfJoiner,
+            createdAt: v.created_at,
+          };
+        },
       );
 
-      return sessionHostedTodayByUserId;
+      return Promise.all(sessionHostedTodayByUserIdReturn);
     } catch (error) {
       this.logger.error(
         'Calling getAllSessionHostedTodayByUserId()',
@@ -285,22 +314,50 @@ export class SessionService {
   async getAllSessionsJoinedTodayByUserId(userId: number) {
     try {
       const today = new Date();
-      const currentDate = today.getDate();
-      const currentMonth = today.getMonth() + 1;
-      const currentYear = today.getFullYear();
 
-      const sessionJoinedByUserId = await this._getAllSessionsJoinedByUserId(
-        userId,
+      const sessionJoinedByUserId = await this.foodOrderRepository.find(
+        {
+          user: userId,
+          created_at: {
+            $gte: `${today.getFullYear()}-${
+              today.getMonth() + 1
+            }-${today.getDate()}`,
+            $lt: `${today.getFullYear()}-${today.getMonth() + 1}-${
+              today.getDate() + 1
+            }`,
+          },
+        },
+
+        { populate: ['session'] },
       );
 
-      const sessionJoinedByUserIdToday = sessionJoinedByUserId.filter(
-        (v) =>
-          v.createdAt.getDate() === currentDate &&
-          v.createdAt.getMonth() + 1 === currentMonth &&
-          v.createdAt.getFullYear() === currentYear,
+      const sessionJoinedByUserIdTodayFormated = sessionJoinedByUserId.map(
+        async (v) => {
+          const numberOfJoiner = await this._getNumberOfJoiner(v.session.id);
+          const session = {
+            id: v.session.id,
+            title: v.session.title,
+            host: v.session.host.email,
+            status: v.session.status,
+            shopImage: v.session.shop_image,
+            numberOfJoiners: numberOfJoiner,
+            createdAt: v.session.created_at,
+          };
+          return session;
+        },
       );
 
-      return sessionJoinedByUserIdToday;
+      const check = [];
+      const result = (
+        await Promise.all(sessionJoinedByUserIdTodayFormated)
+      ).filter((v) => {
+        if (!check.includes(v.id)) {
+          check.push(v.id);
+          return v;
+        }
+      });
+
+      return result;
     } catch (error) {
       this.logger.error('HAS AN ERRO AT getAllSessionsJoinedTodayByUserId()');
     }
