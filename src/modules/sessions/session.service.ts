@@ -36,7 +36,7 @@ export class SessionService {
           session: sessionId,
         },
 
-        { populate: ['session'] },
+        { populate: ['session', 'user'] },
       );
 
       const listUserJoinBySession = sessionsBySessionId.map((v) => {
@@ -75,6 +75,9 @@ export class SessionService {
     try {
       const allSessions = await this.sessionRepository.findAll({
         fields: ['id', 'title', 'host', 'shop_image', 'status', 'created_at'],
+        orderBy: {
+          id: 'DESC',
+        },
       });
 
       const listSessionsReturn = allSessions.map(async (v) => {
@@ -99,9 +102,16 @@ export class SessionService {
 
   async _getAllSessionHostedByUserId(userId: number) {
     try {
-      const sessionHostedByUserId = await this.sessionRepository.find({
-        host: userId,
-      });
+      const sessionHostedByUserId = await this.sessionRepository.find(
+        {
+          host: userId,
+        },
+        {
+          orderBy: {
+            id: 'DESC',
+          },
+        },
+      );
 
       const sessionHostedByUserIdReturn = sessionHostedByUserId.map(
         async (v) => {
@@ -135,8 +145,12 @@ export class SessionService {
         {
           user: userId,
         },
-
-        { populate: ['session'] },
+        {
+          populate: ['session'],
+          orderBy: {
+            id: 'DESC',
+          },
+        },
       );
 
       const sessionJoinedByUserIdTodayFormated = sessionJoinedByUserId.map(
