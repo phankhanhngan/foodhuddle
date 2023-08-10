@@ -70,6 +70,7 @@ export class AWSService {
         files = [].concat(files);
       }
       const commands = files.map((file) => {
+        file.originalname = file.originalname.replace(/ /g, '');
         return new PutObjectCommand({
           Bucket: this.configService.get<string>('AWS_BUCKET_NAME'),
           Key: `${folderPath}/${file.originalname}`,
