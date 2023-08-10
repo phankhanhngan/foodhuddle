@@ -559,7 +559,13 @@ export class SessionService {
 
   async deleteSession(id: number, hostId: number) {
     try {
-      const sessionById = await this.sessionRepository.findOne({ id: id });
+      const [sessionById, sessionPayment] = await Promise.all([
+        this.sessionRepository.findOne({ id: id }),
+        this.sessionPaymentRepository.findOne(
+          { session: id },
+          { fields: ['receiptScreenshot'] },
+        ),
+      ]);
 
       if (sessionById === null) {
         return {
@@ -584,6 +590,9 @@ export class SessionService {
         if (sessionById.qr_images[0] !== undefined) {
           await this.awsService.bulkDeleteObject(
             JSON.parse(sessionById.qr_images),
+          );
+          await this.awsService.bulkDeleteObject(
+            JSON.parse(sessionPayment.receiptScreenshot),
           );
         }
 
